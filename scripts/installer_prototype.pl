@@ -107,14 +107,18 @@ my %create_table; %create_table = (
 	},
 	copy => sub {
 		my $s = shift;
+		
+		use Data::Dumper;
+		print Dumper($s);
+				
 		my $dest = name_to_path($s->{name});
 		my $source = $s->{source};
 
 		my $append = ((-d $source) ? "/" : "");
 		
 		step "Action::Copy", sub {
-			$_[1]->source($source . $append);
-			$_[1]->dest($dest . $append);
+			$_[1]->source($source . $append || '');
+			$_[1]->dest($dest . $append || '');
 		};
 	},
 	test_run => sub { step "Action::Stub" },
