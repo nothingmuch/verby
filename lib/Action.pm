@@ -20,9 +20,10 @@ sub verify {
 
 sub confirm {
 	my $self = shift;
-	$self->verify(@_) or
-		die "verification of $self failed"
-		. ($self->can("error") ? (": " . $self->error) : "");
+	my $cxt = shift;
+	$self->verify($cxt, @_) or
+		die "verification of $self failed: "
+		. ($cxt->error || "error unknown");
 }
 
 __PACKAGE__

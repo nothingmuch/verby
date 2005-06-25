@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 
+
 package Action::SvnCheckout;
 use base qw/Action/;
 
@@ -18,9 +19,10 @@ sub do {
 	my $to = $c->dest;
 	my $svn = $c->svn_exe;
 
-	run [$svn, $from, $to], \(my ($in, $out), sub { $c->error(@_) };
+	run [$svn, $from, $to], \(my ($in, $out, $err));
 
-	$c->maybe_throw_error;
+	$c->error($err);
+	
 	$self->confirm;
 }
 
@@ -29,11 +31,6 @@ sub verify {
 	my $c = shift;
 
 	return unless -d $c->dest;
-}
-
-sub error {
-	my $self = shift;
-	$self->{err};
 }
 
 __PACKAGE__
