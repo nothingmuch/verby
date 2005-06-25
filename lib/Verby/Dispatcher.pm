@@ -201,6 +201,8 @@ sub wait_all {
 sub wait_one {
 	my $self = shift;
 
+	# TODO
+	# in a subclass based around Event or POE make this sensitive to the watchers that actions hand out.
 	my $step = $self->pop_running || return;
 	$self->global_context->logger->debug("waiting for step '$step'");
 	$self->finish_step($step);
