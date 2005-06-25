@@ -10,22 +10,31 @@ Verby - A framework for compositing and sequencing steps of execution.
 	my $d = Verby::Dispatcher->new;
 
 	my $s = step "Verby::Action::Foo";
+	my $other = step "Verby::Action::Bar";
+
+	$s->depends($other);
 
 	$d->add_step($s);
 
-	$d->do_all;
+	$d->do_all; # first $other, then $s
 
 =head1 DESCRIPTION
 
 L<Verby> was originally rewitten to implement the backend of an installer.
 
-An installer has two inputs, which are combined.
+An installer conceptually has two inputs, which are combined to get the job
+done.
 
-The first is the user's configuration - the parameters to influence the
-installation, and the second is the sequence to install.
+The first is the user's configuration (regardless of how it's provided) - the
+parameters to influence the installation, and the second is the recipe for the
+actual execution of the installation, a sort of template if you will, that the
+configuration fills in.
 
-L<Verby> provides concepts and a reusable implementation of the concepts to
-ease quick development of the combination of the two.
+L<Verby> defines the two concepts (not only for installers), and provides some
+useful code to get them working.
+
+In spirit it's very similar to C<Makefile>s, except that the data involved are
+mentally closer to Perl than they are to sh(1).
 
 =head1 CONFIGURATION
 
