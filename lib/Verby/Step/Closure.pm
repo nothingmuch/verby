@@ -121,12 +121,78 @@ __END__
 
 =head1 NAME
 
-Verby::Step::Closure - Reusable generic step with a closure as it's body.
+Verby::Step::Closure - Reusable generic step based on code references.
 
 =head1 SYNOPSIS
 
-	use Verby::Step::Closure;
+	use Verby::Step::Closure qw/step/;
+
+	my $s = step "Action::Class" => sub {
+		# called before action
+	}, sub {
+		# called after action
+	};
 
 =head1 DESCRIPTION
+
+This module eases the creation of step objects, by using closures and
+accessors.
+
+=head1 FUNCTIONS
+
+=over 4
+
+=item step $action_class ?$pre ?$post
+
+This function (optionally exportable) is used as a quick and dirty constructor.
+
+It will require $action_class.
+
+=back
+
+=head1 METHODS
+
+=over 4
+
+=item new $action_class ?$pre ?$post
+
+Creates a new anonymous step.
+
+=item depends *@steps
+
+Just a plain old accessor.
+
+=item is_satisfied
+
+=item finish
+
+=item start
+
+=item do
+
+These methods all call the pre callback (except for C<finish>), then the
+corresponding method on the action (special case: L<Action/verify> for
+C<is_satisfied>), and lastly the post callback (except for C<start>).
+
+=item pump
+
+This just delegates to the pump method of the action.
+
+=item stringify
+
+Stringifies to the action's class.
+
+=item get
+
+A replacement for L<Class::Accessor/get> that will unwrap array references.
+
+=item can $method
+
+A special case of L<UNIVERSAL/can> that will return false for methods the
+action can't fulfill.
+
+=item
+
+=back
 
 =cut
