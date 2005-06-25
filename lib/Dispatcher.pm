@@ -74,14 +74,16 @@ sub start_step {
 	my $step = shift;
 	my $context = shift;
 	
+	my $new_cxt = $context->derive;
+	
 	# FIXME should be able to place a limit on the running set, akin to make -j N
 	$self->wait_all;
 
 	if ($step->can("start") and $step->can("finish")){
-		$step->start;
+		$step->start($new_cxt);
 		$self->running_set->insert($step);
 	} else {
-		$step->do;
+		$step->do($new_cxt);
 		$self->satisfied_set->insert($step);
 	}
 }
