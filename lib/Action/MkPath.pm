@@ -6,16 +6,16 @@ use base qw/Action/;
 use strict;
 use warnings;
 
-use File::Path;
+use File::Path qw/mkpath/;
 use Fatal qw/mkpath/;
 
 sub do {
 	my $self = shift;
 	my $c = shift;
 
-	File::Path::mkpath($c->path);
+	mkpath($c->path);
 
-	$self->confirm;
+	$self->confirm($c);
 }
 
 sub verify {

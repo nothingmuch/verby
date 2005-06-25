@@ -20,7 +20,7 @@ sub verify {
 
 sub confirm {
 	my $self = shift;
-	$self->verify or
+	$self->verify(@_) or
 		die "verification of $self failed"
 		. ($self->can("error") ? (": " . $self->error) : "");
 }
