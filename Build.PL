@@ -15,12 +15,14 @@ Module::Build->new(
 		'Log::Log4perl'                  => 0,
 		'Algorithm::Dependency::Objects' => 0,
 		'List::MoreUtils'                => 0,
-		'Sub::Override'                  => 0,
 		'Devel::Caller::Perl'            => 0,
 		'UNIVERSAL::require'             => 0,
-		'File::Path'                     => 0,
 	},
 	auto_features => {
+		'Verby::Action::MkPath' => {
+			description => "Verby::Action::MkPath - Path creation action",
+			requires => { 'File::Path' => 0 },
+		},
 		'Verby::Action::RunCmd' => {
 			description => "Verby::Action::RunCmd - action baseclass for executing external commands",
 			requires => { 'IPC::Run' => 0 },
@@ -31,7 +33,10 @@ Module::Build->new(
 		},
 		'Verby::Action::Untar' => {
 			description => "Verby::Action::Untar - Tarball extraction",
-			requires => { 'Archive::Tar' => 0 },
+			requires => {
+				'Archive::Tar'  => 0,
+				'Sub::Override' => 0,
+			},
 		},
 		'Verby::Action::Copy' => {
 			description => "Verby::Action::Copy - Rsync copy action",
