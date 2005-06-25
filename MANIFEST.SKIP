@@ -9,5 +9,6 @@
 ^MANIFEST\.SKIP$
 \.tar\.gz$
 ^_darcs
+\.svn
 ^Makefile$
 \.old$
