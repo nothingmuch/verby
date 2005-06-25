@@ -8,7 +8,7 @@ use warnings;
 
 our $VERSION = '0.01';
 
-use Mysql::Table::MetaData;
+use Verby::Action::Mysql::Util;
 use Time::Piece;
 use File::stat;
 
@@ -84,7 +84,7 @@ sub verify {
 	
 	my $file_stamp = localtime($c->stat->mtime);
 
-	my $table_info = Mysql::Table::MetaData->new(
+	my $table_info = Verby::Action::Mysql::Util->new(
 		dbh => $dbh,
 		use_time_piece => 1,
 	)->get_info($table_name);

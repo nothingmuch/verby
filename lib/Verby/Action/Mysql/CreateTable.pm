@@ -8,7 +8,7 @@ use warnings;
 
 our $VERSION = '0.01';
 
-use Mysql::Table::MetaData;
+use Verby::Action::Mysql::Util;
 
 sub do_sql {
 	my $self = shift;
@@ -34,7 +34,7 @@ sub verify {
 
 	my $table_name = $c->table;
 
-	my $table_info = Mysql::Table::MetaData->new($c->dbh)->get_info($table_name);
+	my $table_info = Verby::Action::Mysql::Util->new($c->dbh)->get_info($table_name);
 	$c->logger->debug("table info query on '$table_name' yields " . ($table_info ? "true" : "false"));
 	
 	return ($table_info ? 1 : undef);

@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-package Mysql::Table::MetaData;
+package Verby::Action::Mysql::Util;
 
 use strict;
 use warnings;
@@ -99,13 +99,59 @@ __END__
 
 =head1 NAME
 
-Mysql::Table::MetaData - 
+Verby::Action::Mysql::Util - A table introspection utility library.
 
 =head1 SYNOPSIS
 
-	use Mysql::Table::MetaData;
+	use Verby::Action::Mysql::Util;
+
+	my $m = Verby::Action::Mysql::Util->new(
+		dbh => $dbh,
+		use_time_piece => 1, # date objects are Time::Piece
+	);
+
+	my $table_info = $m->get_info("table_name");
+
+	my $time_piece = $table_info->{update_time};
 
 =head1 DESCRIPTION
+
+This utility module knows to query a MySQL database handle for into regarding a
+table, mostly concerning the structure metadata itself.
+
+=head1 METHODS
+
+=over 4
+
+=item new DBH
+
+=item new PARAMS
+
+Create a new meta data extractor thingamabob.
+
+It takes either a single database handle, or a list of key/value pairs, with
+the key being the name of the corresponding method as named below.
+
+=item get_info TABLE_NAME
+
+This method returns a hash containing the various fields of data regarding a
+table.
+
+=item dbh
+
+Returns the database handle being used.
+
+=item use_time_piece BOOL
+
+Returns or set 
+
+=back
+
+=head1 TABLE INFO DATA FIELDS
+
+=over 4
+
+=back
 
 =head1 BUGS
 
