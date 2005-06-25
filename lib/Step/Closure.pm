@@ -83,7 +83,7 @@ sub _wrapped {
 
 	my $rv = $self->action->$action_method(@_);
 
-	if (($action_method eq "finish" or $action_method eq "do") and my $post = $self->post){
+	if ($action_method ne "start" and my $post = $self->post){
 		$self->$post(@_);
 	}
 
