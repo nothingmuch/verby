@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-package Dispatcher;
+package Verby::Dispatcher;
 
 # FIXME
 # do_all and wait_specific could be optimized to be a little less O(N) ish.
@@ -11,7 +11,7 @@ use warnings;
 
 use Algorithm::Dependency::Objects::Ordered;
 use Set::Object;
-use Context;
+use Verby::Context;
 use Carp qw/croak/;
 use Tie::RefHash;
 
@@ -70,14 +70,14 @@ sub add_steps {
 
 sub global_context {
 	my $self = shift;
-	$self->{global_context} ||= $self->config_hub->derive("Context");
+	$self->{global_context} ||= $self->config_hub->derive("Verby::Context");
 }
 
 sub get_cxt {
 	my $self = shift;
 	my $step = shift;
 
-	$self->{cxt_of_step}{$step} ||= Context->new($self->get_derivable_cxts($step));
+	$self->{cxt_of_step}{$step} ||= Verby::Context->new($self->get_derivable_cxts($step));
 }
 
 sub get_derivable_cxts {
@@ -86,7 +86,7 @@ sub get_derivable_cxts {
 
 	@{ $self->{derivable_cxts}{$step} ||= (
 		$step->provides_cxt
-			? [ Context->new($self->get_parent_cxts($step)) ]
+			? [ Verby::Context->new($self->get_parent_cxts($step)) ]
 			: [ $self->get_parent_cxts($step) ]
 	)};
 }
@@ -295,17 +295,17 @@ __END__
 
 =head1 NAME
 
-Dispatcher - Takes steps and executes them. Sort of like what make(1) is to a
+Verby::Dispatcher - Takes steps and executes them. Sort of like what make(1) is to a
 Makefile.
 
 =head1 SYNOPSIS
 
-	use Dispatcher;
+	use Verby::Dispatcher;
 	use Config::Data; # or something equiv
 
 	my $c = Config::Data->new(); # ... needs the "logger" field set
 
-	my $d = Dispatcher->new;
+	my $d = Verby::Dispatcher->new;
 	$d->config_hub($c);
 
 	$d->add_steps(@steps);
@@ -321,7 +321,7 @@ Makefile.
 
 =item new
 
-Returns a new L<Dispatcher>. Duh!
+Returns a new L<Verby::Dispatcher>. Duh!
 
 =item add_steps *@steps
 
@@ -329,7 +329,7 @@ Returns a new L<Dispatcher>. Duh!
 
 Add a number of steps into the dispatcher pool.
 
-Anything returned from L<Step/depends> is aggregated recursively here, and
+Anything returned from L<Verby::Step/depends> is aggregated recursively here, and
 added into the batch too.
 
 =item do_all
