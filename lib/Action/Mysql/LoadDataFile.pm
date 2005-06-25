@@ -25,17 +25,22 @@ sub do {
 	# always logdie
 	local $dbh->{PrintError} = 0;
 	local $dbh->{RaiseError} = 0;
-	my $accum = '';
-	local $dbh->{HandleSetErr} = sub { $accum = join("... and then:\n", $accum, shift); $c->logger->logdie($accum) };
+	local $dbh->{HandleSetErr} = sub { $c->logger->logdie(shift) };
 
 	$c->logger->info("Deleting all records from table '$table_name'");
 	$dbh->do("delete from $table_name");
 	
 	ATTEMPT: {
+		my $accum = ''; # error accumilator
 		for my $local ("", "LOCAL"){
 			if (eval {
 				local $dbh->{RaiseError} = 1;
-				local $dbh->{HandleError} = sub { $c->logger->debug($_[0]); die $_[0] };
+				local $dbh->{HandleError} = sub {
+					my $err = shift;
+					$accum = join("... and then:\n", $accum, $err); 
+					$c->logger->debug($err);
+					die $err;
+				};
 				my $sth = $dbh->prepare(qq{
 					LOAD DATA
 						$local INFILE ?
