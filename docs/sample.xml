@@ -1,0 +1,75 @@
+<instance>
+    <project
+        company_name="Premier" 
+        base_url="/premier" 
+        system_name="Employee Engagement Reporting System"
+    />
+    <database 
+        vendor="MySQL" 
+        name="premier" 
+        user="premier" 
+        password="premier.^789" 
+    />
+    <svn base_url="svn://127.0.0.1/var/svn/infinity-work/">
+        <repository name="EERS"    url="EERS/trunk"         />
+        <repository name="II"      url="ii-framework/trunk" />        
+        <repository name="Premier" url="/premier/trunk"     />
+    </svn>
+    <demographics>
+        <!-- map proper name to table name -->
+        <demographic name="Age"          table="lkup_age"      />
+        <demographic name="Gender"       table="lkup_gender"   />        
+        <demographic name="Location"     table="lkup_location" />        
+        <demographic name="Organization" table="lkup_org"      />        
+    </demographics>
+</instance>
+
+<base>
+    <tables>
+        <!-- tables to find -->
+        <table regexp="tbl_survey_results_\d+" />
+        <table regexp="lkup_\d+_engagement_scores" />    
+        <table name="tbl_hewitt_norms" />        
+        <table name="tbl_questions" />                                  
+    </tables>
+    <installation>
+        <!-- directory structure to install -->    
+        <dir base="/var/www/" var="$CLIENT">
+            <dir name="conf">
+                <template name="httpd.conf" />
+                <template name="report_tree.pl" />            
+                <template name="startup.pl" />
+                <template name="startup.xml" />
+            </dir>
+            <dir name="htdocs">
+                <!-- directories can have actions -->
+                <dir name="static"     action="Copy::FromArchive"/>
+                <dir name="images"     action="Copy::FromArchive"/>
+                <dir name="javascript" action="Copy::FromArchive"/>
+                <dir name="css"        action="Copy::FromArchive"/>
+                <!-- directories can have nothing (just creates it) -->                
+                <dir name="pdfs"      />
+                <dir name="documents" />                
+            </dir>
+            <dir name="csvdocs" />
+            <dir name="database">
+                <file name="admin_tables.sql />
+                <file name="log_tables.sql />
+                <template name="reports_tables.sql />
+                <template name="demographics_tables.sql />
+                <dir name="data" action="Store::DataFiles"  />
+            </dir>            
+            <dir name="perl">
+                <dir var="uc($CLIENT)">
+                    <file name="main.pm" />
+                </dir>
+            </dir>
+            <dir name="tests">
+                <!-- names of things can contain variables (perl eval-ed) -->            
+                <template var="001_${CLIENT}_load_test.t" />
+                <template var="002_${CLIENT}_org_tree_test.t" />
+                <template var="003_${CLIENT}_registry_test.t" />
+            </dir>
+        </dir>
+    </installation>
+</base>
