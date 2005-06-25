@@ -94,13 +94,15 @@ __END__
 
 =head1 NAME
 
-Verby::Action::Untar - 
+Verby::Action::Untar - Action to un-tar an archive
 
 =head1 SYNOPSIS
 
 	use Verby::Action::Untar;
 
 =head1 DESCRIPTION
+
+This Action, using L<Archive::Tar>, will untar a given archive.
 
 =head1 METHODS 
 

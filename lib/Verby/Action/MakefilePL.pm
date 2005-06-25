@@ -41,13 +41,16 @@ __END__
 
 =head1 NAME
 
-Verby::Action::MakefilePL - 
+Verby::Action::MakefilePL - Action to run 'perl Makefile.PL' on the command line
 
 =head1 SYNOPSIS
 
 	use Verby::Action::MakefilePL;
 
 =head1 DESCRIPTION
+
+This class inherits from L<Verby::Action::RunCmd> to provide the ability to run 
+'perl Makefile.PL' on the command line.
 
 =head1 METHODS 
 

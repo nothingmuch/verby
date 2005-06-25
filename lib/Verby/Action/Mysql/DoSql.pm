@@ -41,13 +41,15 @@ __END__
 
 =head1 NAME
 
-Verby::Action::Mysql::DoSql - 
+Verby::Action::Mysql::DoSql - Action to run a SQL command 
 
 =head1 SYNOPSIS
 
 	use Verby::Action::Mysql::DoSql;
 
 =head1 DESCRIPTION
+
+This Action, given a SQL command will run it using L<DBI/do>.
 
 =head1 METHODS 
 

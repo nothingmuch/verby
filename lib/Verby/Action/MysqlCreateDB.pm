@@ -50,13 +50,15 @@ __END__
 
 =head1 NAME
 
-Verby::Action::MysqlCreateDB - 
+Verby::Action::MysqlCreateDB - Action to create a database in MySQL
 
 =head1 SYNOPSIS
 
 	use Verby::Action::MysqlCreateDB;
 
 =head1 DESCRIPTION
+
+This Action, given a database name, will create said database in MySQL.
 
 =head1 METHODS 
 

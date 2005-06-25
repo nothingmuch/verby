@@ -108,7 +108,7 @@ __END__
 
 =head1 NAME
 
-Verby::Action::Mysql::LoadDataFile - 
+Verby::Action::Mysql::LoadDataFile - Action to validate and import data into a MySQL table
 
 =head1 SYNOPSIS
 

@@ -48,13 +48,15 @@ __END__
 
 =head1 NAME
 
-Verby::Action::Mysql::CreateTable - 
+Verby::Action::Mysql::CreateTable - Action to create a table inside a MySQL database
 
 =head1 SYNOPSIS
 
 	use Verby::Action::Mysql::CreateTable;
 
 =head1 DESCRIPTION
+
+This action, given a table name and a table definition, will create the table in a MySQL database.
 
 =head1 METHODS 
 

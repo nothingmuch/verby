@@ -35,6 +35,8 @@ Action::Stub - An action which just logs debug messages instead of dying.
 
 =head1 DESCRIPTION
 
+This action is good for use when you need to Stub certain actions.
+
 =head1 METHODS 
 
 =over 4

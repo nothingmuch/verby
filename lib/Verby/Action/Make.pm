@@ -48,13 +48,15 @@ __END__
 
 =head1 NAME
 
-Verby::Action::Make - 
+Verby::Action::Make - Action to run 'make' on the command line
 
 =head1 SYNOPSIS
 
 	use Verby::Action::Make;
 
 =head1 DESCRIPTION
+
+This class inherits from L<Verby::Action::RunCmd> to provide the ability to run 'make' on the command line.
 
 =head1 METHODS 
 

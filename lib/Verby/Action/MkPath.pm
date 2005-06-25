@@ -38,7 +38,7 @@ __END__
 
 =head1 NAME
 
-Verby::Action::MkPath - 
+Verby::Action::MkPath - Action to create a directory path
 
 =head1 SYNOPSIS
 
@@ -49,6 +49,8 @@ Verby::Action::MkPath -
 	}
 
 =head1 DESCRIPTION
+
+This Action uses L<File::Path/mkpath> to create a directory path.
 
 =head1 METHODS 
 

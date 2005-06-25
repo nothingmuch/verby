@@ -52,13 +52,15 @@ __END__
 
 =head1 NAME
 
-Verby::Action::Template - 
+Verby::Action::Template - Action to process Template Toolkit files
 
 =head1 SYNOPSIS
 
 	use Verby::Action::Template;
 
 =head1 DESCRIPTION
+
+This Action, given a set of template data, will process Template Toolkit files and return their output.
 
 =head1 METHODS 
 
