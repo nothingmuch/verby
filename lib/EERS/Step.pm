@@ -6,22 +6,26 @@ use base qw/Algorithm::Dependency::Item/;
 use strict;
 use warnings;
 
-use UNIVERSAL::moniker;
-
 sub new {
 	my $pkg = shift;
-	bless {}, $pkg;
+	my $self = bless { id => shift }, $pkg;
 }
 
 sub depends { qw// }
 
 sub id {
 	my $self = shift;
-	if ($self->isa("Class::StrongSingleton") or $self->isa("Class::Singleton")){
-		# if the class is a singleton, it can be referred by it's moniker
-		return $self->moniker;
+	
+	if (defined $self->{id}){
+		# we have an ID, return it
+		return $self->{id};
+	} elsif ($self->isa("Class::StrongSingleton") or $self->isa("Class::Singleton")){
+		# if the class is a singleton, it can be referred by a moniker
+		# the split's regex is like \b zero width assertion on lowercase to UPPERCASE boundry
+		((ref $self ) || $self) =~ /([^:]+)$/;
+		return join "_", map { lc } split /(?<=[a-z])(?=[A-Z])/, $1;
 	} else {
-		die "This method must be implemented by non singleton subclasses";
+		die "Either provide an ID to new() or override the id() method.";
 	}
 }
 
@@ -86,11 +90,21 @@ using L<Algorithm::Dependency::Ordered> by L<EERS::Installer>.
 
 =over 4
 
+=item new $?id
+
+If provided with a parameter, returns an object with it's ID set to that.
+
+Otherwise it returns an object with no ID.
+
 =item id
 
 See L<Algorithm::Dependency::Item/id>.
 
-For singleton classes, the default id is L<UNIVERSAL::moniker>.
+If an ID was provided to C<new>, this is it.
+
+Otherwise, for singleton classes, the default id is L<UNIVERSAL::moniker>.
+
+If neither condition is true, a fatal error is thrown.
 
 =item depends
 
