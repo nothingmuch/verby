@@ -10,23 +10,15 @@
     		<password />
 		</database>    		
 		<svn_root>svn://69.3.245.230/var/svn/infinity-work</svn_root>
-		<data_dir>EERS_demo/data_files</data_dir> <!-- implies File::Spec->catdir(cwd(), "EERS_demo/data_files") -->
+		<!-- implies File::Spec->catdir(cwd(), "EERS_demo/data_files") -->
+		<data_dir>EERS_demo/data_files</data_dir> 
 		<template_dir>EERS_demo/templates</template_dir>
     </config>
     
-    
-<!--
-
-- Steps that have substeps must be named
-- Steps which do not have substeps do not require names
-- Steps with "type" can have extra (arbitrary) attributes which will be validated by the "type"
-
--->    
-    
     <steps>
-        <step name='data'>
+        <step id='data'>
             <!-- this implies: substeps => [] -->
-    		<step name='demographics'>
+    		<step id='demographics'>
     				<!-- 
     				    includes proper name, i don't know where to put it though
     				    do they get written to a config file? or to a table?
@@ -37,9 +29,9 @@
     				<step type="load" proper_name='Gender', file='lkup_gender.csv' />
     				<step type="load" proper_name='Job Family', file='lkup_job_family.txt' />
     				<step type="load" proper_name='Manager Level', file='lkup_manager_level.csv' />
-    				<step type="load" proper_name='Organization', file='organizations.tree' table_name='lkup_org' /> # could make lkup_org.tree
+    				<step type="load" proper_name='Organization', file='organizations.tree' table_name='lkup_org' />
     		</step>
-    		</step name='tables'>
+    		</step id='tables'>
     				<!-- data files without proper name are just loaded as is -->
     				<step type="load" file="tbl_hewitt_norms.csv" />
     				<step type="load" file="tbl_questions.txt" />
@@ -48,8 +40,8 @@
             </step>
     	</step>
 
-    	<step name="project_layout" type="dir" path="/tmp/var/www">
-    		<step type="dir"  name_varname="project_root">
+    	<step id="project_layout" type="dir" path="/tmp/var/www">
+    		<step type="dir" name="$project_root">
     			<step type="dir" name="htdocs">
     				<step type="svn_co" name="static" repo="..." />
     				<step type="svn_co" name="images" repo="..." />
@@ -57,35 +49,41 @@
     				<step type="svn_co" name="css" repo="..." />
     				<step type="dir" name="pdfs" />
     				<step type="dir" name="documents" />
-    			</step>,
+    			</step>
 
-    			{ type => "dir", name => "t", substeps => [
+    			<step type="dir" name="t">
+    			    <!--
     				# here client name is interpolated by the XML parser, i think
     				# the interpretation of the config shouldn't have to do with the syntax it's written in
     				#{ type => "template", template => "001_template_foo.t", output => "001_client_foo.t" },
     				#{ type => "template", template => "002_template_bar.t", output => "001_client_bar.t" },
     				#{ type => "template", template => "002_template_gorch.t", output => "001_client_gorch.t" },
-    			]},
+    				-->
+    			</step>
 
-    			{ type => "dir", name => "database", substeps => [
-    				{ type => "copy", name => "data", source_varname => "data_dir" },
-    			]},
+    			<step type="dir" name="database">
+    				<step type="copy" name="data" source="$data_dir" />
+                </step>
 
-    			{ type => "dir", name => "csvdocs" }, # what's this
+    			<step type="dir" name="csvdocs" />
 
-    			{ type => "dir", name => "conf", substeps => [
-    				{ type => "template", template => "httpd.conf" }, # implicit 'out' param in pwd, httpd.conf searched in template root, relative to $0 perhaps
-    				{ type => "template", template => "startup.pl", depends => "demographics" }, # depends looks up the steps created in any key by that name
-    				{ type => "template", template => "startup.xml" },
-    			]},
+    			<step type="dir" name="conf">
+    			    <!-- 
+    			        implicit 'out' param in pwd, httpd.conf 
+    			        searched in template root, relative to $0 perhaps 
+    			    -->
+    				<step type="template" template="httpd.conf" />
+    				<step type="template" template="startup.pl" depends="demographics" />
+    				<step type="template" template="startup.xml" />
+    			</step>
 
-    			{ type => "dir", name => "perl", substeps => [
-    				{ type => "perl_module", template => "main.pm", package_varname => "perl_module_namespace" },
-    			]},
+    			<step type="dir" name="perl">
+    				<step type="perl_module" template="main.pm" package="$perl_module_namespace" />
+    			</step>
     		</step>
 
-    		{ type => "svn_co", name => "EERS", repo => "EERS/trunk" },
-    		{ type => "svn_co", name => "perl", repo => "ii-framework/trunk/lib" },
+    		<step type="svn_co" name="EERS" repo="EERS/trunk" />
+    		<step type="svn_co" name="perl" repo="ii-framework/trunk/lib" />
     	</step>
 
     	<step type="test_run" depends="project_layout" />
