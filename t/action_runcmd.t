@@ -5,16 +5,17 @@ use warnings;
 
 use Test::More tests => 12;
 use Test::MockObject;
+use Hash::AsObject;
 use Test::Exception;
 
 my $m; BEGIN { use_ok($m = "Action::RunCmd") };
 
 isa_ok(my $a = $m->new, $m);
 
-my $c = Test::MockObject->new;
+my $c = Hash::AsObject->new;
 my $logger = Test::MockObject->new;
 
-$c->set_always(logger => $logger);
+$c->logger($logger);
 $logger->set_true($_) for qw/info warn/;
 $logger->mock("logdie" => sub { shift; die "@_" });
 
@@ -37,7 +38,7 @@ foo
 bar
 FOO
 
-	my ($out, $err) = $a->run($c, [qw/wc -l/], \$in);
+	my ($out, $err) = $a->run($c, [qw/wc -l/], { in => \$in });
 	like($out, qr/^\s*\d+\s*$/, "output of wc -l looks sane");
 	ok(!$err, "no stderr");
 	ok(!$logger->called("warn"), "no warnings logged");

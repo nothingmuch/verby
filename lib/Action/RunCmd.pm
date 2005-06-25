@@ -24,7 +24,7 @@ sub cmd_start {
 
 	$self->log_invocation($c, "running '@$cli'");
 	
-	my $in = shift;
+	my $in = $opts{in};
 	my ($out, $err);
 
 	my $init = shift;
