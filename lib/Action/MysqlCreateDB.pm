@@ -22,7 +22,7 @@ sub do {
 		$dbh->do("create database ?", undef, $c->db_name);
 	}
 
-	$self->confirm;
+	$self->confirm($c);
 }
 
 sub verify {
