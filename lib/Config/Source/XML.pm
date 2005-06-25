@@ -119,7 +119,7 @@ sub _get_all_values {
     return map {
             my ($key) = /^\{\}(.*)$/;
 			my $value = $el->{Attributes}->{$_}->{Value};
-			$value =~ s/\$(\{\w+\}|\w+)/$self->_fetch_config_var($1)/e;
+			$value =~ s/(?<!\\)\$(\{\w+\}|\w+)/$self->_fetch_config_var($1)/e;
             ($key => $value)
         }
         keys %{$el->{Attributes}};        
