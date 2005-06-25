@@ -6,6 +6,8 @@ use base qw/Action::Mysql::DoSql/;
 use strict;
 use warnings;
 
+use Mysql::Table::MetaData;
+
 sub do_sql {
 	my $self = shift;
 	my $c = shift;
@@ -28,8 +30,12 @@ sub verify {
 	my $self = shift;
 	my $c = shift;
 
-	# maybe check that the schema is actually OK?
-	return (Mysql::Table::MetaData->new($c->dbh)->get_info($c->table) ? 1 : undef);
+	my $table_name = $c->table;
+
+	my $table_info = Mysql::Table::MetaData->new($c->dbh)->get_info($table_name);
+	$c->logger->debug("table info query on '$table_name' yields " . ($table_info ? "true" : "false"));
+	
+	return ($table_info ? 1 : undef);
 }
 
 __PACKAGE__

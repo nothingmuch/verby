@@ -53,7 +53,7 @@ sub add_step {
 	my $context = $self->get_cxt($step);
 
 	if ($step->is_satisfied($context)) {
-		$logger->debug("step is already satisfied");
+		$logger->debug("Step '$step' is already satisfied");
 		$satisfied->insert($step);
 	}
 }

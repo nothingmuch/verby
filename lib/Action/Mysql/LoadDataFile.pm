@@ -10,6 +10,8 @@ use Mysql::Table::MetaData;
 use Time::Piece;
 use File::stat;
 
+use DBI;
+
 sub do_sql {
 	my $self = shift;
 	my $c = shift;
@@ -23,7 +25,11 @@ sub do_sql {
 	my $skip = $c->skip_lines || 0;
 
 	$c->logger->info("Deleting all records from table '$table_name'");
-	$dbh->do("delete from $table_name");
+	{
+		local $dbh->{RaiseError} = 0;
+		local $dbh->{HandleError} = undef;
+		$dbh->do("delete from $table_name");
+	}
 	
 	ATTEMPT: {
 		my $accum = ''; # error accumilator

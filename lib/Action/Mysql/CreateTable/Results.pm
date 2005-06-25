@@ -32,7 +32,7 @@ sub do {
 		} elsif (/^q\d+$/){
 			$type = "TINYINT";
 		} else {
-			$c->logger->logdie("Don't know how to handle column name '$_' in survery results table");
+			$c->logger->logdie("Don't know how to handle column name '$_' in survery results table '" . $c->table . "'");
 		}
 
 		"$_ $type UNSIGNED";

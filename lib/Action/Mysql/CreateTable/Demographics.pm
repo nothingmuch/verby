@@ -9,13 +9,26 @@ use warnings;
 sub do {
 	my $self = shift;
 	my $c = shift;
-
-	$c->schema(q{
-		id INTEGER PRIMARY KEY,
+	
+	my $id_column = $c->id_column;
+	
+	$c->schema(qq{
+		$id_column INTEGER PRIMARY KEY,
 		description VARCHAR(255)
 	});
 
 	$self->SUPER::do($c);
+}
+
+sub verify {
+	my $self = shift;
+	my $c = shift;
+
+	my $table_name = $c->table;
+	(my $id_column = $table_name . "_id") =~ s/^(lkup|tbl)_//;
+	$c->id_column($id_column);
+
+	$self->SUPER::verify($c);
 }
 
 __PACKAGE__

@@ -7,9 +7,6 @@ use Step::Closure qw/step/;
 use Config::Data;
 use File::Basename;
 
-my $conf = {
-};
-
 my $l4pconf = <<L4P;
 	log4perl.rootLogger 			= INFO, term
 

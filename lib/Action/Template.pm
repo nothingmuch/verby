@@ -7,6 +7,7 @@ use strict;
 use warnings;
 
 use Template;
+use Template::Constants qw( :debug );
 
 sub do {
 	my $self = shift;
@@ -17,7 +18,7 @@ sub do {
 
 	$c->logger->info("templating '$template' into $output");
 
-	my $t = Template->new(ABSOLUTE => 1);
+	my $t = Template->new(ABSOLUTE => 1, DEBUG => DEBUG_UNDEF);
 
 	$t->process($template, $self->template_data($c), $output)
 		|| $c->logger->logdie("couldn't process template: " . $t->error);

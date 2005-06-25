@@ -5,8 +5,8 @@ use warnings;
 
 die "usage: $0 path/to/datafiles/*.{csv,txt}" unless @ARGV;
 
+use Step::Mysql::LoadDataFile;
 use Dispatcher;
-use Step::Closure qw/step/;
 use Config::Data;
 use File::Basename;
 use File::Spec;
@@ -33,59 +33,17 @@ my @create_results;
 my @create_others;
 
 foreach my $file (@ARGV){
+	next if $file =~ /generated/;
 	$logger->debug("making steps for '$file'");
-	my $cxt_name = "cxt_" . (0+\$file);
 
-	my ($table_name, $path, $suffix) = fileparse($file, qr/\.(?:csv|txt|tree)/);
+	my ($load, $create) = Step::Mysql::LoadDataFile->new($file);
 
-	my $flatten;
-	if ($file =~ /\.tree$/){
-		my $flat = File::Spec->catfile(dirname($file), "generated_lkup_org.txt");
-		{
-			my $tree_file = $file;
-			$flatten = step "Action::FlattenTree" => sub {
-				my $c = $_[1];
-				$c->tree_file($tree_file);
-				$c->output($flat);
-			};
-		}
-
-		$file = $flat;
-		$table_name = "lkup_org";
-	}
-	
-	my $analyze = step("Action::AnalyzeDataFile" => sub {
-		$_[1]->file($file);
-	}, sub {
-		$_[1]->export_all;
-	});
-
-	$analyze->provides_cxt(1);
-	$analyze->depends($flatten || ());;
-
-	my $type;
-	for ($table_name){
-		$type = "Hewitt" if /hewitt_norms/;
-		$type = "Results" if /survey_results/;
-		$type ||= "Demographics";
-	}
-	my $create = step "Action::Mysql::CreateTable::$type" => sub {
-		$_[1]->table($table_name);
-		$_[1]->export("table");
-	};
-	$create->provides_cxt(1);
-	
-	my $load = step "Action::Mysql::LoadDataFile";
-
-	if ($table_name =~ /survey_results/){
+	if ($file =~ /survey_results/){
 		push @create_results, $create;
 	} else {
 		push @create_others, $create;
 	}
 
-	$load->depends($create, $analyze);
-	$create->depends($analyze);
-	
 	push @load_steps, $load;
 }
 

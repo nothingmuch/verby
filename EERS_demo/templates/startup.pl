@@ -75,7 +75,7 @@ my $EERS_c = $registry->getRegisteredContainer('EERS');
 # Database Container
 # --------------------------------------------------------------------------------------------------- #	
 
-my $db_c = II::IOC::Container::Database->new('MySQL', '[% database.dsn %]', '[% database.username %]', '[% database.password %]'); 
+my $db_c = II::IOC::Container::Database->new('MySQL', '[% c.database.dsn %]', '[% c.database.username %]', '[% c.database.password %]'); 
 $db_c->asMock() if $RUNNING_LOCALLY;
 
 #     $db_c->addProxy('connection' => IOC::Proxy->new({
@@ -138,11 +138,11 @@ $EERS_c->register(IOC::Service->new('FilterFactory' => sub {
                 sql_generator => EERS::Filter::Demographic::Tree::SQLGenerator->new('tbl_org', 'org_id', $c->get('TreeManager')->getTreeIndex('Organizations')),
                 view          => EERS::Filter::Demographic::Tree::View->new('Organizational Level' => $c->get('TreeManager')->getTreeIndex('Organizations'))
             },     
-            [% FOREACH demographic IN demographics %]       
+            [% FOREACH demographic IN c.demographics %]       
             '[% demographic.id %]' => {
                 demographic   => EERS::Filter::Demographic->new('[% demographic.id %]'),
                 sql_generator => EERS::Filter::Demographic::SQLGenerator->new('[% demographic.table.name %]', '[% demographic.table.id %]'),
-                view          => EERS::Filter::Demographic::View->new('[% demographic.proper_name %]' => $c->find('Demographics/[% demographic.table_name %]'))
+                view          => EERS::Filter::Demographic::View->new('[% demographic.proper_name %]' => $c->find('Demographics/[% demographic.table.name %]'))
             },
             [% END %]
         }

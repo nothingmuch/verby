@@ -14,7 +14,7 @@ sub do {
 
 	local $dbh->{PrintError} = 0;
 	local $dbh->{RaiseError} = 0;
-	local $dbh->{HandleError} = sub { $c->logger->logdie(shift) };
+	local $dbh->{HandleError} = sub { $c->logger->logdie(shift(@_) . " $self " . Data::Dumper::Dumper($c->data)) };
 
 	$self->do_sql($c);
 
