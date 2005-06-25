@@ -6,6 +6,8 @@ use strict;
 use warnings;
 
 use Scalar::Util qw/weaken/;
+use Tie::HashDefaults;
+use Carp qw/croak/;
 
 sub new {
 	my $pkg = shift;
@@ -18,18 +20,33 @@ sub new {
 		weaken($self->{parent});
 		tie my %data, "Tie::HashDefaults", $parent->data;
 		$self->{data} = \%data;;
-	}
+	} else { $self->{data} = {} };
 
 	$self;
 }
 
 sub AUTOLOAD {
-	my $self = shift;
 	(our $AUTOLOAD) =~ /::([^:]+)$/;
 
 	my $field = $1;
 
-	$self->get($field);
+	my $sub = sub {
+		my $self = shift;
+		$self->set($field, @_) if @_;
+		$self->get($field);
+	};
+
+	{
+		no strict;
+		*{ $field } = $sub;
+	}
+
+	goto &$sub;
+}
+
+sub set {
+	my $self = shift;
+	croak "$self is not mutable";
 }
 
 sub get {
@@ -47,6 +64,11 @@ sub derive {
 sub data {
 	my $self = shift;
 	$self->{data};
+}
+
+sub parent {
+	my $self = shift;
+	$self->{parent};
 }
 
 __PACKAGE__

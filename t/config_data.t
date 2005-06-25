@@ -3,7 +3,8 @@
 use strict;
 use warnings;
 
-use Test::More tests => 20;
+use Test::More tests => 23;
+use Test::Exception;
 
 my $m; BEGIN { use_ok($m = "Config::Data") };
 
@@ -27,6 +28,9 @@ is($p->foo, $p->get("foo"), "get('foo') is the same as ->foo");
 can_ok($p, "derive");
 isa_ok(my $c = $p->derive, $m);
 
+can_ok($c, "parent");
+is($c->parent, $p, "c->parent is correct");
+
 is($c->foo, $p->foo, "child inherits parents values");
 
 $c->data->{foo} = "blah";
@@ -45,3 +49,4 @@ is($o->foo, $c->foo, "grandchild inherits childs value");
 delete $c->data->{foo};
 is($o->foo, $p->foo, "when key deleted in child, grandchild gets parent");
 
+dies_ok { $p->foo("new") } "can't set immutable object";

@@ -10,13 +10,22 @@ sub AUTOLOAD {
 	# TODO
 	# consider merging this AUTOLOAD into Config::Data, and let it to ->set if
 	# $self isa ::Mutable, so that we can cache closures.
-	my $self = shift;
 	(our $AUTOLOAD) =~ /::([^:]+)$/;
 
 	my $field = $1;
 
-	$self->set($field, @_) if @_;
-	$self->get($field);
+	my $sub = sub {
+		my $self = shift;
+		$self->set($field, @_) if @_;
+		$self->get($field);
+	};
+
+	{
+		no strict;
+		*{ $field } = $sub;
+	}
+
+	goto &$sub;
 }
 
 sub set {
@@ -31,7 +40,7 @@ sub export {
 	my $self = shift;
 	my $field = shift;
 
-	my $parent = $parent;
+	my $parent = $self->parent;
 	die "parent of $self is immutable" unless $parent->isa(__PACKAGE__);
 	$parent->set($field, $self->$field);
 }
