@@ -18,7 +18,7 @@ sub import {
     *{ (caller())[0] . "::step"} = \&step if $_[0] eq 'step';
 }
 
-__PACKAGE__->mk_accessors(qw/action depends code post/);
+__PACKAGE__->mk_accessors(qw/action depends pre post/);
 
 sub get {
 	my $self = shift;
@@ -29,12 +29,12 @@ sub get {
 
 sub new {
 	my $pkg = shift;
-	my $code = shift or croak "must supply code body";
+	my $pre = shift;
 	my $post = shift;
 
 	my $self = bless {
 		depends => [],
-		code => $code,
+		pre => $pre,
 		post => $post,
 	}, $pkg;
 
@@ -77,8 +77,9 @@ sub _wrapped {
 	my $self = shift;
 	my $action_method = shift;
 
-	my $sub = $self->code;
-	$self->$sub(@_) unless $action_method eq "finish";
+	if ($action_method ne "finish" and my $sub = $self->pre){
+		$self->$sub(@_);
+	}
 
 	my $rv = $self->action->$action_method(@_);
 
@@ -89,7 +90,7 @@ sub _wrapped {
 	$rv;
 }
 
-sub step ($&;&) {
+sub step ($;&&) {
 	my $action_class = shift;
 
 	my $step = Step::Closure->new(@_);

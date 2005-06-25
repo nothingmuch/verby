@@ -40,6 +40,8 @@ sub add_step {
 
 	return if $steps->includes($step);
 
+	$self->global_context->logger->debug("adding step $step");
+
 	$self->add_step($_) for $step->depends;
 	$steps->insert($step);
 

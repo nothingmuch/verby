@@ -1,5 +1,5 @@
 # Expected variables are:
-# conf.project_root
+# c.project_root
 # demographics.demographic
 # id (lower case proper name with _ for spaces)
 # proper_name (the english name)
@@ -25,8 +25,8 @@ BEGIN {
     unshift @INC => qw(
                 /var/www/perl
                 /var/www/EERS/perl                
-                /var/www/[% conf.project_root %]/
-                /var/www/[% conf.project_root %]/perl             
+                [% c.project_root %]/
+                [% c.project_root %]/perl             
                 );
                 
 } 
@@ -56,8 +56,8 @@ use EERS::Entities::Organization;
 
 my $RUNNING_LOCALLY = 1;
 
-if (-e '/var/www/[% conf.project_root %]/conf/startup.xml') {
-    IOC::Config::XML->new()->read('/var/www/[% conf.project_root %]/conf/startup.xml');
+if (-e '[% c.project_root %]/conf/startup.xml') {
+    IOC::Config::XML->new()->read('[% c.project_root %]/conf/startup.xml');
     $RUNNING_LOCALLY = 0;
 }
 elsif (-e 'conf/startup.xml') {
@@ -156,8 +156,8 @@ $EERS_c->register(IOC::Service->new('FilterFactory' => sub {
 use Premier;
 
 use generics Premier => (
-    BASE_URL => "[% conf.project_url %]",
-    COMPANY_NAME => "[% conf.company_name %]",
+    BASE_URL => "[% c.project_url %]",
+    COMPANY_NAME => "[% c.company_name %]",
     SYSTEM_NAME  => "Employee Engagement Reporting Toolkit"    
     );	
 
@@ -166,7 +166,7 @@ Premier->setSessionManager($registry->locateService('/EERS/Web/SessionManager'))
 use EERS::Handlers::PDFReport;    
     
 use generics EERS::Handlers::PDFReport => (
-	PDF_DIR => "/var/www/[% conf.project_root %]/htdocs/static/pdf/"
+	PDF_DIR => "[% c.project_root %]/htdocs/static/pdf/"
 	);	    
   
 1;

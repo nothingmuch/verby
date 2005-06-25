@@ -37,7 +37,7 @@ sub do {
 				local $dbh->{RaiseError} = 1;
 				local $dbh->{HandleError} = sub {
 					my $err = shift;
-					$accum = join("... and then:\n", $accum, $err); 
+					$accum = join("\nError:", $accum, $err); 
 					$c->logger->debug($err);
 					die $err;
 				};

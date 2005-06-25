@@ -18,9 +18,9 @@ sub logger {
 
 sub _get_logger {
 	my $self = shift;
-	my $obj = (Devel::Caller::Perl::called_args(2))[0];
-	
-	my $class = ref $obj || $obj; # get it's class
+	my $obj; $obj ||= (Devel::Caller::Perl::called_args($_))[0] for (2, 1);
+
+	my $class = ref $obj || $obj;
 	my $str = (overload::Method($obj, '""') ? "::$obj" : ""); # if it knows to stringify, get that too
 
 	return Log::Log4perl::get_logger("$class$str");

@@ -1,5 +1,5 @@
 
-package [% conf.perl_module_namespace %];
+package [% c.perl_module_namespace %];
 
 use strict;
 use warnings;
@@ -20,11 +20,11 @@ __END__
 
 =head1 NAME
 
-[% conf.perl_module_namespace %] - [% conf.perl_module_namespace %] EERS (Employee Engagement Reporting System)
+[% c.perl_module_namespace %] - [% c.perl_module_namespace %] EERS (Employee Engagement Reporting System)
 
 =head1 SYNOPSIS
 
-  use [% conf.perl_module_namespace %];
+  use [% c.perl_module_namespace %];
 
 =head1 DESCRIPTION
 
