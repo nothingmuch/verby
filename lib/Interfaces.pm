@@ -14,7 +14,23 @@ use Class::Interfaces (
         },
         
     'Action'    => [ 'do', 'verify' ],
-    'Context'   => [ 'get', 'set' ],
+
+	'Config::Data' => [ qw/get derive data parent AUTOLOAD/ ],
+	'Config::Data::Mutable' => [ qw/set AUTOLOAD/ ],
+	
+    'Context'   => { # shadows the Config::Hub or the global context
+		isa => 'Config::Data::Mutable',
+	},
+	
+	'Config::Hub' => { # shadows all the Config::Source objects
+		isa => 'Config::Data',
+		methods => qw/sources/, # Module::Pluggable::Ordered
+	},
+
+	'Config::Source' => {
+		isa => 'Config::Data',
+		methods => qw/extract/, # like get but only once
+	},
     );
     
 1;
