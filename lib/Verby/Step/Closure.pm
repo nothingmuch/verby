@@ -133,7 +133,8 @@ __END__
 
 =head1 NAME
 
-Verby::Step::Closure - Reusable generic step based on code references.
+Verby::Step::Closure - Quick and dirty (in the fun sense, like playing with
+mud) step generator.
 
 =head1 SYNOPSIS
 
@@ -148,7 +149,13 @@ Verby::Step::Closure - Reusable generic step based on code references.
 =head1 DESCRIPTION
 
 This module eases the creation of step objects, by using closures and
-accessors.
+accessors. It's purpose is to be able to rapidly create simple steps based on
+an action class and some clalbacks.
+
+Since L<Verby::Action> and L<Verby::Step> are separated, this may lead to
+unnecessary typing, class creation, or other silly crap.
+L<Verby::Step::Closure>'s purpose is to make this boundry unnoticable, so that
+when you don't need it it doesn't get in your way.
 
 =head1 FUNCTIONS
 
@@ -158,7 +165,8 @@ accessors.
 
 This function (optionally exportable) is used as a quick and dirty constructor.
 
-It will require $action_class.
+It will require $action_class with L<UNIVERSAL::require>, and then create a new
+L<Verby::Step::Closure> with the C<action> field set to an instance.
 
 =back
 
@@ -213,5 +221,10 @@ action can't fulfill.
 =item
 
 =back
+
+=head1 EXAMPLE
+
+The test files, as well as the demo scripts make extensive use of
+L<Verby::Step::Closure>.
 
 =cut

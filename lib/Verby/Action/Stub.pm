@@ -23,11 +23,13 @@ __END__
 
 =head1 NAME
 
-Action::Stub - 
+Action::Stub - An action which just logs debug messages instead of dying.
 
 =head1 SYNOPSIS
 
-	use Action::Stub;
+	use Verby::Step::Closure qw/step/;
+
+	my $s = step "Verby::Action::Stub";
 
 =head1 DESCRIPTION
 

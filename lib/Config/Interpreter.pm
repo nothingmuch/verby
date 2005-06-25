@@ -251,4 +251,7 @@ L<Verby::Dispatcher>.
 
 =head1 DESCRIPTION
 
+This is the code that "understands" the configuration tree produced by
+L<Config::Source::XML>.
+
 =cut
