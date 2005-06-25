@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 10;
+use Test::More tests => 12;
 use Test::Exception;
 
 my $m;
@@ -21,17 +21,21 @@ dies_ok { $m->do } "'verify' is a stub";
 can_ok($m, "confirm");
 
 my $v = 1;
+my @args;
 {
 	package My::Action;
 	use base qw/Action/;
 
-	sub verify { $v }
+	sub verify { push @args, [ @_ ]; $v }
 }
 
 my $o = My::Action->new;
 
-lives_ok { $o->confirm } "confirm when verified";
+lives_ok { $o->confirm("foo") } "confirm when verified";
+is_deeply(\@args, [ [ $o, "foo" ] ], "confirm proxied args");
 
 $v = 0;
-dies_ok { $o->confirm } "confirm when verification failed";
+@args = ();
+dies_ok { $o->confirm("bar") } "confirm when verification failed";
+is_deeply(\@args, [ [ $o, "bar" ] ], "confirm proxied args");
 
