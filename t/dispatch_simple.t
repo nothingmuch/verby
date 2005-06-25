@@ -9,15 +9,10 @@ use Test::More tests => 24;
 use Test::Deep;
 use Test::MockObject;
 use List::MoreUtils qw/uniq/;
-use Sub::Override;
 
 use Config::Data;
 
 my $m; BEGIN { use_ok($m = "Dispatcher") };
-
-my $cfg = Config::Data->new;
-$cfg->data->{logger} = Test::MockObject->new;
-my $ov = Sub::Override->new("Dispatcher::config_hub" => sub { $cfg });
 
 my @items = map { Test::MockObject->new } 1 .. 4;
 $_->set_always(is_satisfied => undef) for @items;
@@ -29,6 +24,10 @@ my @log;
 $_->mock(do => sub { push @log, shift }) for @items;
 
 isa_ok(my $d = $m->new, $m);
+
+my $cfg = Config::Data->new;
+$cfg->data->{logger} = Test::MockObject->new;
+$d->config_hub($cfg);
 
 can_ok($d, "add_step");
 $d->add_step($_) for @items;
