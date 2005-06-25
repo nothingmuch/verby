@@ -25,7 +25,8 @@ sub do {
 	# always logdie
 	local $dbh->{PrintError} = 0;
 	local $dbh->{RaiseError} = 0;
-	local $dbh->{HandleSetErr} = sub { $c->logger->logdie(shift) };
+	my $accum = '';
+	local $dbh->{HandleSetErr} = sub { $accum = join("... and then:\n", $accum, shift); $c->logger->logdie($accum) };
 
 	$c->logger->info("Deleting all records from table '$table_name'");
 	$dbh->do("delete from $table_name");
@@ -55,7 +56,7 @@ sub do {
 			}
 		}
 
-		$c->logger->logdie("Couldn't load '$file' into table '$table_name': " . ($dbh->errstr || ""));
+		$c->logger->logdie("Couldn't load '$file' into table '$table_name': $accum");
 	}
 
 	$self->confirm($c);
