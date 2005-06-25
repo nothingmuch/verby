@@ -4,6 +4,22 @@ Problems with Algorithm::Dependency:
 - it does not deal with or detect circular dependencies
 - it deals with $ids and not with $objects
 
+Centralized vs. Decentralized:
+
+I would like for this module/framework to have the capability of havig both centralized and decentralized control, as there are benefits to both approaches, and we should not force the user into one or the other.
+
+First some defintions;
+
+- Centralized control implies that all the actions and dependency relationships are set up from a single location. Thereby keeping the majority of the complexity in one place.
+
+- Decentralized control implies that each step (action + depenedency) is responsible for it's own information and interdependencies. 
+
+How to:
+
+We can achieve centralized control simply by writing the script which strings all the objects together in one place. Or through some kind of configuration format which then generates the that tree.
+
+We can achieve decentralized control through subclassing. Simply by overriding some methods in our dependency and action objects we can give them the capabilities needed. 
+
 What we need:
 
 - Action objects
@@ -32,23 +48,43 @@ How do we run this:
 
 Visitor objects should be able to do all our work for us. We can write visitors to check for circular dependencies, for doing test runs, etc. It also allows us to isolate the complexity of doing the 'make' like reentrant behavior, into a Visitor object. This means that both our Action objects and our Dependency objects need not know about this behavior.
 
+So what does this all look like: 
+                                
+    my $base_dir = Dependency->new();                    
+    $base_dir->addAction(Action::MkPath->new('/var/www'));
 
-+--------------+
-|  Dependency  |<-----------------+
-+--------------+      +--------+  |
-| actions      |----->| Action |  |   
-| dependencies |--+   +--------+  |
-+--------------+  |               |
-                  +---------------+   
-                    
-                    
-my $base_dir = Dependency->new();                    
-$base_dir->addAction(Action::MkDir->new('/var/www'));
+    my $project_tree = Dependency->new();                    
+    $project_tree->addAction(Action::MkDirTree->new(...));
+    $project_tree->depends_on($base_dir); # adds $project_tree to $base_dir's dependencies
 
-my $project_tree = Dependency->new();                    
-$project_tree->addAction(Action::MkDirTree->new(...));
-project_tree->depends_on($base_dir);
+    +--------------+
+    |  Dependency  |
+    +--------------+      +----------------+
+    | actions      |----->| Action::MkPath |   
+    | dependencies |--+   +----------------+
+    +--------------+  |  
+                      |    +--------------+        
+                      +--->|  Dependency  | 
+                           +--------------+    +-------------------+
+                           | actions      |--->| Action::MkDirTree |
+                           | dependencies |    +-------------------+
+                           +--------------+
 
+Post-order traversal of this tree will process dependencies in the correct order. This basically means that all the of the children must be satisfied before thier parent. 
+
+Misc. Thoughts:
+
+* Maybe Dependency should be called Step? Each step depending upon it's own sub-steps.
+
+* What if a parent Step/Dependency has information that a child needs how do we handle that?
+
+  - A given Visitor object might encapsulate certain aspects such as a database connection.
+    This would mean moving something which might fit within the hierarchy up into the Visitor 
+    object instead. Maybe as part of a general config? 
+    
+  - Should the Visitor hold some global config data? Would it couple the Actions to the Visitors
+    to much if we were to pass the Visitor to the Action? Or should we create some basic Context
+    or Environment object which the Visitor object has, but the Action object uses.
 
 
 
