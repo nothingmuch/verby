@@ -8,6 +8,11 @@ use warnings;
 
 use UNIVERSAL::moniker;
 
+sub new {
+	my $pkg = shift;
+	bless {}, $pkg;
+}
+
 sub depends { qw// }
 
 sub id {
