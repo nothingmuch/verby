@@ -5,7 +5,7 @@ package Config::Source::XML;
 use strict;
 use warnings;
 
-use $VERSION = '0.01';
+our $VERSION = '0.01';
 
 use XML::SAX::ParserFactory;
 
@@ -29,7 +29,7 @@ package Config::Source::XML::SAX::Handler;
 use strict;
 use warnings;
 
-use $VERSION = '0.01';
+our $VERSION = '0.01';
 
 use base 'XML::SAX::Base';
 

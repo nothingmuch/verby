@@ -10,7 +10,7 @@ use Tie::Memoize;
 
 sub new {
 	my $pkg = shift;
-	tie my %data, 'Tie::Memoize', sub { $self->extract(shift };
+	tie my %data, 'Tie::Memoize', sub { $pkg->extract(shift) };
 
 	bless { data => \%data }, $pkg;
 }

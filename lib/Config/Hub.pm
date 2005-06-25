@@ -13,7 +13,7 @@ use warnings;
 sub new {
 	my $pkg = shift;
 
-	tie my %data, 'Tie::HashDefaults', map { $_->data } my @sources = $self->sources;
+	tie my %data, 'Tie::HashDefaults', map { $_->data } my @sources = $pkg->sources;
 	bless {
 		sources => \@sources,
 		data => \%data,

@@ -25,7 +25,7 @@ sub verify {
 
 	return unless -d $wd
 		and -d File::Spec->catdir($wd, ".svn")
-		and $self->run($c, [qw/svn up/], undef, sub { chdir $wd };
+		and $self->run($c, [qw/svn up/], undef, sub { chdir $wd });
 }
 
 __PACKAGE__
