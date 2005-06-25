@@ -12,6 +12,16 @@
 		<svn_root>svn://69.3.245.230/var/svn/infinity-work</svn_root>
 		<data_dir>EERS_demo/data_files</data_dir> 
 		<template_dir>EERS_demo/templates</template_dir>
+
+
+		<log4perl_conf>
+			log4perl.rootLogger 					= INFO, term
+			log4perl.logger.EERS.Installer			= INFO
+			#log4perl.logger.Verby.Dispatcher		= DEBUG
+
+			log4perl.appender.term					= Log::Log4perl::Appender::ScreenColoredLevels
+			log4perl.appender.term.layout			= Log::Log4perl::Layout::SimpleLayout::Multiline
+		</log4perl_conf>
     </config>
  
     <steps>
@@ -75,5 +85,5 @@
 
     	<step type="test_run" depends="project_layout" />
    	
-    </steps> 
+	</steps>
 </installer>

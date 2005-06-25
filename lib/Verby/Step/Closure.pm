@@ -20,6 +20,11 @@ sub import {
 
 __PACKAGE__->mk_accessors(qw/action depends pre post provides_cxt/);
 
+sub add_deps {
+	my $self = shift;
+	$self->depends($self->depends, @_);
+}
+
 sub get {
 	my $self = shift;
 	my $rv = $self->SUPER::get(@_);
@@ -168,6 +173,10 @@ Creates a new anonymous step.
 =item depends *@steps
 
 Just a plain old accessor.
+
+=item add_deps *@steps
+
+Append more steps to the dep list.
 
 =item is_satisfied
 
