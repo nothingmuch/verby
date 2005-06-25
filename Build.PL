@@ -18,6 +18,10 @@ Module::Build->new(
 		'UNIVERSAL::require'             => 0,
 	},
 	auto_features => {
+		'Verby::Config::Source::ARGV' => {
+			description => "Verby::Config::Source::ARGV - A config data object which gets keys from the command line",
+			requires => { 'Getopt::Casual' => 0 },
+		},
 		'Verby::Action::MkPath' => {
 			description => "Verby::Action::MkPath - Path creation action",
 			requires => { 'File::Path' => 0 },
@@ -28,7 +32,10 @@ Module::Build->new(
 		},
 		'Verby::Action::MySql' => {
 			description => "MySQL related actions",
-			requires => { 'DBD::mysql' => 0 },
+			requires => {
+				'DBD::mysql' => 0,
+				'Time::Piece' => 0,
+			},
 		},
 		'Verby::Action::Untar' => {
 			description => "Verby::Action::Untar - Tarball extraction",
