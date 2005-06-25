@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 24;
+use Test::More tests => 28;
 use Test::Deep;
 use Test::MockObject;
 use List::MoreUtils qw/uniq/;
@@ -55,3 +55,7 @@ my @finished = map { $_->[1] } grep { $_->[0] eq "finish" } @log;
 cmp_deeply([ @finished[0,1] ], bag(@items[0,2]), "first two steps are in either order");
 cmp_deeply([ @finished[2,3] ], [ @items[1,3] ], "last steps are stricter");
 
+foreach my $item (@items){
+	my ($start_cxt, $finish_cxt) = map { $_->[2] } grep { $_->[1] == $item } @log;
+	is($start_cxt, $finish_cxt, "context when starting and finishing was the same");
+}
