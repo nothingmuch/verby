@@ -17,12 +17,14 @@ die $@ if $@;
 
 my $l4pconf = <<L4P;
 	log4perl.rootLogger 			= INFO, term
+	log4perl.logger.EERS.Installer	= INFO
 
 	log4perl.appender.term			= Log::Log4perl::Appender::ScreenColoredLevels
 	log4perl.appender.term.layout	= Log::Log4perl::Layout::SimpleLayout::Multiline
 L4P
 Log::Log4perl::init(\$l4pconf);
 
+my $l = Log::Log4perl::get_logger("EERS::Installer");
 
 my @steps; # catch all for all the steps created, thrown at the dispatcher later
 my @stack; # used to track substeps
@@ -107,28 +109,28 @@ my %create_table; %create_table = (
 		my $dest = name_to_path($s->{name});
 		my $source = $s->{source};
 
-	return step "Action::Stub"; # don't really copy, it's not in the conf yet
+		my $append = ((-d $source) ? "/" : "");
 		
 		step "Action::Copy", sub {
-			$_[1]->source($source);
-			$_[1]->dest($dest);
+			$_[1]->source($source . $append);
+			$_[1]->dest($dest . $append);
 		};
 	},
 	test_run => sub { step "Action::Stub" },
 );
 
-warn "traversing...\n";
+$l->info("traversing...");
 traverse($config{steps});
 
-warn "unwrapping additional dependencies deps...\n";
+$l->info("unwrapping additional dependencies deps...");
 foreach my $name (keys %dependant_groups){
 	foreach my $step (@{ $dependant_groups{$name} }){
 		$step->depends(@{ $named_steps_groups{$name} });
 	}
 }
 $_->depends($_->depends, @create_demographics) for @create_results;
-warn "done!\n";
 
+$l->info("registering steps with dispatcher");
 my $d = Dispatcher->new;
 
 my $cfg = Config::Data->new;
@@ -146,10 +148,11 @@ $d->config_hub($cfg);
 
 $d->add_step($_) for @steps;
 
+$l->info("dispatching");
+
 $d->do_all;
 
-#use Data::Dumper;
-#warn Dumper(@steps);
+$l->info("exiting");
 
 exit;
 

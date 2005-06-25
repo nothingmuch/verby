@@ -6,12 +6,21 @@ use base qw/Action/;
 use strict;
 use warnings;
 
-use IPC::Run;
+use IPC::Run ();
 
 sub run {
 	my $self = shift;
+
+	$self->cmd_start(@_);
+	$self->cmd_finish(@_);
+}
+
+sub cmd_start {
+	my $self = shift;
 	my $c = shift;
 	my $cli = shift;
+
+	my %opts = (log_stderr => 1, %{ shift @_ || {} });
 
 	$self->log_invocation($c, "running '@$cli'");
 	
@@ -20,14 +29,52 @@ sub run {
 
 	my $init = shift;
 
-	IPC::Run::run($cli, ($in || ()), ">", \$out, "2>", sub {
-		$err .= "@_";
-		
-		my $output = "@_";
-		chomp($output) if ($output =~ tr/\n// == 1); # if it's one line, trim it
-		$c->logger->warn("stderr: $output");
-	}, ($init ? (init => $init) : ())) or $c->logger->logdie("subcommand '@$cli' failed: \$!='$!'");
+	my $mk_log_handler = sub {
+		my $name = shift;
+		my $var_ref = shift;
 
+		return sub {
+			${$var_ref} .= "@_";
+		
+			my $output = "@_";
+			chomp($output) if ($output =~ tr/\n// == 1); # if it's one line, trim it
+			foreach my $line (split /\n/, $output){ # if it's not split it looks chaotic
+				$c->logger->warn("$name: $line");
+			}
+		}
+	};
+
+	my $err_arg = ($opts{log_stderr} ? $mk_log_handler->(stderr => \$err) : \$err);
+	my $out_arg = ($opts{log_stdout} ? $mk_log_handler->(stdout => \$out) : \$out); 
+
+	my $h = IPC::Run::start($cli, ($in || ()), ">", $out_arg, "2>", $err_arg, ($init ? (init => $init) : ()))
+		or $c->logger->logdie("subcommand '@$cli' could not be started: \$!='$!'");
+
+	$c->cmd_handle($h);
+	$c->stdout_ref(\$out);
+	$c->stderr_ref(\$err);
+}
+
+sub finish {
+	my $self = shift;
+	my $c = shift;
+
+	$self->cmd_finish($c);
+
+	$c->confirm($c);
+}
+
+sub cmd_finish {
+	my $self = shift;
+	my $c = shift;
+
+	my $h = $c->cmd_handle;
+	IPC::Run::finish($h)
+		or $c->logger->logdie("subcommand failed: \$!='$!'");
+
+	my $out = ${ $c->stdout_ref };
+	my $err = ${ $c->stderr_ref };
+	
 	return ($out, $err);
 }
 

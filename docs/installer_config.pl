@@ -51,10 +51,10 @@ use File::Temp qw/tempdir/;
 		project_layout => { type => "dir", name => "/tmp/var/www", substeps => [
 			{ type => "dir", name_varname => "project_root", substeps => [
 				{ type => "dir", name => "htdocs", substeps => [ # steps can nest, meaning that substeps depend on their parent
-					{ type => "copy", name => "static", source => "..." }, # probably should be svn_co
-					{ type => "copy", name => "images", source => "..." },
-					{ type => "copy", name => "javascript", source => "..." },
-					{ type => "copy", name => "css", source => "..." },
+					{ type => "svn_co", name => "static", repo => "..." }, # probably should be svn_co
+					{ type => "svn_co", name => "images", repo => "..." },
+					{ type => "svn_co", name => "javascript", repo => "..." },
+					{ type => "svn_co", name => "css", repo => "..." },
 					{ type => "dir", name => "pdfs" },
 					{ type => "dir", name => "documents" },
 				]},
@@ -65,6 +65,10 @@ use File::Temp qw/tempdir/;
 					#{ type => "template", template => "001_template_foo.t", output => "001_client_foo.t" },
 					#{ type => "template", template => "002_template_bar.t", output => "001_client_bar.t" },
 					#{ type => "template", template => "002_template_gorch.t", output => "001_client_gorch.t" },
+				]},
+
+				{ type => "dir", name => "database", substeps => [
+					{ type => "copy", name => "data", source => "EERS_demo/data_files" },
 				]},
 
 				{ type => "dir", name => "csvdocs" }, # what's this
