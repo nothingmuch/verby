@@ -10,7 +10,7 @@ use List::MoreUtils qw/uniq/;
 use Config::Data;
 
 my $m;
-BEGIN { use_ok($m = "Dispatcher") }
+BEGIN { use_ok($m = "Verby::Dispatcher") }
 
 foreach my $s ([0, 2], [0, 1], [2], [0, 1, 2], [0], [1]){ # not quite random. Note that 0 and 2 don't care which comes first
 	my $n = do { my %s; @s{@$s} = (); [ grep { not exists $s{$_} } 0 .. 3 ] }; # the inverse of $s

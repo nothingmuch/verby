@@ -10,7 +10,7 @@ use List::MoreUtils qw/uniq/;
 use Config::Data;
 
 my $m;
-BEGIN { use_ok($m = "Dispatcher") }
+BEGIN { use_ok($m = "Verby::Dispatcher") }
 
 my @items = map { Test::MockObject->new } 1 .. 4;
 foreach my $meth (qw/is_satisfied provides_cxt/){

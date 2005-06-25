@@ -11,7 +11,7 @@ use File::Temp qw/tempdir/;
 use File::Path qw/rmtree/;
 use File::Spec;
 
-my $m; BEGIN { use_ok($m = "Action::MkPath") }
+my $m; BEGIN { use_ok($m = "Verby::Action::MkPath") }
 
 my $dir = tempdir(CLEANUP => 1);
 

@@ -8,7 +8,7 @@ use Test::Exception;
 use Test::MockObject;
 
 my $m;
-BEGIN { use_ok($m = "Action") };
+BEGIN { use_ok($m = "Verby::Action") };
 
 can_ok($m, "new");
 isa_ok(my $a = $m->new, $m);
@@ -25,7 +25,7 @@ my $v = 1;
 my @args;
 {
 	package My::Action;
-	use base qw/Action/;
+	use base qw/Verby::Action/;
 
 	sub verify { push @args, [ @_ ]; $v }
 }

@@ -8,7 +8,7 @@ use Test::MockObject;
 use Hash::AsObject;
 use Test::Exception;
 
-my $m; BEGIN { use_ok($m = "Action::RunCmd") };
+my $m; BEGIN { use_ok($m = "Verby::Action::RunCmd") };
 
 isa_ok(my $a = $m->new, $m);
 

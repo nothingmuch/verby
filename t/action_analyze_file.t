@@ -12,14 +12,14 @@ use File::Temp qw/tempfile/;
 use Fcntl qw/SEEK_SET/;
 
 my $m;
-BEGIN { use_ok($m = "Action::AnalyzeDataFile") }
+BEGIN { use_ok($m = "Verby::Action::AnalyzeDataFile") }
 
 my $logger = Test::MockObject->new;
 $logger->mock(logdie => sub { shift; die "@_" });
 $logger->set_true($_) for qw/info warn debug/;
 
 isa_ok(my $a = $m->new, $m);
-isa_ok($a, "Action");
+isa_ok($a, "Verby::Action");
 
 {
 	my ($fh, $tempfile) = tempfile(UNLINK => 1);

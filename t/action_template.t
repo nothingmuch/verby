@@ -11,7 +11,7 @@ use File::Temp qw/tempfile/;
 use File::Spec;
 use Config::Data;
 
-my $m; BEGIN { use_ok($m = "Action::Template") };
+my $m; BEGIN { use_ok($m = "Verby::Action::Template") };
 
 my $template = <<TMPL;
 foo bar gorch

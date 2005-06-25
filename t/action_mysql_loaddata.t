@@ -22,7 +22,7 @@ my $dbh;
 BEGIN { plan tests => 15, sub { $dbh = DBI->connect("dbi:mysql:test"); $dbh } }
 
 my $m;
-BEGIN { use_ok($m = "Action::Mysql::LoadDataFile") }
+BEGIN { use_ok($m = "Verby::Action::Mysql::LoadDataFile") }
 
 # clear the DB a bit
 $dbh->{RaiseError} = 1;
@@ -48,7 +48,7 @@ $c->logger->mock(logdie => sub { shift; die "@_" });
 $c->logger->set_true($_) for qw/info warn debug/;
 
 isa_ok(my $a = $m->new, $m);
-isa_ok($a, "Action");
+isa_ok($a, "Verby::Action");
 
 $stat->mtime(time + 3);
 

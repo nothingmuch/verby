@@ -12,7 +12,7 @@ use Test::MockObject::Extends;
 use Hash::AsObject;
 use Sub::Override;
 
-my $m; BEGIN { use_ok($m = "Action::MysqlCreateDB") }
+my $m; BEGIN { use_ok($m = "Verby::Action::MysqlCreateDB") }
 
 my $dbh = DBI->connect("dbi:Mock:", {});
 
