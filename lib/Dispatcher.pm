@@ -94,8 +94,21 @@ sub do_all {
 
 	my $global_context = $self->global_context;
 
-	foreach my $step ($self->ordered_steps){
-		$self->start_step($step);
+	my @free_steps;
+	my @steps = map { [ $_, Set::Object->new($_->depends) ] } $self->ordered_steps;
+
+	my $satisfied = $self->satisfied_set;
+
+	while (@steps){
+		push @free_steps, shift(@steps)->[0] while (@steps and $steps[0][1]->subset($satisfied));
+		@free_steps = sort { $a->can("start") ? ($b->can("start") ? 0 : -1) : 1 } @free_steps;
+
+		if (@free_steps){
+			$self->start_step(shift @free_steps);
+		} else {
+			$self->global_context->logger->debug("free step pool exhausted");
+			$self->wait_one;
+		}
 	}
 
 	$self->wait_all;
@@ -103,7 +116,7 @@ sub do_all {
 
 sub ordered_steps {
 	my $self = shift;
-	$self->mk_dep_engine->schedule_all;
+	my @steps = $self->mk_dep_engine->schedule_all;
 }
 
 sub mk_dep_engine {
@@ -122,9 +135,6 @@ sub dep_engine_class {
 sub start_step {
 	my $self = shift;
 	my $step = shift;
-
-	# FIXME should be able to place a limit on the running set, akin to make -j N
-	$self->wait_all;
 
 	my $g_cxt = $self->global_context;
 
@@ -154,15 +164,20 @@ sub wait_all {
 	# finish all running tasks
 
 	$self->global_context->logger->debug("waiting for all running steps");
-
-	my $satisfied = $self->satisfied_set;
 	
 	while ($self->running_steps){
-		my $entry = $self->pop_running;
-		my ($step, $cxt) = @$entry;
-		$step->finish($cxt);
-		$satisfied->insert($step);
+		$self->wait_one;
 	}
+}
+
+sub wait_one {
+	my $self = shift;
+
+	my $entry = $self->pop_running || return;
+	my ($step, $cxt) = @$entry;
+	$self->global_context->logger->debug("waiting for step '$step'");
+	$step->finish($cxt);
+	$self->satisfied_set->insert($step);
 }
 
 sub _set_members_query {
@@ -199,7 +214,7 @@ sub pop_running {
 	my $self = shift;
 	my $step = shift;
 	my $cxt = shift;
-	my $entry = $self->pop_running_queue;
+	my $entry = $self->pop_running_queue || return;
 	$self->running_set->remove($entry->[0]);
 	return $entry;
 }

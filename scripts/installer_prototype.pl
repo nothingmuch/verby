@@ -18,6 +18,7 @@ die $@ if $@;
 my $l4pconf = <<L4P;
 	log4perl.rootLogger 			= INFO, term
 	log4perl.logger.EERS.Installer	= INFO
+	#log4perl.logger.Dispatcher		= DEBUG
 
 	log4perl.appender.term			= Log::Log4perl::Appender::ScreenColoredLevels
 	log4perl.appender.term.layout	= Log::Log4perl::Layout::SimpleLayout::Multiline
