@@ -1,7 +1,6 @@
 #!/usr/bin/perl
 
 package Dispatcher;
-use base qw/Class::Accessor/;
 
 use strict;
 use warnings;
@@ -11,18 +10,25 @@ use Set::Object;
 use Context;
 use Carp qw/croak/;
 
-__PACKAGE__->mk_ro_accessors(
-	my @set_fields = qw/step_set running_set satisfied_set/
-);
-
-__PACKAGE__->mk_accessors(qw/config_hub/);
-
 sub new {
 	my $pkg = shift;
 	bless {
-		map { $_ => Set::Object->new } @set_fields,
+		step_set      => Set::Object->new,
+		running_set   => Set::Object->new,
+		satisfied_set => Set::Object->new,
 		running_queue => [],
+		config_hub    => undef
 	}, $pkg;
+}
+
+sub step_set      { (shift)->{step_set}      }
+sub running_set   { (shift)->{running_set}   }
+sub satisfied_set { (shift)->{satisfied_set} }
+
+sub config_hub {
+    my $self = shift;
+    $self->{config_hub} = shift if @_;
+    $self->{config_hub};
 }
 
 sub add_step {

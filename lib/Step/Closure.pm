@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 package Step::Closure;
-use base qw/Step Class::Accessor Exporter/;
+use base qw/Step Class::Accessor/;
 
 use strict;
 use warnings;
@@ -11,7 +11,11 @@ use overload '""' => 'stringify';
 
 use Carp qw/croak/;
 
-our @EXPORT_OK = qw/step/;
+sub import {
+    shift;            # remove pkg
+    return unless @_; # dont export it if they dont ask
+    *{ (caller())[0] . "::step"} = \&step if $_[0] eq 'step';
+}
 
 __PACKAGE__->mk_accessors(qw/action depends code post/);
 

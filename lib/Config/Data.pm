@@ -19,7 +19,7 @@ sub new {
 		$self->{parent} = $parent;
 		weaken($self->{parent});
 		tie my %data, "Tie::HashDefaults", $parent->data;
-		$self->{data} = \%data;;
+		$self->{data} = \%data;
 	} else { $self->{data} = {} };
 
 	$self;

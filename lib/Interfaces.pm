@@ -47,7 +47,7 @@ Interfaces - A set of Interfaces for this framework
 
     my $step1 = Step->new();
     $step1->add_action(Action->new(
-        perform => sub { 
+        do => sub { 
             mkdir('var/www');
         },
         verify  => sub { -e 'var' && -d 'var' && -e 'var/www' && -d 'var/www' }
@@ -55,7 +55,7 @@ Interfaces - A set of Interfaces for this framework
 
     my $step1_1 = Step->new();
     $step1_1->add_action(Action->new(
-        perform => sub { 
+        do => sub { 
             chdir('var/www/'); # assume that this exists because
                                # we are dependant upon it                         
             open(FILE, ">", "index.html") || die "cannot open file : $!";
@@ -75,7 +75,7 @@ Interfaces - A set of Interfaces for this framework
         # actions in the current
         # dependent
         foreach my $a ($dep->actions()) {
-            $a->do();
+            $a->do($dep->context());
             # we could warn, we could die, it all
             # depends upon our application
             $a->verify() || warn "could not verify $a";
@@ -142,9 +142,11 @@ This will verify that the action has been performed correctly.
 
 =back
 
+Actions do not have pre-conditions. It is assumed that the Step container takes care of the environment.
+
 =head2 Context
 
-A B<Context> object is just a simple scratch-pad to be held by B<Visitor> objects, and passed to B<Action> objects. It allows the B<Visitor> to keep notes for itself. 
+A B<Context> object is just a simple scratch-pad to be held by B<Step> objects, and optionally passed to B<Action> objects by B<Visitor> objects. It allows the B<Visitor> and B<Step> object to keep notes. This object could also have a "lexical" type behavior, so that the context is specific to a B<Step> and it's sub-B<Step>s but not to it's parent B<Step>s.
 
 =over 4
 
@@ -153,8 +155,6 @@ A B<Context> object is just a simple scratch-pad to be held by B<Visitor> object
 =item B<set>
 
 =back
-
-Actions do not have pre-conditions. It is assumed that the Step container takes care of the environment.
 
 =head1 AUTHORS
 
