@@ -5,7 +5,7 @@ use warnings;
 
 use lib "t/lib";
 
-use Test::More tests => 24;
+use Test::More tests => 20;
 use Test::Deep;
 use Test::MockObject;
 use List::MoreUtils qw/uniq/;
@@ -51,5 +51,4 @@ is((uniq @log), 4, "each step is distinct");
 cmp_deeply([ @log[0,1] ], bag(@items[0,2]), "first two steps are in either order");
 cmp_deeply([ @log[2,3] ], [ @items[1,3] ], "last steps are stricter");
 
-ok($d->is_satisfied($_), "step is marked as satisfied") for @items;
 
