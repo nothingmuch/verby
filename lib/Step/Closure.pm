@@ -14,6 +14,7 @@ use Carp qw/croak/;
 sub import {
     shift;            # remove pkg
     return unless @_; # dont export it if they dont ask
+	no strict 'refs';
     *{ (caller())[0] . "::step"} = \&step if $_[0] eq 'step';
 }
 
@@ -94,7 +95,8 @@ sub step ($&;&) {
 	my $step = Step::Closure->new(@_);
 
 	$action_class->require
-		or die "Couldn't require $action_class: $UNIVERSAL::require::ERROR";
+		or die "Couldn't require $action_class: $UNIVERSAL::require::ERROR"
+			unless $action_class->can("new");
 	$step->action($action_class->new);
 
 	$step;

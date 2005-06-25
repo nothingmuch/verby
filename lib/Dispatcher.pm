@@ -89,7 +89,7 @@ sub start_step {
 	my $g_cxt = $self->global_context;
 	my $new_cxt = $g_cxt->derive;
 
-	$g_cxt->logger->info("starting step $step");
+	$g_cxt->logger->debug("starting step $step");
 
 	# FIXME should be able to place a limit on the running set, akin to make -j N
 	$self->wait_all;
@@ -109,7 +109,7 @@ sub wait_all {
 	my $self = shift;
 	# finish all running tasks
 
-	$self->global_context->logger->info("waiting for all running steps");
+	$self->global_context->logger->debug("waiting for all running steps");
 
 	my $satisfied = $self->satisfied_set;
 	
