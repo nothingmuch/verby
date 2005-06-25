@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+use File::Spec;
+use Cwd qw/cwd/;
 use File::Temp qw/tempdir/;
 
 # sample perl based config file for testing
@@ -19,7 +21,7 @@ use File::Temp qw/tempdir/;
 		#dsn => ["dbi:mysql:premier", "premier", "premier.^789"], # used to make maple syroup.
 		dsn => ["dbi:mysql:test"],
 		svn_root => "svn://69.3.245.230/var/svn/infinity-work", # the base URL for the svn_co stuff below
-		data_dir => "EERS_demo/data_files", # used to find the basenames of demographics and tables
+		data_dir => File::Spec->catdir(cwd(), "EERS_demo/data_files"), # used to find the basenames of demographics and tables
 		template_dir => "EERS_demo/templates",
 	},
 	
@@ -68,7 +70,7 @@ use File::Temp qw/tempdir/;
 				]},
 
 				{ type => "dir", name => "database", substeps => [
-					{ type => "copy", name => "data", source => "EERS_demo/data_files" },
+					{ type => "copy", name => "data", source_varname => "data_dir" },
 				]},
 
 				{ type => "dir", name => "csvdocs" }, # what's this
