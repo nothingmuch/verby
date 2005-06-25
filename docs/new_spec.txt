@@ -1,0 +1,35 @@
+
+Problems with Algorithm::Dependency:
+
+- it does not deal with or detect circular dependencies
+- it deals with $ids and not with $objects
+
+What we need:
+
+- Action objects
+
+These are objects which encapsulte an action of some kind. The action should be reversable/transactional. They should support re-starting of the action (meaning they clean up, then restart). And it should be able to determine if it successfully completed.
+
+Action objects should contain no dependency information, and are essentially "dumb" objects. They simple perform their task and assume that their environment is taken care of. They can be passed some configuration data if needed, or they can be hardcoded. 
+
+- Dependency objects
+
+These objects are the means by which Actions can be combined. A Dependency object contains at least one Action object which it will run if all it's dependencies are satisfied. If a dependency object contains more than one action, it is assumed that they can either be run in order or in parallell (in other words they have no dependencies between them other than the dependecies of their parent (the Dependency object)). 
+
+A dependency is assumed to be satisfied if all it's actions have completed successfully. Any additional checks for completion can be implemented as Actions.
+
+Dependency objects can also contain other dependency objects. This allows for a series of inter-dependent dependencies to be grouped together, and still isolate them from the other dependencies.
+
+What do we do with this:
+
+First we can analyze the dependency tree fairly easily with this structure. Which would facilitate dry runs as well as testability. We can also catch circular dependencies as well (assuming that a circular dependency can be deduced by the presence of identical actions in the dependency graph).
+
+Next, this allows is to isolate the simple from the complex. Simple actions, combined in complex dependency situations. However, this complexity can also be managed by nesting dependency objects into dependency groups.
+
+Since actions are no longer coupled to their dependencies, they need not be singletons anymore. Which means we can have more general purpose actions which can be re-used with different configurations.
+
+How do we run this:
+
+Visitor objects should be able to do all our work for us. We can write visitors to check for circular dependencies, for doing test runs, etc. It also allows us to isolate the complexity of doing the 'make' like reentrant behavior, into a Visitor object. This means that both our Action objects and our Dependency objects need not know about this behavior.
+
+
