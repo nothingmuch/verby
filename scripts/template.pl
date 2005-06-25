@@ -2,8 +2,8 @@
 
 use File::Temp qw/tempdir/;
 
-use Dispatcher;
-use Step::Closure qw/step/;
+use Verby::Dispatcher;
+use Verby::Step::Closure qw/step/;
 use Config::Data;
 use File::Basename;
 
@@ -21,6 +21,12 @@ my $cfg = Config::Data->new;
 	company_name => "Beer rocks!",
 	perl_module_namespace => "Acme::Møøse",
 	project_url => "http://goatse.cx",
+	database => {
+		dsn => "dbi:moose",
+		username => "",
+		password => "",
+	},
+	demographics => [ ],
 );
 
 my $tmpl_dir = "EERS_demo/templates";
@@ -30,20 +36,20 @@ my %by_dir = (
 	"perl/foo" => [qw/main.pm/],
 );
 
-my $d = Dispatcher->new;
+my $d = Verby::Dispatcher->new;
 $d->config_hub($cfg);
 
 foreach my $dir (keys %by_dir){
 	foreach my $file (@{ $by_dir{$dir} }){
 		my $in = "$tmpl_dir/$file";
 		my $out = "$out_dir/$dir/$file";
-		my $t = step "Action::Template" => sub {
+		my $t = step "Verby::Action::Template" => sub {
 			my $c = $_[1];
 			$c->template($in);
 			$c->output($out);
 	   	};
 		my $path = dirname($out);
-		$t->depends(step "Action::MkPath" => sub { $_[1]->path($path) });
+		$t->depends(step "Verby::Action::MkPath" => sub { $_[1]->path($path) });
 		$d->add_step($t);
 	}
 }
