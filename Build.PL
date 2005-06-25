@@ -37,6 +37,10 @@ Module::Build->new(
 			description => "Verby::Action::Copy - Rsync copy action",
 			requires => { 'File::Rsync' => 0 },
 		},
+		'Verby::Action::Template' => {
+			description => "Verby::Action::Template - Generic Template Toolkit action",
+			requires => { 'Template' => 0 },
+		}
 	},
 	build_requires => {
 		'Test::More'       => 0,
