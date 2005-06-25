@@ -45,9 +45,7 @@ sub new {
     $self->{_config}           = undef;
     $self->{_in_main_config}   = undef;
     $self->{_in_steps}         = undef;
-    $self->{_current_node}     = [];
-    $self->{_current_tag_name} = undef;
-    $self->{_current_step}     = undef;
+    $self->{_node_stack}       = [];
     return $self;
 }
 
@@ -142,36 +140,36 @@ sub _config_init {
     $self->{_in_main_config} = 1;   # set the flag
     $self->{_config}->{conf} = {};  # init the hash node
     # ... and add it to our context
-    av_push(@{$self->{_current_node}}, $self->{_config}->{conf});
+    av_push(@{$self->{_node_stack}}, $self->{_config}->{conf});
 }
 
 sub _config_start {
     my ($self, $tag_name) = @_;
 
 	# '<foo><bar>blah</bar> more text </foo>' is illegal
-	defined and not ref and croak "Node can't contain both text and sub elements" for $self->{_current_node}[-1];
+	defined and not ref and croak "Node can't contain both text and sub elements" for $self->{_node_stack}[-1];
 
 	# put the same node  both on the stack, *and* in the right place in the structure
 	# note that setting the last element on the stack will also set the thing in the structue, since we are aliasing
 	my $node; # this is a new container
-	hv_store(%{ $self->{_current_node}[-1] }, $tag_name, $node); # the same contaner (not value) is put in both the hash
-	av_push(@{ $self->{_current_node} }, $node); # and the last node of the array
+	hv_store(%{ $self->{_node_stack}[-1] }, $tag_name, $node); # the same contaner (not value) is put in both the hash
+	av_push(@{ $self->{_node_stack} }, $node); # and the last node of the array
 }
 
 sub _config_end {
     my ($self, $tag_name) = @_;
-    pop @{$self->{_current_node}};
+    pop @{$self->{_node_stack}};
 }
 
 sub _config_characters {
     my ($self, $data) = @_;
-	$self->{_current_node}->[-1] = $data; # since we aliased the structure's node will also be set. See above
+	$self->{_node_stack}->[-1] = $data; # since we aliased the structure's node will also be set. See above
 }
 
 sub _config_cleanup {
     my ($self) = @_;
     $self->{_in_main_config} = 0; # turn off the flag
-    $self->{_current_node} = [];  # clear the context
+    $self->{_node_stack} = [];  # clear the context
 }
 
 ## <step> tags
@@ -180,7 +178,7 @@ sub _step_init {
     my ($self, $el) = @_;
     $self->{_in_steps} = 1;         # turn on the flag
     $self->{_config}->{steps} = []; # create a context
-    push @{$self->{_current_node}} => { substeps => $self->{_config}->{steps} }; # the substeps of the root element are just the top level array.
+    push @{$self->{_node_stack}} => { substeps => $self->{_config}->{steps} }; # the substeps of the root element are just the top level array.
 }
 
 sub _step_start {
@@ -188,13 +186,13 @@ sub _step_start {
     # create a new node
     my $node = { $self->_get_all_values($el), substeps => [] };   
 
-    push @{$self->{_current_node}[-1]{substeps}} => $node;
-    push @{$self->{_current_node}}, $node;
+    push @{$self->{_node_stack}[-1]{substeps}} => $node;
+    push @{$self->{_node_stack}}, $node;
 }
 
 sub _step_end {
     my ($self, $el) = @_;
-    my $val = pop @{$self->{_current_node}};
+    my $val = pop @{$self->{_node_stack}};
 	delete $val->{substeps} unless @{ $val->{substeps} };
 }
 
@@ -206,7 +204,7 @@ sub _step_characters {
 sub _step_cleanup {
     my ($self, $el) = @_;
     $self->{_in_steps} = 0;       # turn off the flag
-    $self->{_current_node} = [];  # clear the context    
+    $self->{_node_stack} = [];  # clear the context    
 }
 
 __PACKAGE__
