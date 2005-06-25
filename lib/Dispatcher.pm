@@ -6,11 +6,12 @@ use base qw/Class::Accessor/;
 use strict;
 use warnings;
 
-use Algorithm::Dependency::Objects;
+use Algorithm::Dependency::Objects::Ordered;
 use Set::Object;
 use Context;
+use Carp qw/croak/;
 
-__PACKAGE__>mk_ro_accessors(
+__PACKAGE__->mk_ro_accessors(
 	my @set_fields = qw/step_set running_set satisfied_set/
 );
 
@@ -28,7 +29,7 @@ sub add_step {
 	my $steps = $self->step_set;
 	my $satisfied = $self->satisfied_set;
 
-	return if $set->includes($step);
+	return if $steps->includes($step);
 
 	$self->add_step($_) for $step->depends;
 	$steps->insert($step);
@@ -38,7 +39,7 @@ sub add_step {
 sub do_all {
 	my $self = shift;
 
-	my $global_context = $self->confit_hub->derive("Context");
+	my $global_context = $self->config_hub->derive("Context");
 
 	$global_context->logger(Log::Log4perl->get_logger("EERS::Installer"))
 		unless $global_context->logger;
@@ -102,6 +103,19 @@ sub wait_all {
 sub steps {
 	my $self = shift;
 	$self->step_set->members;
+}
+
+sub config_hub {
+	die "not yet implemented";
+}
+
+sub is_satisfied {
+	my $self = shift;
+	my $step = shift;
+	croak "$step is not registered at all"
+		unless $self->step_set->contains($step);
+
+	$self->satisfied_set->contains($step);
 }
 
 __PACKAGE__
