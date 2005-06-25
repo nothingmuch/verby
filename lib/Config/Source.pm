@@ -17,7 +17,7 @@ sub new {
 	$self = bless { data => \%data }, $pkg;
 }
 
-sub query {
+sub get_key {
 	die "subclass should extract keys from real config source";
 }
 
