@@ -148,12 +148,17 @@ sub _config_start {
 
 	# '<foo><bar>blah</bar> more text </foo>' is illegal
 	defined and not ref and croak "Node can't contain both text and sub elements" for $self->{_node_stack}[-1];
+	# the above needs to change to '... for ${ $self->{_node_stack}->[-1] }' if we remove Array::RefElem
 
 	# put the same node  both on the stack, *and* in the right place in the structure
 	# note that setting the last element on the stack will also set the thing in the structue, since we are aliasing
 	my $node; # this is a new container
 	hv_store(%{ $self->{_node_stack}[-1] }, $tag_name, $node); # the same contaner (not value) is put in both the hash
 	av_push(@{ $self->{_node_stack} }, $node); # and the last node of the array
+
+	# alternatively, without Array::RefElem:
+	# $self->{_node_stack}[-1]{$tag_name} = $node;
+	# push @{ $self->{_node_stack} }, \$self->{_node_stack}[-1]{$tag_name};
 }
 
 sub _config_end {
@@ -164,6 +169,9 @@ sub _config_end {
 sub _config_characters {
     my ($self, $data) = @_;
 	$self->{_node_stack}->[-1] = $data; # since we aliased the structure's node will also be set. See above
+
+	# if using refs, then make this:
+	# ${ $self->{_node_stack}->[-1] } = $data;
 }
 
 sub _config_cleanup {
