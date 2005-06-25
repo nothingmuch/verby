@@ -27,7 +27,11 @@ $d->config_hub($cfg);
 
 my $logger = Log::Log4perl::get_logger;
 
-foreach my $file (grep { !/survey_results/ } @ARGV){
+my @load_steps;
+my @create_results;
+my @create_others;
+
+foreach my $file (@ARGV){
 	$logger->info("making steps for '$file'");
 	my $cxt_name = "cxt_" . (0+\$file);
 
@@ -38,8 +42,7 @@ foreach my $file (grep { !/survey_results/ } @ARGV){
 		my $self = shift;
 		my $c = shift;
 
-		# i'm sorry, Stevan....
-		(tied %{ $c->data })->[1] = (tied %{ $c->$cxt_name->data })->[1]; #
+		(tied %{ $c->data })->[1] = (tied %{ $c->$cxt_name->data })->[1];
 	};
 	
 	my $analyze = step("Action::AnalyzeDataFile" => sub {
@@ -58,14 +61,29 @@ foreach my $file (grep { !/survey_results/ } @ARGV){
 
 	my $load = &step("Action::Mysql::LoadDataFile" => $steal_cxt);
 
-	my $type = (($table_name =~ /hewitt_norms/) ? "Hewitt" : "Demographics");
+	my $type;
+	for ($table_name){
+		$type = "Hewitt" if /hewitt_norms/;
+		$type = "Results" if /survey_results/;
+		$type ||= "Demographics";
+	}
 	my $create = &step("Action::Mysql::CreateTable::$type" => $steal_cxt);
+
+	if ($table_name =~ /survey_results/){
+		push @create_results, $create;
+	} else {
+		push @create_others, $create;
+	}
 
 	$load->depends($create, $analyze);
 	$create->depends($analyze);
-
-	$d->add_step($load);
+	
+	push @load_steps, $load;
 }
+
+$_->depends($_->depends, @create_others) for @create_results;
+
+$d->add_step($_) for @load_steps;
 
 $d->do_all;
 

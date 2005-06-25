@@ -20,6 +20,7 @@ sub do {
 
 	my $fs = $c->field_sep;
 	my $ls = $c->line_sep;
+	my $skip = $c->skip_lines || 0;
 
 	# always logdie
 	local $dbh->{PrintError} = 0;
@@ -34,13 +35,18 @@ sub do {
 			if (eval {
 				local $dbh->{RaiseError} = 1;
 				local $dbh->{HandleError} = sub { $c->logger->debug($_[0]); die $_[0] };
-				$dbh->prepare(qq{
+				my $sth = $dbh->prepare(qq{
 					LOAD DATA
 						$local INFILE ?
 						INTO TABLE $table_name
 						FIELDS TERMINATED BY ?
 						LINES TERMINATED BY ?
-				})->execute($file, $fs, $ls);
+						IGNORE ? LINES
+				});
+				my $i;
+				$sth->bind_param(++$i, $_) for ($file, $fs, $ls);
+				$sth->bind_param(++$i, $skip, DBI::SQL_INTEGER);
+				$sth->execute;
 			}){
 				$c->logger->info("Successfully loaded '$file', local=" . ($local ? 1 : 0));
 				last ATTEMPT;
