@@ -25,6 +25,11 @@ sub new {
 	$self;
 }
 
+sub DESTROY {
+	my $self = shift;
+	untie %{ $self->{data} };
+}
+
 sub AUTOLOAD {
 	(our $AUTOLOAD) =~ /::([^:]+)$/;
 
