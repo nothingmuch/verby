@@ -25,14 +25,29 @@ __END__
 
 =head1 NAME
 
+Interfaces - A set of Interfaces for this framework
+
 =head1 SYNOPSIS
 
     my $dep1 = Dependency->new();
-    $dep1->add_action(Action->new());
-    $dep1->add_action(Action->new());
+    $dep1->add_action(Action->new(
+        perform => sub { 
+            mkdir('var/www');
+        },
+        verify  => sub { -e 'var' && -d 'var' && -e 'var/www' && -d 'var/www' }
+    ));
 
     my $dep2 = Dependency->new();
-    $dep2->add_action(Action->new());
+    $dep2->add_action(Action->new(
+        perform => sub { 
+            chdir('var/www/'); # assume that this exists because
+                               # we are dependant upon it                         
+            open(FILE, ">", "index.html") || die "cannot open file : $!";
+            print FILE "<HTML><BODY><H1>Hello World</H1></BODY></HTML>"
+            close(FILE);
+        },
+        verify  => sub { -e 'index.html' && -f 'index.html' && -s 'index.html' }
+    ));
     $dep2->depends_on($dep1);
 
     $dep2->depends_on(); # returns $dep
