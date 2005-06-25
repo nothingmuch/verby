@@ -6,11 +6,13 @@ use base qw/Verby::Step Class::Accessor/;
 use strict;
 use warnings;
 
-use UNIVERSAL::require;
 use overload '""' => 'stringify';
 
+use UNIVERSAL::require;
+use Scalar::Util qw/blessed/;
 use Carp qw/croak/;
 
+# stevan hates Exporter, so this is not a bug ;-)
 sub import {
     shift;            # remove pkg
     return unless @_; # dont export it if they dont ask
@@ -18,6 +20,7 @@ sub import {
     *{ (caller())[0] . "::step"} = \&step if $_[0] eq 'step';
 }
 
+# he also hates Class::Accessor, so don't tell him I left this in
 __PACKAGE__->mk_accessors(qw/action depends pre post provides_cxt/);
 
 sub add_deps {
@@ -108,14 +111,19 @@ sub _wrapped {
 }
 
 sub step ($;&&) {
-	my $action_class = shift;
+	my $action = shift;
 
 	my $step = Verby::Step::Closure->new(@_);
 
-	$action_class->require
-		or die "Couldn't require $action_class: $UNIVERSAL::require::ERROR"
-			unless $action_class->can("new");
-	$step->action($action_class->new);
+	unless (blessed $action){
+		unless ($action->can("new")){
+			$action->require
+				or die "Couldn't require $action: $UNIVERSAL::require::ERROR";
+		}
+		$action = $action->new;
+	}
+
+	$step->action($action);
 
 	$step;
 }
