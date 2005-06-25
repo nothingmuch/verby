@@ -165,7 +165,7 @@ sub start_step {
 	if ($step->can("start") and $step->can("finish")){
 		$g_cxt->logger->debug("$step is async");
 		$step->start($cxt);
-		$self->mark_running($step, $cxt)
+		$self->mark_running($step)
 	} else {
 		$g_cxt->logger->debug("$step is sync");
 		$step->do($cxt);
@@ -176,13 +176,12 @@ sub start_step {
 sub pump_running {
 	my $self = shift;
 
-	foreach my $entry (@{ $self->{running_queue} }){
-		my ($step, $cxt) = @$entry;
+	foreach my $step (@{ $self->{running_queue} }){
 		next unless $step->can("pump");
 		
-		unless ($step->pump($cxt)){
+		unless ($step->pump($self->get_cxt($step))){
 			$self->global_context->logger->debug("step '$step' has finished");
-			$self->wait_specific($entry);
+			$self->wait_specific($step);
 		}
 	}
 }
@@ -201,28 +200,25 @@ sub wait_all {
 sub wait_one {
 	my $self = shift;
 
-	my $entry = $self->pop_running || return;
-	my ($step, $cxt) = @$entry;
+	my $step = $self->pop_running || return;
 	$self->global_context->logger->debug("waiting for step '$step'");
-
-	$self->finish_step($step, $cxt);
+	$self->finish_step($step);
 }
 
 sub wait_specific {
 	my $self = shift;
+	my $step = shift;
 
-	my $entry = shift;
+	@{ $self->{running_queue} } = grep { $_ != $step } @{ $self->{running_queue} };
 
-	my ($step, $cxt) = @$entry;
-	@{ $self->{running_queue} } = grep { $_ != $entry } @{ $self->{running_queue} };
-
-	$self->finish_step($step, $cxt);
+	$self->finish_step($step);
 }
 
 sub finish_step {
 	my $self = shift;
 	my $step = shift;
-	my $cxt = shift;
+
+	my $cxt = $self->get_cxt($step);
 
 	$step->finish($cxt);
 	$self->satisfied_set->insert($step);
@@ -250,7 +246,7 @@ sub mark_running {
 	my $step = shift;
 	my $cxt = shift;
 	$self->running_set->insert($step);
-	$self->push_running_queue([$step, $cxt]);
+	$self->push_running($step);
 }
 
 sub is_running {
@@ -259,20 +255,12 @@ sub is_running {
 	$self->running_set->includes($step);
 }
 
-sub pop_running {
-	my $self = shift;
-	my $step = shift;
-	my $cxt = shift;
-	my $entry = $self->pop_running_queue || return;
-	return $entry;
-}
-
-sub push_running_queue {
+sub push_running {
 	my $self = shift;
 	push @{ $self->{running_queue} }, @_;
 }
 
-sub pop_running_queue {
+sub pop_running {
 	my $self = shift;
 	shift @{ $self->{running_queue} };
 }
@@ -352,6 +340,108 @@ will derive the global context, and it's sub-contexts.
 Returns the global context for the dispatcher.
 
 If necessary derives a context from L</config_hub>.
+
+=item is_running $step
+
+Whether or not $step is currently executing.
+
+=item is_satisfied $step
+
+Whether or not $step does not need to be executed (because it was already
+executed or because it didn't need to be in the first place).
+
+=item get_cxt $step
+
+Returns the context associated with $step. This is where $step will write it's
+data.
+
+=item get_derivable_cxts $step
+
+Returns the contexts to derive from, when creating a context for $step.
+
+If $step starts a new context (L<Step/provides_cxt> is true) then a new context
+is created here, derived from get_parent_cxts($step). Otherwise it simply
+returns get_parent_cxts($step).
+
+Note that when a step 'provides a context' this really means that a new context
+is created, and this context is derived for the step, and any step that depends
+on it.
+
+=item get_parent_cxts $step
+
+If $step depends on any other steps, take their contexts. Otherwise, returns
+the global context.
+
+=item start_step $step
+
+If step supports the async interface, start it and put it in the running step
+queue. If it's synchroneous, call it's L<Step/do> method.
+
+=item finish_step $step
+
+Finish step, and mark it as satisfied. Only makes sense for async steps.
+
+=item mark_running $step
+
+Put $step in the running queue, and mark it in the running step set.
+
+=item push_running $step
+
+Push $step into the running step queue.
+
+=item pop_running
+
+Pop a step from the running queue.
+
+=item mk_dep_engine
+
+Creates a new object using L</dep_engine_class>.
+
+=item ordered_steps
+
+Returns the steps to be executed in order.
+
+=item pump_running
+
+Give every running step a bit of time to move things forward.
+
+This method is akin to L<IPC::Run/pump>.
+
+It also calls L</finish_step> on each step that returns false.
+
+=item steps
+
+Returns a list of steps that the dispatcher cares about.
+
+=item step_set
+
+Returns the L<Set::Object> that is used for internal bookkeeping of the steps
+involved.
+
+=item running_steps
+
+Returns a list of steps currently running.
+
+=item running_set
+
+Returns the L<Set::Object> that is used to track which steps are running.
+
+=item satisfied_set
+
+Returns the L<Set::Object> that is used to track which steps are satisfied.
+
+=item wait_all
+
+Wait for all the running steps to finish.
+
+=item wait_one
+
+Effectively C<finish_step(pop_running)>.
+
+=item wait_specific $step
+
+Waits for a specific step to finish. Called by L<pump_running> when a step
+claims that it's ready.
 
 =back
 
