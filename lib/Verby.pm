@@ -1,3 +1,15 @@
+
+package Verby;
+
+use strict;
+use warnings;
+
+our $VERSION = '0.01';
+
+__PACKAGE__
+
+__END__
+
 =head1 NAME
 
 Verby - A framework for compositing and sequencing steps of execution.
@@ -162,3 +174,28 @@ Context fields should be exported from the verification stage, because
 sometimes a step will not be executed. If execution is necessary to figure out
 a field that may be exported, then verification should be false.
 
+=head1 BUGS
+
+None that we are aware of. Of course, if you find a bug, let us know, and we will be sure to fix it. 
+
+=head1 CODE COVERAGE
+
+We use B<Devel::Cover> to test the code coverage of the tests, below is the B<Devel::Cover> report on this module's test suite.
+
+=head1 SEE ALSO
+
+=head1 AUTHOR
+
+Yuval Kogman, E<lt>nothingmuch@woobling.orgE<gt>
+stevan little, E<lt>stevan@iinteractive.comE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2005 by Infinity Interactive, Inc.
+
+L<http://www.iinteractive.com>
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself. 
+
+=cut
