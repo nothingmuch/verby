@@ -13,7 +13,7 @@ use Class::Interfaces (
         methods => [ 'dependents', 'depends_on', 'add_action', 'actions', 'is_satisfied' ]
         },
         
-    'Action'    => [ 'perform', 'verify' ],
+    'Action'    => [ 'do', 'verify' ],
     'Context'   => [ 'get', 'set' ],
     );
     
@@ -59,7 +59,7 @@ Interfaces - A set of Interfaces for this framework
         # actions in the current
         # dependent
         foreach my $a ($dep->actions()) {
-            $a->perform();
+            $a->do();
             # we could warn, we could die, it all
             # depends upon our application
             $a->verify() || warn "could not verify $a";
@@ -116,7 +116,7 @@ This method will determine if this B<Step> has been satisifed. It does this by c
 
 =over 4
 
-=item B<perform (?$context)>
+=item B<do (?$context)>
 
 This will perform the action specified, it can potentially take a C<$context> object.
 
@@ -128,7 +128,7 @@ This will verify that the action has been performed correctly.
 
 =head2 Context
 
-A B<Context> object is just a simple scratch-pad to be held by B<Visitor> objects, and passed to B<Action> objects. It allows the B<Visitor> to keep notes for itself.
+A B<Context> object is just a simple scratch-pad to be held by B<Visitor> objects, and passed to B<Action> objects. It allows the B<Visitor> to keep notes for itself. 
 
 =over 4
 
