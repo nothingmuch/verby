@@ -11,7 +11,6 @@ Module::Build->new(
 	requires => {
 		'perl'                           => '>= 5.008',
 		'Set::Object'                    => 0,
-		'Class::Accessor'                => 0,
 		'Log::Log4perl'                  => 0,
 		'Algorithm::Dependency::Objects' => 0,
 		'List::MoreUtils'                => 0,

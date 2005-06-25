@@ -51,7 +51,6 @@ We use B<Devel::Cover> to test the code coverage of the tests, please refer to C
 =head1 AUTHOR
 
 Yuval Kogman, E<lt>nothingmuch@woobling.orgE<gt>
-stevan little, E<lt>stevan@iinteractive.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 

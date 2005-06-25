@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 package Verby::Step::Closure;
-use base qw/Verby::Step Class::Accessor/;
+use base qw/Verby::Step/;
 
 use strict;
 use warnings;
@@ -23,7 +23,54 @@ sub import {
 }
 
 # he also hates Class::Accessor, so don't tell him I left this in
-__PACKAGE__->mk_accessors(qw/action depends pre post provides_cxt/);
+#__PACKAGE__->mk_accessors(qw/action depends pre post provides_cxt/);
+# shhh, don't tell Yuval I took out his Class::Accessor stuff
+
+sub new {
+	my $pkg = shift;
+	my $pre = shift;
+	my $post = shift;
+
+	my $self = bless {
+		depends => [],
+		pre => $pre,
+		post => $post,
+		action => undef,
+		provides_cxt => undef,
+	}, $pkg;
+
+	$self;
+}
+
+sub depends {
+    my ($self, @depends) = @_;
+    $self->{depends} = [ @depends ] if scalar @depends;
+    @{$self->{depends}};
+}
+
+sub action {
+    my $self = shift;
+    $self->{action} = shift if defined @_;
+    $self->{action};
+}
+
+sub pre {
+    my $self = shift;
+    $self->{pre} = shift if defined @_;
+    $self->{pre};
+}
+
+sub post {
+    my $self = shift;
+    $self->{post} = shift if defined @_;
+    $self->{post};
+}
+
+sub provides_cxt {
+    my $self = shift;
+    $self->{provides_cxt} = shift if defined @_;
+    $self->{provides_cxt};
+}
 
 sub add_deps {
 	my $self = shift;
@@ -42,20 +89,6 @@ sub set {
 	my $key = $_[0];
 
 	$self->SUPER::set(@_);
-}
-
-sub new {
-	my $pkg = shift;
-	my $pre = shift;
-	my $post = shift;
-
-	my $self = bless {
-		depends => [],
-		pre => $pre,
-		post => $post,
-	}, $pkg;
-
-	$self;
 }
 
 sub is_satisfied {
@@ -249,7 +282,6 @@ We use B<Devel::Cover> to test the code coverage of the tests, please refer to C
 =head1 AUTHOR
 
 Yuval Kogman, E<lt>nothingmuch@woobling.orgE<gt>
-stevan little, E<lt>stevan@iinteractive.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
