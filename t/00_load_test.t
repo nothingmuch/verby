@@ -59,11 +59,6 @@ BEGIN {
                 use_ok('Verby::Action::Mysql::CreateTable::Hewitt');
                 use_ok('Verby::Action::Mysql::CreateTable::Results');
 
-    # Mysql
-
-        # Mysql/Table
-        use_ok('Mysql::Table::MetaData');
-
     # Log
 
         # Log/Log4perl
@@ -72,14 +67,6 @@ BEGIN {
 
                 # Log/Log4perl/Layout/SimpleLayout
                 use_ok('Log::Log4perl::Layout::SimpleLayout::Multiline');
-
-    # Algorithm
-
-        # Algorithm/Dependency
-        use_ok('Algorithm::Dependency::Objects');
-
-            # Algorithm/Dependency/Objects
-            use_ok('Algorithm::Dependency::Objects::Ordered');
 
 };
 
