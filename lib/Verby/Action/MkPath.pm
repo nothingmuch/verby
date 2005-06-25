@@ -1,4 +1,4 @@
-u!/usr/bin/perl
+#!/usr/bin/perl
 
 package Verby::Action::MkPath;
 use base qw/Verby::Action/;

@@ -58,7 +58,7 @@ FOO
 	my $e = "blah\n";
 	my $o = "gorch\n";
 	my $init = sub { warn $e; print STDOUT $o };
-	my ($out, $err) = $a->run($c, ["true"], undef, $init);
+	my ($out, $err) = $a->run($c, ["true"], { init => $init });
 	is($out, $o, "init invoked and outputted to stdout");
 	is($err, $e, "... and stderr");
 }
