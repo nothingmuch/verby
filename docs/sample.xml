@@ -1,3 +1,4 @@
+<!-- this is configuration info needed on a per-instance basis -->
 <instance>
     <project
         company_name="Premier" 
@@ -24,6 +25,7 @@
     </demographics>
 </instance>
 
+<!-- this is configuration info for the system as a whole -->
 <base>
     <tables>
         <!-- tables to find -->
@@ -73,3 +75,29 @@
         </dir>
     </installation>
 </base>
+
+<!-- a dependecy tree -->
+<prepareDataFiles>
+    <cleanLineEndings />
+    <flattenOrganizationTree depends="cleanLineEndings" />
+    <analyzeDataFiles depends="flattenOrganizationTree" />
+</prepareDataFiles>
+<createProjectDirectory depends="prepareDataFiles">
+    <createWWW />
+    <checkForLibraries depends="createWWW" />
+    <createDirectoryTree depends="createWWW" />
+    <runTestSuite depends="createDirectoryTree, checkForLibraries" />
+</createProjectDirectory>
+<importData depends="createProjectDirectory">
+    <hasProjectInDatabase />
+    <importDataFile depends="hasProjectInDatabase" />
+    <verifyImport depends="importDataFile" />
+</importData>
+<importProjectIntoSVN depends="importData">
+    <createProject />
+    <tagLibraries depends="createProject" />    
+    <importProject depends="tagLibraries" />    
+</importProjectIntoSVN>
+
+
+
