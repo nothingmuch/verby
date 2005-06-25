@@ -180,30 +180,22 @@ sub _step_init {
     my ($self, $el) = @_;
     $self->{_in_steps} = 1;         # turn on the flag
     $self->{_config}->{steps} = []; # create a context
-    push @{$self->{_current_node}} => $self->{_config}->{steps};        
+    push @{$self->{_current_node}} => { substeps => $self->{_config}->{steps} }; # the substeps of the root element are just the top level array.
 }
 
 sub _step_start {
     my ($self, $el) = @_;
     # create a new node
     my $node = { $self->_get_all_values($el), substeps => [] };   
-    # if we are at the base of the steps ...
-    if (ref($self->{_current_node}->[-1]) eq 'ARRAY') {
-        push @{$self->{_current_node}->[-1]} => $node;         
-    }
-    # otherwise ...
-    else {
-        push @{$self->{_current_node}->[-1]->{substeps}} => $node; 
-    }            
-    push @{$self->{_current_node}}, $node;       
+
+    push @{$self->{_current_node}[-1]{substeps}} => $node;
+    push @{$self->{_current_node}}, $node;
 }
 
 sub _step_end {
     my ($self, $el) = @_;
-    my $val = pop @{$self->{_current_node}};   
-    unless (@{$val->{substeps}}) {
-        delete $val->{substeps};
-    }
+    my $val = pop @{$self->{_current_node}};
+	delete $val->{substeps} unless @{ $val->{substeps} };
 }
 
 sub _step_characters {
