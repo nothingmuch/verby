@@ -218,13 +218,12 @@ array references.
 A special case of L<UNIVERSAL/can> that will return false for methods the
 action can't fulfill.
 
-=item
-
 =back
 
 =head1 EXAMPLE
 
 The test files, as well as the demo scripts make extensive use of
-L<Verby::Step::Closure>.
+L<Verby::Step::Closure>. Look at F<scripts/module_builder.pl> for some
+documented usage.
 
 =cut

@@ -18,8 +18,8 @@ sub new {
 		config => shift,
 
 		# used to keep track of state
-		steps => [],
-		stack => [],
+		steps => [], # collects all the steps
+		stack => [], # the stack of parents of the current substep
 		substeps_by_parent_id => {}, # all the sub-steps of a given step id
 		substeps_stack => [], # used to fill in substeps_by_parent_id
 		depenadnt_by_dep_id => {}, # used to track via the id of a step, which steps depend on it (or actually all it's children)
@@ -247,11 +247,171 @@ L<Verby::Dispatcher>.
 
 =head1 SYNOPSIS
 
-	use Config::Interpreter;
+	# create the objects involved
+	my $d = Verby::Dispatcher->new;
+	my $c = Config::Source::XML->new;
+
+	# load the steps into the dispatcher
+	my $i = Config::Interpreter->new($c->load("config.xml"));
+	$i->prepare_dispatcher($d);
+
+	# do the work
+	$d->do_all;
 
 =head1 DESCRIPTION
 
 This is the code that "understands" the configuration tree produced by
 L<Config::Source::XML>.
+
+The hash ref returned by the XML parser has two keys, C<config> and C<steps>.
+C<config> is copied into the context hub, it's pretty boring.
+
+The C<steps> structure is more interesting.
+
+It's an array reference containing hash references. Each hash ref represents a
+single step. It has a C<type> key set, which is used to call the appropriate
+method to create a new step.
+
+There's also an optional C<id> tag, to identify a step, and a C<depends> tag,
+to facilitate arbitrary dependencies.
+
+If the hash contains a C<substeps> value, which is an array ref, then this is
+recursively traversed like the top level C<steps>.
+
+Each sub step depends on it's parent automatically.
+
+All other fields are arbitrary, and are used by the appropriate C<mk_step>
+method, and eventually end up in C<Verby::Step::Closure> callbacks, controlling
+the behavior of the action.
+
+=head1 STEP TYPES
+
+=head2 C<dir>
+
+Creates a C<Verby::Action::MkPath> closure step. If the path given is relative,
+then the parent C<dir>s are concatenated with C<File::Spec>, until the path is
+relative or we run out of parents.
+
+This means that nested substeps will not only depend on each other, but also
+nest in the file system.
+
+=head2 C<load>
+
+This loads a data file. This operation really creates three or four steps -
+tree flattenning if applicable, data file analysis, table creation, and actual
+loading.
+
+This complexity is hidden by C<Verby::Step::Mysql::LoadDataFile>.
+
+C<table_name> can override the guessed table name, and C<proper_name> is used
+by one of the templating step.
+
+The C<file> argument finds a basename in the C<data_dir> config var. More
+interetingly the C<file_glob> step will explode the traversal, much like
+junctive autothreading, creating a step for each file matching the glob. An
+example of how this is used is C<tbl_survey_results_*.csv>
+
+=head2 C<svn_co>
+
+Check out the SVN URL in C<repo> (based on C<svn_root> in the config), into
+C<path>.
+
+Not yet implemented.
+
+=head2 C<copy>
+
+Copies C<source> to C<path> using L<Verby::Action::Copy>.
+
+=head2 C<template>
+
+Uses L<Verby::Action::Template>, taking the C<template> basename from
+C<template_dir>, and outputting the same template file in the "current
+directory" as implied by the C<dir> stacking behavior.
+
+=head2 C<perl_module>
+
+A thin wrapper for C<template> which takes a perl namespace, such as
+C<Acme::Moose>, and outputs the file C<Acme/Moose.pm>.
+
+=head2 C<test_run>
+
+Runs the test suite by running C<prove -Ilib t/>.
+
+Not yet implemented.
+
+=head1 METHODS
+
+=head2 Public
+
+=over 4
+
+=item new $config
+
+Create a new interpreter. The parameter should be the one returned by L<Config::Source::XML/load>.
+
+=item prepare_dispatcher $dispatcher
+
+Traverses the config given to C<new>, unwraps extra dependencies, makes a
+C<Config::Data> out of the $config's C<config> key, sets $dispatcher's
+C<config_hub> to that, and then adds all the steps to $dispatcher.
+
+=back
+
+=head2 Internal
+
+=over 4
+
+=item mk_step $struct
+
+Used internally to dispatch step creation, doing the book keeping.
+
+=item mk_step_copy
+
+=item mk_step_dir
+
+=item mk_step_load
+
+=item mk_step_noop
+
+=item mk_step_perl_module
+
+=item mk_step_stub
+
+=item mk_step_svn_co
+
+=item mk_step_template
+
+=item mk_step_test_run
+
+These facilitate the creation of a step of C<type> foo.
+
+=item traverse $array_ref
+
+Traverses a step structure, maintaining the stacks, and calling C<mk_step>.
+Also calls C<explode_file_globs> when that key is met.
+
+=item push_step $step
+
+=item pop_step $step
+
+Maintains the various stacks needed for the nesting semantics.
+
+=item unwrap_extra_deps
+
+Used after a traversal to add the C<depends>/C<id> relationships, when the full
+data set is known.
+
+=item absolute_path
+
+Returns an absolute path (or at least tries to) based on the parent C<dir>
+steps of the current substep. This is used to logically position subdirectories
+and output file basenames in the output tree.
+
+=item explode_file_globs
+
+Creates N steps with a C<file> key from one step with a C<file_glob> key, by
+expanding the glob inside C<data_dir>.
+
+=back
 
 =cut
