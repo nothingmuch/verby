@@ -18,7 +18,7 @@ These objects are the means by which Actions can be combined. A Dependency objec
 
 A dependency is assumed to be satisfied if all it's actions have completed successfully. Any additional checks for completion can be implemented as Actions.
 
-Dependency objects can also contain other dependency objects. This allows for a series of inter-dependent dependencies to be grouped together, and still isolate them from the other dependencies.
+Dependency objects can also contain other dependency objects. This allows for a series of inter-dependent dependencies to be grouped together, and still isolate them from the other dependencies. This will actually be encapsulated by a Dependency runner Action object.
 
 What do we do with this:
 
@@ -31,5 +31,25 @@ Since actions are no longer coupled to their dependencies, they need not be sing
 How do we run this:
 
 Visitor objects should be able to do all our work for us. We can write visitors to check for circular dependencies, for doing test runs, etc. It also allows us to isolate the complexity of doing the 'make' like reentrant behavior, into a Visitor object. This means that both our Action objects and our Dependency objects need not know about this behavior.
+
+
++--------------+
+|  Dependency  |<-----------------+
++--------------+      +--------+  |
+| actions      |----->| Action |  |   
+| dependencies |--+   +--------+  |
++--------------+  |               |
+                  +---------------+   
+                    
+                    
+my $base_dir = Dependency->new();                    
+$base_dir->addAction(Action::MkDir->new('/var/www'));
+
+my $project_tree = Dependency->new();                    
+$project_tree->addAction(Action::MkDirTree->new(...));
+project_tree->depends_on($base_dir);
+
+
+
 
 
