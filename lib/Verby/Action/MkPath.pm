@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-package Action::MkPath;
-use base qw/Action/;
+package Verby::Action::MkPath;
+use base qw/Verby::Action/;
 
 use strict;
 use warnings;
@@ -36,11 +36,11 @@ __END__
 
 =head1 NAME
 
-Action::MkPath - 
+Verby::Action::MkPath - 
 
 =head1 SYNOPSIS
 
-	use Action::MkPath;
+	use Verby::Action::MkPath;
 
 =head1 DESCRIPTION
 

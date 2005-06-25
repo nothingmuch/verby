@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-package Action::Template;
-use base qw/Action/;
+package Verby::Action::Template;
+use base qw/Verby::Action/;
 
 use strict;
 use warnings;
@@ -50,11 +50,11 @@ __END__
 
 =head1 NAME
 
-Action::Template - 
+Verby::Action::Template - 
 
 =head1 SYNOPSIS
 
-	use Action::Template;
+	use Verby::Action::Template;
 
 =head1 DESCRIPTION
 

@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-package Action::Make;
-use base qw/Action::RunCmd/;
+package Verby::Action::Make;
+use base qw/Verby::Action::RunCmd/;
 
 use strict;
 use warnings;
@@ -35,11 +35,11 @@ __END__
 
 =head1 NAME
 
-Action::Make - 
+Verby::Action::Make - 
 
 =head1 SYNOPSIS
 
-	use Action::Make;
+	use Verby::Action::Make;
 
 =head1 DESCRIPTION
 

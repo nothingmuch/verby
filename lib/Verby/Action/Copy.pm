@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-package Action::Copy;
-use base qw/Action::RunCmd/;
+package Verby::Action::Copy;
+use base qw/Verby::Action::RunCmd/;
 
 use strict;
 use warnings;
@@ -43,11 +43,11 @@ __END__
 
 =head1 NAME
 
-Action::Copy - 
+Verby::Action::Copy - 
 
 =head1 SYNOPSIS
 
-	use Action::Copy;
+	use Verby::Action::Copy;
 
 =head1 DESCRIPTION
 

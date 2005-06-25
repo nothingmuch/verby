@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-package Action::RunCmd;
-use base qw/Action/;
+package Verby::Action::RunCmd;
+use base qw/Verby::Action/;
 
 use strict;
 use warnings;
@@ -112,11 +112,11 @@ __END__
 
 =head1 NAME
 
-Action::RunCmd - a base class for actions which exec external commands.
+Verby::Action::RunCmd - a base class for actions which exec external commands.
 
 =head1 SYNOPSIS
 
-	use Action::RunCmd;
+	use Verby::Action::RunCmd;
 
 =head1 DESCRIPTION
 

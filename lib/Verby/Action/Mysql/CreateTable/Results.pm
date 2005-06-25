@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-package Action::Mysql::CreateTable::Results;
-use base qw/Action::Mysql::CreateTable/;
+package Verby::Action::Mysql::CreateTable::Results;
+use base qw/Verby::Action::Mysql::CreateTable/;
 
 use strict;
 use warnings;
@@ -49,11 +49,11 @@ __END__
 
 =head1 NAME
 
-Action::Mysql::CreateTable::Results - 
+Verby::Action::Mysql::CreateTable::Results - 
 
 =head1 SYNOPSIS
 
-	use Action::Mysql::CreateTable::Results;
+	use Verby::Action::Mysql::CreateTable::Results;
 
 =head1 DESCRIPTION
 

@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-package Action::Mysql::DoSql;
-use base qw/Action/;
+package Verby::Action::Mysql::DoSql;
+use base qw/Verby::Action/;
 
 use strict;
 use warnings;
@@ -39,11 +39,11 @@ __END__
 
 =head1 NAME
 
-Action::Mysql::DoSql - 
+Verby::Action::Mysql::DoSql - 
 
 =head1 SYNOPSIS
 
-	use Action::Mysql::DoSql;
+	use Verby::Action::Mysql::DoSql;
 
 =head1 DESCRIPTION
 

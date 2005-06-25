@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-package Action::MysqlCreateDB;
-use base qw/Action/;
+package Verby::Action::MysqlCreateDB;
+use base qw/Verby::Action/;
 
 use strict;
 use warnings;
@@ -48,11 +48,11 @@ __END__
 
 =head1 NAME
 
-Action::MysqlCreateDB - 
+Verby::Action::MysqlCreateDB - 
 
 =head1 SYNOPSIS
 
-	use Action::MysqlCreateDB;
+	use Verby::Action::MysqlCreateDB;
 
 =head1 DESCRIPTION
 

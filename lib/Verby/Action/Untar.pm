@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-package Action::Untar;
-use base qw/Action/;
+package Verby::Action::Untar;
+use base qw/Verby::Action/;
 
 use strict;
 use warnings;
@@ -79,11 +79,11 @@ __END__
 
 =head1 NAME
 
-Action::Untar - 
+Verby::Action::Untar - 
 
 =head1 SYNOPSIS
 
-	use Action::Untar;
+	use Verby::Action::Untar;
 
 =head1 DESCRIPTION
 

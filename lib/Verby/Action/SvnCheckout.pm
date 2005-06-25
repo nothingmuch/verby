@@ -1,8 +1,7 @@
 #!/usr/bin/perl
 
-
-package Action::SvnCheckout;
-use base qw/Action::RunCmd/;
+package Verby::Action::SvnCheckout;
+use base qw/Verby::Action::RunCmd/;
 
 use strict;
 use warnings;
@@ -37,11 +36,11 @@ __END__
 
 =head1 NAME
 
-Action::SvnCheckout - 
+Verby::Action::SvnCheckout - 
 
 =head1 SYNOPSIS
 
-	use Action::SvnCheckout;
+	use Verby::Action::SvnCheckout;
 
 =head1 DESCRIPTION
 

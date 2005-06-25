@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-package Action::Mysql::CreateTable::Hewitt;
-use base qw/Action::Mysql::CreateTable/;
+package Verby::Action::Mysql::CreateTable::Hewitt;
+use base qw/Verby::Action::Mysql::CreateTable/;
 
 use strict;
 use warnings;
@@ -27,11 +27,11 @@ __END__
 
 =head1 NAME
 
-Action::Mysql::CreateTable::Hewitt - 
+Verby::Action::Mysql::CreateTable::Hewitt - 
 
 =head1 SYNOPSIS
 
-	use Action::Mysql::CreateTable::Hewitt;
+	use Verby::Action::Mysql::CreateTable::Hewitt;
 
 =head1 DESCRIPTION
 

@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-package Action::FlattenTree;
-use base qw/Action/;
+package Verby::Action::FlattenTree;
+use base qw/Verby::Action/;
 
 use strict;
 use warnings;

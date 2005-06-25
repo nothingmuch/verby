@@ -1,7 +1,7 @@
 #!t/usr/bin/perl
 
-package Action::Mysql::LoadDataFile;
-use base qw/Action::Mysql::DoSql/;
+package Verby::Action::Mysql::LoadDataFile;
+use base qw/Verby::Action::Mysql::DoSql/;
 
 use strict;
 use warnings;
@@ -106,11 +106,11 @@ __END__
 
 =head1 NAME
 
-Action::Mysql::LoadDataFile - 
+Verby::Action::Mysql::LoadDataFile - 
 
 =head1 SYNOPSIS
 
-	use Action::Mysql::LoadDataFile;
+	use Verby::Action::Mysql::LoadDataFile;
 
 =head1 DESCRIPTION
 

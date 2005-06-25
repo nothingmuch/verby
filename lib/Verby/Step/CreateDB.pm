@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-package Step::CreateDB;
-use base qw/Action::MysqlCreateDB/;
+package Verby::Step::CreateDB;
+use base qw/Verby::Action::MysqlCreateDB/;
 
 use strict;
 use warnings;
@@ -32,11 +32,11 @@ __END__
 
 =head1 NAME
 
-Step::CreateDB - 
+Verby::Step::CreateDB - 
 
 =head1 SYNOPSIS
 
-	use Step::CreateDB;
+	use Verby::Step::CreateDB;
 
 =head1 DESCRIPTION
 

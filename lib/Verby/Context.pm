@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-package Context;
+package Verby::Context;
 use base qw/Config::Data::Mutable/;
 
 use strict;
@@ -34,11 +34,11 @@ __END__
 
 =head1 NAME
 
-Context - 
+Verby::Context - 
 
 =head1 SYNOPSIS
 
-	use Context;
+	use Verby::Context;
 
 =head1 DESCRIPTION
 

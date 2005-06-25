@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-package Action;
+package Verby::Action;
 
 use strict;
 use warnings;
@@ -37,11 +37,11 @@ __END__
 
 =head1 NAME
 
-Action - 
+Verby::Action - 
 
 =head1 SYNOPSIS
 
-	use Action;
+	use Verby::Action;
 
 =head1 DESCRIPTION
 

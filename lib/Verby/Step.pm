@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-package Step;
+package Verby::Step;
 
 use strict;
 use warnings;
@@ -32,11 +32,11 @@ __END__
 
 =head1 NAME
 
-Step - 
+Verby::Step - 
 
 =head1 SYNOPSIS
 
-	use Step;
+	use Verby::Step;
 
 =head1 DESCRIPTION
 

@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-package Action::AnalyzeDataFile;
-use base qw/Action/;
+package Verby::Action::AnalyzeDataFile;
+use base qw/Verby::Action/;
 
 use strict;
 use warnings;
@@ -74,11 +74,11 @@ __END__
 
 =head1 NAME
 
-Action::AnalyzeDataFile - 
+Verby::Action::AnalyzeDataFile - 
 
 =head1 SYNOPSIS
 
-	use Action::AnalyzeDataFile;
+	use Verby::Action::AnalyzeDataFile;
 
 =head1 DESCRIPTION
 

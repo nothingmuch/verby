@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 
-package Step::Mysql::LoadDataFile;
-use base qw/Step::Closure/;
-use Step::Closure qw/step/;
+package Verby::Step::Mysql::LoadDataFile;
+use base qw/Verby::Step::Closure/;
+use Verby::Step::Closure qw/step/;
 
 use strict;
 use warnings;
@@ -20,7 +20,7 @@ sub new {
 		my $flat = File::Spec->catfile(dirname($file), "generated_organizations_tsv.txt");
 		{
 			my $tree_file = $file;
-			$flatten = step "Action::FlattenTree" => sub {
+			$flatten = step "Verby::Action::FlattenTree" => sub {
 				my $c = $_[1];
 				$c->tree_file($tree_file);
 				$c->output($flat);
@@ -34,7 +34,7 @@ sub new {
 	$table_name ||= basename($file, qw/.csv .txt .tree/);
 
 
-	my $analyze = step("Action::AnalyzeDataFile" => sub {
+	my $analyze = step("Verby::Action::AnalyzeDataFile" => sub {
 		$_[1]->file($file);
 	}, sub {
 		$_[1]->export_all;
@@ -49,14 +49,14 @@ sub new {
 		$type = "Results" if /survey_results/;
 		$type ||= "Demographics";
 	}
-	my $create = step "Action::Mysql::CreateTable::$type" => sub {
+	my $create = step "Verby::Action::Mysql::CreateTable::$type" => sub {
 		$_[1]->table($table_name);
 		$_[1]->export("table");
 	};
 	$create->provides_cxt(1);
 	$create->depends($analyze);
 
-	my $self = step("Action::Mysql::LoadDataFile");
+	my $self = step("Verby::Action::Mysql::LoadDataFile");
 	$self->depends($create, $analyze);
 
 	wantarray ? ($self, $create, $analyze, ($flatten || ())) : $self;
@@ -70,11 +70,11 @@ __END__
 
 =head1 NAME
 
-Step::Mysql::LoadDataFile - 
+Verby::Step::Mysql::LoadDataFile - 
 
 =head1 SYNOPSIS
 
-	use Step::Mysql::LoadDataFile;
+	use Verby::Step::Mysql::LoadDataFile;
 
 =head1 DESCRIPTION
 

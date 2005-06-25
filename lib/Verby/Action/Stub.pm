@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-package Action::Stub;
-use base qw/Action/;
+package Verby::Action::Stub;
+use base qw/Verby::Action/;
 
 use strict;
 use warnings;

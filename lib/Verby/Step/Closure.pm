@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-package Step::Closure;
-use base qw/Step Class::Accessor/;
+package Verby::Step::Closure;
+use base qw/Verby::Step Class::Accessor/;
 
 use strict;
 use warnings;
@@ -121,11 +121,11 @@ __END__
 
 =head1 NAME
 
-Step::Closure - Reusable generic step with a closure as it's body.
+Verby::Step::Closure - Reusable generic step with a closure as it's body.
 
 =head1 SYNOPSIS
 
-	use Step::Closure;
+	use Verby::Step::Closure;
 
 =head1 DESCRIPTION
 

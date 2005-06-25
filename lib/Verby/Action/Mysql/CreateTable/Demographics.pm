@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-package Action::Mysql::CreateTable::Demographics;
-use base qw/Action::Mysql::CreateTable/;
+package Verby::Action::Mysql::CreateTable::Demographics;
+use base qw/Verby::Action::Mysql::CreateTable/;
 
 use strict;
 use warnings;
@@ -39,11 +39,11 @@ __END__
 
 =head1 NAME
 
-Action::Mysql::CreateTable::Demographics - 
+Verby::Action::Mysql::CreateTable::Demographics - 
 
 =head1 SYNOPSIS
 
-	use Action::Mysql::CreateTable::Demographics;
+	use Verby::Action::Mysql::CreateTable::Demographics;
 
 =head1 DESCRIPTION
 
