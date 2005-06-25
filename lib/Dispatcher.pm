@@ -21,6 +21,7 @@ sub new {
 	my $pkg = shift;
 	bless {
 		map { $_ => Set::Object->new } @set_fields,
+		running_queue => [],
 	}, $pkg;
 }
 
@@ -90,7 +91,7 @@ sub start_step {
 
 	if ($step->can("start") and $step->can("finish")){
 		$step->start($new_cxt);
-		$self->running_set->insert($step);
+		$self->mark_running($step, $new_cxt)
 	} else {
 		$step->do($new_cxt);
 		$self->satisfied_set->insert($step);
@@ -101,19 +102,63 @@ sub wait_all {
 	my $self = shift;
 	# finish all running tasks
 
-	my $running = $self->running_set;
 	my $satisfied = $self->satisfied_set;
 	
-	foreach my $step ($running->members){
-		$step->finish;
-		$running->remove($step);
+	while ($self->running_steps){
+		my $entry = $self->pop_running;
+		my ($step, $cxt) = @$entry;
+		$step->finish($cxt);
 		$satisfied->insert($step);
 	}
 }
 
+sub _set_members_query {
+	my $self = shift;
+	my $set = shift;
+	return wantarray ? $set->members : $set->size;
+}
+
 sub steps {
 	my $self = shift;
-	$self->step_set->members;
+	$self->_set_members_query($self->step_set);
+}
+
+sub running_steps {
+	my $self = shift;
+	$self->_set_members_query($self->running_set);
+}
+
+sub mark_running {
+	my $self = shift;
+	my $step = shift;
+	my $cxt = shift;
+	$self->running_set->insert($step);
+	$self->push_running_queue([$step, $cxt]);
+}
+
+sub is_running {
+	my $self = shift;
+	my $step = shift;
+	$self->running_set->includes($step);
+}
+
+sub pop_running {
+	my $self = shift;
+	my $step = shift;
+	my $cxt = shift;
+	my $entry = $self->pop_running_queue;
+	$self->running_set->remove($entry->[0]);
+	return $entry;
+}
+
+sub push_running_queue {
+	my $self = shift;
+	push @{ $self->{running_qeue} }, @_;
+}
+
+sub pop_running_queue {
+	my $self = shift;
+	shift @{ $self->{running_qeue} };
 }
 
 sub is_satisfied {

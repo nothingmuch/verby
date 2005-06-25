@@ -20,7 +20,7 @@ $items[3]->set_list(depends => ($items[1]));
 
 my @log;
 foreach my $event (qw/start finish/){
-	$_->mock($event => sub { push @log, [ $event, shift ] }) for @items;
+	$_->mock($event => sub { push @log, [ $event, @_ ] }) for @items;
 }
 
 isa_ok(my $d = $m->new, $m);
