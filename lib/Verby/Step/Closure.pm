@@ -50,25 +50,25 @@ sub depends {
 
 sub action {
     my $self = shift;
-    $self->{action} = shift if defined @_;
+    $self->{action} = shift if @_;
     $self->{action};
 }
 
 sub pre {
     my $self = shift;
-    $self->{pre} = shift if defined @_;
+    $self->{pre} = shift if @_;
     $self->{pre};
 }
 
 sub post {
     my $self = shift;
-    $self->{post} = shift if defined @_;
+    $self->{post} = shift if @_;
     $self->{post};
 }
 
 sub provides_cxt {
     my $self = shift;
-    $self->{provides_cxt} = shift if defined @_;
+    $self->{provides_cxt} = shift if @_;
     $self->{provides_cxt};
 }
 
