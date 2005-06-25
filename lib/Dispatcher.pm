@@ -2,6 +2,10 @@
 
 package Dispatcher;
 
+# FIXME
+# do_all and wait_specific could be optimized to be a little less O(N) ish.
+# with small data sets it doesn't really matter.
+
 use strict;
 use warnings;
 
