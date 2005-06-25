@@ -5,16 +5,16 @@ use strict;
 use warnings;
 
 use Class::Interfaces (
-    'Visitor'    => [ 'visit' ],
-    'Visitable'  => [ 'accept' ],
+    'Visitor'   => [ 'visit' ],
+    'Visitable' => [ 'accept' ],
         
-    'Dependency' => {
-        isa      => 'Visitable',
-        methods  => [ 'dependents', 'depends_on', 'add_action', 'actions', 'is_satisfied' ]
+    'Step'      => {
+        isa     => 'Visitable',
+        methods => [ 'dependents', 'depends_on', 'add_action', 'actions', 'is_satisfied' ]
         },
         
-    'Action'     => [ 'perform', 'verify' ],
-    'Context'    => [ 'get', 'set' ],
+    'Action'    => [ 'perform', 'verify' ],
+    'Context'   => [ 'get', 'set' ],
     );
     
 1;
@@ -29,16 +29,16 @@ Interfaces - A set of Interfaces for this framework
 
 =head1 SYNOPSIS
 
-    my $dep1 = Dependency->new();
-    $dep1->add_action(Action->new(
+    my $step1 = Step->new();
+    $step1->add_action(Action->new(
         perform => sub { 
             mkdir('var/www');
         },
         verify  => sub { -e 'var' && -d 'var' && -e 'var/www' && -d 'var/www' }
     ));
 
-    my $dep2 = Dependency->new();
-    $dep2->add_action(Action->new(
+    my $step1_1 = Step->new();
+    $step1_1->add_action(Action->new(
         perform => sub { 
             chdir('var/www/'); # assume that this exists because
                                # we are dependant upon it                         
@@ -48,10 +48,10 @@ Interfaces - A set of Interfaces for this framework
         },
         verify  => sub { -e 'index.html' && -f 'index.html' && -s 'index.html' }
     ));
-    $dep2->depends_on($dep1);
+    $step1_1->depends_on($step1);
 
-    $dep2->depends_on(); # returns $dep
-    $dep1->dependents() # returns [ $dep2 ]
+    $step1_1->depends_on(); # returns $step1
+    $step1->dependents() # returns [ $step1_1 ]
 
     my $v = Visitor->new(sub {
         my ($self, $dep) = @_;
@@ -74,7 +74,7 @@ Interfaces - A set of Interfaces for this framework
         }
     });
 
-    $dep1->accept($v);
+    $step1->accept($v);
 
 =head1 DESCRIPTION
 
@@ -82,33 +82,33 @@ This file defines two interfaces.
 
 =head1 INTERFACES
 
-=head2 Dependency
+=head2 Step
 
 =over 4
 
 =item B<dependents>
 
-A B<Dependency> object can have other B<Dependency> objects which depend upon it. This method will return a list of direct dependents.
+A B<Step> object can have other B<Step> objects which depend upon it. This method will return a list of direct dependents.
 
 In parent-child parlance, this will return a list of this objects children.
 
 =item B<depends_on (?$dependency)>
 
-A B<Dependency> object itself may be dependent upon other B<Dependency> object. If C<$dependency> is passed to this method, then the invocant becomes a dependant of C<$dependency>. If no C<$dependency> is passed, then this will return the object which the invocant depends upon (if it exists).
+A B<Step> object itself may be dependent upon other B<Step> object. If C<$dependency> is passed to this method, then the invocant becomes a dependant of C<$dependency>. If no C<$dependency> is passed, then this will return the object which the invocant depends upon (if it exists).
 
 In parent-child parlance, this will return a this objects parent.
 
 =item B<add_action>
 
-A B<Dependency> object may itself contain a number of B<Action> objects. This method allows the addition of these actions.
+A B<Step> object may itself contain a number of B<Action> objects. This method allows the addition of these actions.
 
 =item B<actions>
 
-This returns all the B<Action> objects this B<Dependency> has.
+This returns all the B<Action> objects this B<Step> has.
 
 =item B<is_satisfied>
 
-This method will determine if this B<Dependency> has been satisifed. It does this by calling C<verify> on all of its  B<Action> objects.
+This method will determine if this B<Step> has been satisifed. It does this by calling C<verify> on all of its  B<Action> objects.
 
 =back
 
@@ -138,7 +138,7 @@ A B<Context> object is just a simple scratch-pad to be held by B<Visitor> object
 
 =back
 
-Actions do not have pre-conditions. It is assumed that the Dependency container takes care of the environment.
+Actions do not have pre-conditions. It is assumed that the Step container takes care of the environment.
 
 =head1 AUTHORS
 
