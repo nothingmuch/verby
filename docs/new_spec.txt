@@ -61,16 +61,16 @@ So what does this all look like:
     |  Dependency  |
     +--------------+      +----------------+
     | actions      |----->| Action::MkPath |   
-    | dependencies |--+   +----------------+
+    | dependenants |--+   +----------------+
     +--------------+  |  
                       |    +--------------+        
                       +--->|  Dependency  | 
                            +--------------+    +-------------------+
                            | actions      |--->| Action::MkDirTree |
-                           | dependencies |    +-------------------+
+                           | dependenants |    +-------------------+
                            +--------------+
 
-Post-order traversal of this tree will process dependencies in the correct order. This basically means that all the of the children must be satisfied before thier parent. 
+Pre-order traversal of this tree will process dependencies in the correct order. This basically means that all the of the parents must be satisfied before thier children. So in this example, Action::MkPath must be completed before Action::MkDirTree can be run.
 
 Misc. Thoughts:
 
