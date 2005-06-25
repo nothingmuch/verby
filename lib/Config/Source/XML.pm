@@ -8,6 +8,7 @@ use warnings;
 our $VERSION = '0.01';
 
 use XML::SAX::ParserFactory;
+use Carp qw/croak/;
 
 sub new {
     my $class = shift;
@@ -17,7 +18,7 @@ sub new {
 sub load {
     my ($self, $file) = @_;
     (-e $file && -f $file)
-        || die "Bad config file '$file' either it doesn't exist or it's not a file";    
+        || croak "Bad config file '$file' either it doesn't exist or it's not a file";    
     my $handler = Config::Source::XML::SAX::Handler->new();
     my $p = XML::SAX::ParserFactory->parser(Handler => $handler);
     $p->parse_uri($file);
@@ -34,6 +35,9 @@ use warnings;
 our $VERSION = '0.01';
 
 use base 'XML::SAX::Base';
+
+use Carp qw/croak/;
+use Array::RefElem qw/hv_store av_push/;
 
 sub new {
     my $class = shift;
@@ -138,40 +142,32 @@ sub _config_init {
     $self->{_in_main_config} = 1;   # set the flag
     $self->{_config}->{conf} = {};  # init the hash node
     # ... and add it to our context
-    push @{$self->{_current_node}}, $self->{_config}->{conf};     
+    av_push(@{$self->{_current_node}}, $self->{_config}->{conf});
 }
 
 sub _config_start {
     my ($self, $tag_name) = @_;
-    if (defined $self->{_current_tag_name}) {
-        # init a hash node
-        my $node = {}; 
-        # link it to the structure
-        $self->{_current_node}->[-1]->{$self->{_current_tag_name}} = $node; 
-        # push it onto the current context
-        push @{$self->{_current_node}} => $node;
-    }
-    # record the current tag name
-    $self->{_current_tag_name} = $tag_name;      
+
+	# '<foo><bar>blah</bar> more text </foo>' is illegal
+	defined and not ref and croak "Node can't contain both text and sub elements" for $self->{_current_node}[-1];
+
+	my $node;
+	# put the same node  both on the stack, *and* in the right place in the structure
+	# note that setting the last element on the stack will also set the thing in the structue, since we are aliasing
+	hv_store(%{ $self->{_current_node}[-1] }, $tag_name, $node);
+	av_push(@{ $self->{_current_node} }, $node);
 }
 
 sub _config_end {
     my ($self, $tag_name) = @_;
-    if (defined $self->{_current_tag_name} && $self->{_current_tag_name} eq $tag_name) {
-        # clear our current tag ...
-        $self->{_current_tag_name} = undef;    
-    }
-    else {
-        # exit the current context
-        pop @{$self->{_current_node}};
-    }     
+	# if we don't want undefs: $self->{_current_node}[-1] ||= '';
+    pop @{$self->{_current_node}};
 }
 
 sub _config_characters {
     my ($self, $data) = @_;
-    (defined $self->{_current_tag_name} && @{$self->{_current_node}})
-        || die "we should always have a current tag and some context"; 
-    $self->{_current_node}->[-1]->{$self->{_current_tag_name}} = $data;    
+	# setting the last element will also set the current thing in the structure due to aliasing. See above
+	$self->{_current_node}->[-1] = $data;
 }
 
 sub _config_cleanup {
