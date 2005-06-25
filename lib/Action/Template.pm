@@ -34,7 +34,7 @@ sub verify {
 	my $self = shift;
 	my $c = shift;
 
-	my $output;
+	my $output = $c->output;
 	
 	(defined($output) and not ref($output))
 		? -e $output

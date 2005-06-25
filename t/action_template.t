@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 6;
+use Test::More tests => 8;
 use Test::MockObject;
 use Test::Exception;
 
@@ -13,15 +13,16 @@ use Config::Data;
 
 my $m; BEGIN { use_ok($m = "Action::Template") };
 
-my ($outfh, $outfile) = tempfile(UNLINK => 1);
+my $template = <<TMPL;
+foo bar gorch
+foo='[% c.foo() %]'
+ding ding ding
+TMPL
 
 my $c = Config::Data->new;
 %{ $c->data } = (
-	template => \*DATA,
-	output => $outfile,
-
+	template => \$template,
 	logger => Test::MockObject->new,
-
 	foo => "blah",
 );
 
@@ -30,17 +31,25 @@ $c->logger->mock(logdie => sub { shift; die "@_" });
 
 isa_ok(my $a = $m->new, $m);
 
-can_ok($a, "do");
+{
+	(my $outfh, $c->data->{output}) = tempfile(UNLINK => 1);
 
-ok(!$a->verify($c), "verify is false");
+	can_ok($a, "do");
 
-lives_ok { $a->do($c) } "template had no errors";
+	lives_ok { $a->do($c) } "template had no errors";
 
-my $output = do { local $/; <$outfh> };
-like($output, qr/foo='blah'/s, "output looks good");
+	ok($a->verify($c), "verififcation successful");
 
-__DATA__
-foo bar gorch
-foo='[% c.foo() %]'
-ding ding ding
+	my $output = do { local $/; <$outfh> };
+	like($output, qr/foo='blah'/s, "output looks good");
+}
 
+{
+	my ($outfh, $outfile) = tempfile(UNLINK => 1);
+	$c->data->{output} = $outfile;
+	chmod 0, $outfile or die "couldn't chmod '$outfile': $!";
+
+	$c->logger->clear;
+	dies_ok { $a->do($c) } "action dies when output not writable";
+	$c->logger->called_ok("logdie");
+}
