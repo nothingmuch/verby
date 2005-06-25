@@ -1,37 +1,27 @@
 #!/usr/bin/perl
 
 package Action::Mysql::CreateTable;
-use base qw/Action/;
+use base qw/Action::Mysql::DoSql/;
 
 use strict;
 use warnings;
 
-sub do {
+sub do_sql {
 	my $self = shift;
 	my $c = shift;
 
-	my $dbh = $c->dbh;
 	my $table = $c->table;
 	my $schema = $c->schema;
 
-	local $dbh->{PrintError} = 0;
-	local $dbh->{RaiseError} = 0;
-	local $dbh->{HandleError} = sub {
-		my $msg = shift;
-		$c->logger->logdie($msg);
-	};
-
-	my $sql = qq{
+	$c->sql(qq{
 		CREATE TABLE $table (
 			$schema
 		);
-	};
+	});
 
 	$c->logger->info("creating table '$table'");
-	
-	$dbh->do($sql);
 
-	$self->confirm($c);
+	$self->SUPER::do_sql($c);
 }
 
 sub verify {

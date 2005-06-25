@@ -1,7 +1,7 @@
 #!t/usr/bin/perl
 
 package Action::Mysql::LoadDataFile;
-use base qw/Action/;
+use base qw/Action::Mysql::DoSql/;
 
 use strict;
 use warnings;
@@ -10,7 +10,7 @@ use Mysql::Table::MetaData;
 use Time::Piece;
 use File::stat;
 
-sub do {
+sub do_sql {
 	my $self = shift;
 	my $c = shift;
 
@@ -21,11 +21,6 @@ sub do {
 	my $fs = $c->field_sep;
 	my $ls = $c->line_sep;
 	my $skip = $c->skip_lines || 0;
-
-	# always logdie
-	local $dbh->{PrintError} = 0;
-	local $dbh->{RaiseError} = 0;
-	local $dbh->{HandleSetErr} = sub { $c->logger->logdie(shift) };
 
 	$c->logger->info("Deleting all records from table '$table_name'");
 	$dbh->do("delete from $table_name");
@@ -63,8 +58,6 @@ sub do {
 
 		$c->logger->logdie("Couldn't load '$file' into table '$table_name': $accum");
 	}
-
-	$self->confirm($c);
 }
 
 
