@@ -113,6 +113,8 @@ sub do_all {
 		}
 	}
 
+	$self->start_step($_) for @free_steps;
+
 	$self->wait_all;
 }
 
