@@ -126,7 +126,7 @@ Verby::Action::RunCmd - a base class for actions which exec external commands.
 
 =over 4
 
-=item run \@CLI, $stdin, sub { init }
+=item B<run \@CLI, $stdin, sub { init }>
 
 This is basically a wrapper around L<IPC::Run/run> which knows how to log with our system.
 
@@ -142,6 +142,18 @@ The init sub is run after the fork, before the exec. Normally you use it like:
 Stdout is collected into a variable.
 
 Stderr is collected into a variable, and logged in real time using the log level C<warn>.
+
+=item B<finish>
+
+=item B<pump>
+
+=item B<log_extra>
+
+=item B<log_invocation>
+
+=item B<cmd_start>
+
+=item B<cmd_finish>
 
 =back
 

@@ -309,60 +309,59 @@ Makefile.
 
 =head1 DESCRIPTION
 
-
 =head1 METHODS
 
 =over 4
 
-=item new
+=item B<new>
 
 Returns a new L<Verby::Dispatcher>. Duh!
 
-=item add_steps *@steps
+=item B<add_steps *@steps>
 
-=item add_step *@steps
+=item B<add_step *@steps>
 
 Add a number of steps into the dispatcher pool.
 
 Anything returned from L<Verby::Step/depends> is aggregated recursively here, and
 added into the batch too.
 
-=item do_all
+=item B<do_all>
 
 Calculate all the dependencies using L<Algorithm::Dependency::Objects>, and
 then dispatch in order.
 
-=item dep_engine_class
+=item B<dep_engine_class>
 
 The class used to instantiate the dependecy resolver. Defaults to
 L<Algorithm::Dependency::Objects::Ordered>. Subclass if you don't like it.
 
-=item config_hub ?$new_config_hub
+=item B<config_hub ?$new_config_hub>
 
 A setter getter for the L<Verby::Config::Data> (or compatible) object from which we
 will derive the global context, and it's sub-contexts.
 
-=item global_context
+=item B<global_context>
 
 Returns the global context for the dispatcher.
 
 If necessary derives a context from L</config_hub>.
 
-=item is_running $step
+=item B<is_running $step>
 
 Whether or not $step is currently executing.
 
-=item is_satisfied $step
+=item B<is_satisfied $step>
 
 Whether or not $step does not need to be executed (because it was already
 executed or because it didn't need to be in the first place).
 
-=item get_cxt $step
+=item B<get_cxt $step>
 
 Returns the context associated with $step. This is where $step will write it's
 data.
 
-=item get_derivable_cxts $step
+=item B<get_derivable_cxts $step>
 
 Returns the contexts to derive from, when creating a context for $step.
 
@@ -374,41 +373,41 @@ Note that when a step 'provides a context' this really means that a new context
 is created, and this context is derived for the step, and any step that depends
 on it.
 
-=item get_parent_cxts $step
+=item B<get_parent_cxts $step>
 
 If $step depends on any other steps, take their contexts. Otherwise, returns
 the global context.
 
-=item start_step $step
+=item B<start_step $step>
 
 If step supports the async interface, start it and put it in the running step
 queue. If it's synchroneous, call it's L<Step/do> method.
 
-=item finish_step $step
+=item B<finish_step $step>
 
 Finish step, and mark it as satisfied. Only makes sense for async steps.
 
-=item mark_running $step
+=item B<mark_running $step>
 
 Put $step in the running queue, and mark it in the running step set.
 
-=item push_running $step
+=item B<push_running $step>
 
 Push $step into the running step queue.
 
-=item pop_running
+=item B<pop_running>
 
 Pop a step from the running queue.
 
-=item mk_dep_engine
+=item B<mk_dep_engine>
 
 Creates a new object using L</dep_engine_class>.
 
-=item ordered_steps
+=item B<ordered_steps>
 
 Returns the steps to be executed in order.
 
-=item pump_running
+=item B<pump_running>
 
 Give every running step a bit of time to move things forward.
 
@@ -416,36 +415,36 @@ This method is akin to L<IPC::Run/pump>.
 
 It also calls L</finish_step> on each step that returns false.
 
-=item steps
+=item B<steps>
 
 Returns a list of steps that the dispatcher cares about.
 
-=item step_set
+=item B<step_set>
 
 Returns the L<Set::Object> that is used for internal bookkeeping of the steps
 involved.
 
-=item running_steps
+=item B<running_steps>
 
 Returns a list of steps currently running.
 
-=item running_set
+=item B<running_set>
 
 Returns the L<Set::Object> that is used to track which steps are running.
 
-=item satisfied_set
+=item B<satisfied_set>
 
 Returns the L<Set::Object> that is used to track which steps are satisfied.
 
-=item wait_all
+=item B<wait_all>
 
 Wait for all the running steps to finish.
 
-=item wait_one
+=item B<wait_one>
 
 Effectively C<finish_step(pop_running)>.
 
-=item wait_specific $step
+=item B<wait_specific $step>
 
 Waits for a specific step to finish. Called by L<pump_running> when a step
 claims that it's ready.

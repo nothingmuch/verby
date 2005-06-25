@@ -73,11 +73,11 @@ nearly completely virtual.
 
 =over 4
 
-=item depends
+=item B<depends>
 
 Subclass this to return a list of other steps to depend on.
 
-=item is_satisfied
+=item B<is_satisfied>
 
 This method should return a true value if the step does not need to be
 executed.
@@ -86,13 +86,15 @@ Typically a delegation to L<Verby::Action/verify>. They are named differently,
 because C<is_satisfied> implies state. The L<Verby::Dispatcher> will sometimes
 make assumptions, without asking the step to check that it is satisfied.
 
-=item do
+=item B<provides_cxt>
 
-=item start
+=item B<do>
 
-=item finish
+=item B<start>
 
-=item pump
+=item B<finish>
+
+=item B<pump>
 
 These are basically delegations to the corresponding L<Verby::Action> methods.
 

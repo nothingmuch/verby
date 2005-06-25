@@ -200,11 +200,11 @@ unnecessary typing, class creation, or other silly crap.
 L<Verby::Step::Closure>'s purpose is to make this boundry unnoticable, so that
 when you don't need it it doesn't get in your way.
 
-=head1 FUNCTIONS
+=head1 EXPORTED FUNCTIONS
 
 =over 4
 
-=item step $action_class ?$pre ?$post
+=item B<step $action_class ?$pre ?$post>
 
 This function (optionally exportable) is used as a quick and dirty constructor.
 
@@ -217,46 +217,46 @@ L<Verby::Step::Closure> with the C<action> field set to an instance.
 
 =over 4
 
-=item new $action_class ?$pre ?$post
+=item B<new $action_class ?$pre ?$post>
 
 Creates a new anonymous step.
 
-=item depends *@steps
+=item B<depends *@steps>
 
 Just a plain old accessor.
 
-=item add_deps *@steps
+=item B<add_deps *@steps>
 
 Append more steps to the dep list.
 
-=item is_satisfied
+=item B<is_satisfied>
 
-=item finish
+=item B<finish>
 
-=item start
+=item B<start>
 
-=item do
+=item B<do>
 
 These methods all call the pre callback (except for C<finish>), then the
 corresponding method on the action (special case: L<Action/verify> for
 C<is_satisfied>), and lastly the post callback (except for C<start>).
 
-=item pump
+=item B<pump>
 
 This just delegates to the pump method of the action.
 
-=item stringify
+=item B<stringify>
 
 Stringifies to the action's class.
 
-=item get
+=item B<get>
 
-=item set
+=item B<set>
 
 Replacements for L<Class::Accessor>'s methods that convert between lists and
 array references.
 
-=item can $method
+=item B<can $method>
 
 A special case of L<UNIVERSAL/can> that will return false for methods the
 action can't fulfill.

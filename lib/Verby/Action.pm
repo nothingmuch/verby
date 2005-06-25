@@ -60,7 +60,9 @@ Think of it as an abstraction of a make target.
 
 =over 4
 
-=item do $cxt
+=item B<new>
+
+=item B<do $cxt>
 
 The thing that the action really does. For example
 
@@ -76,7 +78,7 @@ Will use wget to download C<< $c->url >> to C<< $c->file >>.
 This is a bad example though, you ought to subclass L<Verby::Action::RunCmd> if
 you want to run a command.
 
-=item verify $cxt
+=item B<verify $cxt>
 
 Perform a boolean check - whether or not the action needs to happen or not.
 
@@ -88,7 +90,7 @@ verify method would look like:
 		-f $c->file;
 	}
 
-=item confirm $cxt
+=item B<confirm $cxt>
 
 Typically called at the end of an action's do:
 
@@ -109,15 +111,15 @@ C<do>, analogeous to C<IPC::Run>'s nonblocking interface:
 
 =over 4
 
-=item start $cxt
+=item B<start $cxt>
 
 Initiate the action, returning as early as possible.
 
-=item finish $cxt
+=item B<finish $cxt>
 
 Clean up the action.
 
-=item pump $cxt
+=item B<pump $cxt>
 
 Perform any nonblocking operation needed to keep things moving.
 

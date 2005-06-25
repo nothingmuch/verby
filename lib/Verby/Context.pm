@@ -57,6 +57,14 @@ share variables that the action sets, so that other steps may have them too.
 
 It is a mutable L<Verby::Config::Data> that derives from the global context.
 
+=head1 METHODS
+
+=over 4
+
+=item B<logger>
+
+=back
+
 =head1 EXAMPLE USAGE
 
 See the annotated F<scripts/module_builder.pl> for how a context is used in

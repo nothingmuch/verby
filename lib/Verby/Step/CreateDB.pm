@@ -42,6 +42,16 @@ Verby::Step::CreateDB -
 
 =head1 DESCRIPTION
 
+=head1 METHODS
+
+=over 4
+
+=item B<config>
+
+=item B<do>
+
+=back
+
 =head1 BUGS
 
 None that we are aware of. Of course, if you find a bug, let us know, and we will be sure to fix it. 

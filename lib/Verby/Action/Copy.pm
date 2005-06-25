@@ -45,13 +45,27 @@ __END__
 
 =head1 NAME
 
-Verby::Action::Copy - 
+Verby::Action::Copy - Action to copy a directory tree to from one location to another
 
 =head1 SYNOPSIS
 
 	use Verby::Action::Copy;
 
 =head1 DESCRIPTION
+
+This module uses L<File::Rsync> to copy a directory tree to from one location to another.
+
+=head1 METHODS 
+
+=over 4
+
+=item B<start>
+
+=item B<finish>
+
+=item B<verfiy>
+
+=back
 
 =head1 BUGS
 
