@@ -18,8 +18,7 @@ sub do {
 	$c->logger->info("analyzing file '$file'");
 	
 	unless ($self->verify($c)){
-		-e $file
-			or $c->logger->logdie("File '$file' does not exist!");
+		-e $file or $c->logger->logdie("File '$file' does not exist!");
 		
 		# stat the file
 		$c->stat(my $stat = stat($file))
@@ -28,27 +27,31 @@ sub do {
 		open my $fh, "<", $file
 			or $c->logger->logdie("Couldn't open file '$file': $!");
 
-		# read a chunk of the file
-		my $b = $stat->blksize;
-		$b = 2048 if $b < 2048;
-		local $/ = \$b;
-		local $_ = <$fh>;
+		if ($file !~ /\.tree$/){
+			# read a chunk of the file
+			my $b = $stat->blksize;
+			$b = 2048 if $b < 2048;
+			local $/ = \$b;
+			local $_ = <$fh>;
 
-		# guess the separator
-		/([\t,])/
-			? $c->field_sep(local $, = $1)
-			: $c->logger->logdie("Can't guess field separator");
+			# guess the separator
+			/([\t,])/
+				? $c->field_sep(local $, = $1)
+				: $c->logger->logdie("Can't guess field separator");
 
-		(/(\015\012)/ || /([\r\n])/)
-			? $c->line_sep(local $/ = $1)
-			: $c->logger->logdie("Can't guess line separator");
+			(/(\015\012)/ || /([\r\n])/)
+				? $c->line_sep(local $/ = $1)
+				: $c->logger->logdie("Can't guess line separator");
 
-		# now that we know the separators, read a line
-		seek $fh, 0, SEEK_SET;
+			# now that we know the separators, read a line
+			seek $fh, 0, SEEK_SET;
 
-		# and count the number of columns
-		my @cols = split($,, scalar <$fh>);
-		$c->columns(scalar @cols);
+			# and count the number of columns
+			my @cols = split($,, scalar <$fh>);
+			$c->columns(scalar @cols);
+		} else {
+			$c->is_tree_file(1);	
+		}
 
 		close $fh;
 	}
@@ -60,9 +63,7 @@ sub verify {
 	my $self = shift;
 	my $c = shift;
 
-	defined($c->$_) or return undef for qw/field_sep line_sep stat columns/;
-
-	return 1;
+	defined $c->stat;
 }
 
 __PACKAGE__

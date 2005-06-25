@@ -27,7 +27,9 @@ sub do_sql {
 	
 	ATTEMPT: {
 		my $accum = ''; # error accumilator
+		my $i;
 		for my $local ("", "LOCAL"){
+			$i++ and $c->logger->debug("retrying with local=$local");
 			if (eval {
 				local $dbh->{RaiseError} = 1;
 				local $dbh->{HandleError} = sub {
@@ -81,8 +83,11 @@ sub verify {
 
 	return unless $table_info;
 	return unless $file_stamp <= $table_info->{update_time};
-	$c->logger->logdie("schema of table '$table_name' doesn't match data file '$file'")
-		unless @{ $table_info->{columns} } == $c->columns;
+
+	$c->logger->logdie("schema of table '$table_name' doesn't match data file '$file':"
+		. " table has " . (scalar @{ $table_info->{columns} }) . " columns"
+		. " while file has " . $c->columns . " columns"
+	) unless @{ $table_info->{columns} } == $c->columns;
 
 	$table_info->{rows} > 0;
 }

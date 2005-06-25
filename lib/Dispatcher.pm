@@ -40,13 +40,17 @@ sub add_step {
 
 	return if $steps->includes($step);
 
-	$self->global_context->logger->debug("adding step $step");
-
 	$self->add_step($_) for $step->depends;
+
+	(my $logger = $self->global_context->logger)->debug("adding step $step");
 	$steps->insert($step);
 
 	my $context = $self->global_context->derive("Context");
-	$satisfied->insert($step) if $step->is_satisfied($context);
+
+	if ($step->is_satisfied($context)) {
+		$logger->debug("step is already satisfied");
+		$satisfied->insert($step);
+	}
 }
 
 sub global_context {

@@ -9,6 +9,7 @@ use Dispatcher;
 use Step::Closure qw/step/;
 use Config::Data;
 use File::Basename;
+use File::Spec;
 use DBI;
 
 my $l4pconf = <<L4P;
@@ -32,7 +33,7 @@ my @create_results;
 my @create_others;
 
 foreach my $file (@ARGV){
-	$logger->info("making steps for '$file'");
+	$logger->debug("making steps for '$file'");
 	my $cxt_name = "cxt_" . (0+\$file);
 
 	my ($table_name, $path, $suffix) = fileparse($file, qr/\.(?:csv|txt|tree)/);
@@ -44,6 +45,22 @@ foreach my $file (@ARGV){
 
 		(tied %{ $c->data })->[1] = (tied %{ $c->$cxt_name->data })->[1];
 	};
+
+	my $flatten;
+	if ($file =~ /\.tree$/){
+		my $flat = File::Spec->catfile(dirname($file), "generated_lkup_org.txt");
+		{
+			my $tree_file = $file;
+			$flatten = step "Action::FlattenTree" => sub {
+				my $c = $_[1];
+				$c->tree_file($tree_file);
+				$c->output($flat);
+			};
+		}
+
+		$file = $flat;
+		$table_name = "lkup_org";
+	}
 	
 	my $analyze = step("Action::AnalyzeDataFile" => sub {
 		my $self = shift;
@@ -58,6 +75,8 @@ foreach my $file (@ARGV){
 		$c->$cxt_name($c);
 		$c->export($cxt_name);
 	});
+
+	$analyze->depends($flatten || ());;
 
 	my $load = &step("Action::Mysql::LoadDataFile" => $steal_cxt);
 
