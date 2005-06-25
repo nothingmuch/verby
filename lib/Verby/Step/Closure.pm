@@ -24,7 +24,14 @@ sub get {
 	my $self = shift;
 	my $rv = $self->SUPER::get(@_);
 
-	UNIVERSAL::isa($rv, "ARRAY") ? @$rv : $rv;
+	(ref $rv eq "ARRAY") ? @$rv : $rv;
+}
+
+sub set {
+	my $self = shift;
+	my $key = $_[0];
+
+	$self->SUPER::set(@_);
 }
 
 sub new {
@@ -81,7 +88,7 @@ sub can {
 sub _wrapped {
 	my $self = shift;
 	my $action_method = shift;
-
+	
 	if ($action_method ne "finish" and my $sub = $self->pre){
 		$self->$sub(@_);
 	}
@@ -98,7 +105,7 @@ sub _wrapped {
 sub step ($;&&) {
 	my $action_class = shift;
 
-	my $step = Step::Closure->new(@_);
+	my $step = Verby::Step::Closure->new(@_);
 
 	$action_class->require
 		or die "Couldn't require $action_class: $UNIVERSAL::require::ERROR"

@@ -13,11 +13,11 @@ sub new {
 	my $pkg = shift;
 
 	my $file = shift;
-	my $table_name = shift;
+	my $table_name = shift || basename($file, qw/.csv .txt .tree/);
 
 	my $flatten; # optional flattenning for trees
 	if ($file =~ /\.tree$/){
-		my $flat = File::Spec->catfile(dirname($file), "generated_organizations_tsv.txt");
+		my $flat = File::Spec->catfile(dirname($file), "generated_" . basename($file, ".tree") . "_tsv.txt");
 		{
 			my $tree_file = $file;
 			$flatten = step "Verby::Action::FlattenTree" => sub {
@@ -28,11 +28,7 @@ sub new {
 		}
 
 		$file = $flat;
-		$table_name ||= "lkup_org";
 	};
-
-	$table_name ||= basename($file, qw/.csv .txt .tree/);
-
 
 	my $analyze = step("Verby::Action::AnalyzeDataFile" => sub {
 		$_[1]->file($file);

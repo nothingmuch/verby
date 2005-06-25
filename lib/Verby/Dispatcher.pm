@@ -14,6 +14,7 @@ use Set::Object;
 use Verby::Context;
 use Carp qw/croak/;
 use Tie::RefHash;
+require overload;
 
 sub new {
 	my $pkg = shift;
@@ -43,13 +44,13 @@ sub config_hub {
 sub add_step {
 	my $self = shift;
 
-	foreach my $step (@_) {
-		my $steps = $self->step_set;
-		my $satisfied = $self->satisfied_set;
+	my $steps = $self->step_set;
+	my $satisfied = $self->satisfied_set;
 
+	foreach my $step (@_) {
 		return if $steps->includes($step);
 
-		$self->add_step($_) for $step->depends;
+		$self->add_step($step->depends);
 
 		(my $logger = $self->global_context->logger)->debug("adding step $step");
 		$steps->insert($step);
@@ -209,7 +210,7 @@ sub wait_specific {
 	my $self = shift;
 	my $step = shift;
 
-	@{ $self->{running_queue} } = grep { $_ != $step } @{ $self->{running_queue} };
+	@{ $self->{running_queue} } = grep { overload::StrVal($_) ne overload::StrVal($step) } @{ $self->{running_queue} };
 
 	$self->finish_step($step);
 }

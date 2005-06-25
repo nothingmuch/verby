@@ -24,7 +24,7 @@ sub new {
 
 sub DESTROY {
 	my $self = shift;
-	untie %{ $self->{data} };
+	untie %{ $self->{data} } if tied $self->{data};
 }
 
 sub AUTOLOAD {
