@@ -5,8 +5,8 @@ use warnings;
 
 die "usage: $0 path/to/datafiles/*.{csv,txt}" unless @ARGV;
 
-use Step::Mysql::LoadDataFile;
-use Dispatcher;
+use Verby::Step::Mysql::LoadDataFile;
+use Verby::Dispatcher;
 use Config::Data;
 use File::Basename;
 use File::Spec;
@@ -23,7 +23,7 @@ Log::Log4perl::init(\$l4pconf);
 my $cfg = Config::Data->new;
 $cfg->data->{dbh} = DBI->connect("dbi:mysql:test");
 
-my $d = Dispatcher->new;
+my $d = Verby::Dispatcher->new;
 $d->config_hub($cfg);
 
 my $logger = Log::Log4perl::get_logger;
@@ -36,7 +36,7 @@ foreach my $file (@ARGV){
 	next if $file =~ /generated/;
 	$logger->debug("making steps for '$file'");
 
-	my ($load, $create) = Step::Mysql::LoadDataFile->new($file);
+	my ($load, $create) = Verby::Step::Mysql::LoadDataFile->new($file);
 
 	if ($file =~ /survey_results/){
 		push @create_results, $create;
