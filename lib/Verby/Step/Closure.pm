@@ -200,7 +200,10 @@ Stringifies to the action's class.
 
 =item get
 
-A replacement for L<Class::Accessor/get> that will unwrap array references.
+=item set
+
+Replacements for L<Class::Accessor>'s methods that convert between lists and
+array references.
 
 =item can $method
 

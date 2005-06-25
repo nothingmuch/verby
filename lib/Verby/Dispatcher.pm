@@ -16,6 +16,8 @@ use Carp qw/croak/;
 use Tie::RefHash;
 require overload;
 
+our $VERSION = 0.01;
+
 sub new {
 	my $pkg = shift;
 	tie my %cxt_of_step, "Tie::RefHash";
