@@ -117,8 +117,13 @@ Verby::Action::RunCmd - a base class for actions which exec external commands.
 
 =head1 SYNOPSIS
 
-	use base qw/Verby::Action::RunCmd/;
-
+	use base qw/Verby::Action::RunCmd/; # not usable on it's own
+	
+	sub start {
+		my ($self, $c) = @_;
+		blah();
+		$self->cmd_start($c, [qw/touch file/]);
+	}
 
 =head1 DESCRIPTION
 
