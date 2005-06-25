@@ -21,15 +21,14 @@ sub cmd_start {
 	my $self = shift;
 	my $c = shift;
 	my $cli = shift;
-
 	my %opts = (log_stderr => 1, %{ shift @_ || {} });
 
 	$self->log_invocation($c, "running '@$cli'");
+
+	my $init = $opts{init};
 	
 	my $in = $opts{in};
 	my ($out, $err);
-
-	my $init = shift;
 
 	my $mk_log_handler = sub {
 		my $name = shift;
@@ -118,7 +117,8 @@ Verby::Action::RunCmd - a base class for actions which exec external commands.
 
 =head1 SYNOPSIS
 
-	use Verby::Action::RunCmd;
+	use base qw/Verby::Action::RunCmd/;
+
 
 =head1 DESCRIPTION
 
@@ -126,46 +126,90 @@ Verby::Action::RunCmd - a base class for actions which exec external commands.
 
 =over 4
 
-=item B<run \@CLI, $stdin, sub { init }>
+=item B<run @args_for_cmd_start>
 
-This is basically a wrapper around L<IPC::Run/run> which knows how to log with our system.
+The method to be used by your action's C<do> method when appropriate.
 
-The CLI array ref is sent to IPC::Run.
+Basically a thin wrapper arund C<cmd_start> and C<cmd_finish>, that lazy people
+will like.
 
-$stdin is a parameter in the same format passed to IPC::Run. It can be a
-filename, a ref to a scalar, a code ref, etc.
+=item B<cmd_start $cxt, \@command_line, [ \%opts ]>
 
-The init sub is run after the fork, before the exec. Normally you use it like:
+The method to be used by your action's C<start> method when appropriate.
 
-	sub { chdir $workdir }
+The first parameter is the context, as is typical in L<Verby>.
 
-Stdout is collected into a variable.
+The second parameter is an array reference of the command line to invoke. This
+is passed verbatim to L<IPC::Run>.
 
-Stderr is collected into a variable, and logged in real time using the log level C<warn>.
+The third, optional parameter, is a hash reference of options.
+
+The option fields that you can use are
+
+=over 4
+
+=item init
+
+A code reference, corresponding to L<IPC::Run>'s init parameter.
+
+=item log_stderr
+
+A boolean (true by default), that causes the C<STDERR> handler to be a delegate
+to the logger.
+
+=item log_stdout
+
+The same as C<log_stderr> but for C<STDOUT>. False by default.
+
+=item in
+
+A parameter to be passed as the input to L<IPC::Run>. This can be a string ref,
+a code ref, or, whatever. See L<IPC::Run>'s docs.
+
+=back
+
+=item C<cmd_finish>
+
+The inverse of C<cmd_start> - causes an OS image to be restored, for the time
+just prior to the invocation of C<cmd_start>. Only works on the EROS operating
+system.
+
+On other operating systems, it waits for the child process to finish.
 
 =item B<finish>
 
+A default implementation of L<Verby::Action/finish> that'll call C<cmd_finish>
+and then L<Verby::Action/confirm>.
+
 =item B<pump>
+
+See if the process finished. Part of the L<Verby::Action> async interface.
 
 =item B<log_extra>
 
+A method that given the context might append something to log messages. used by
+L<Verby::Action::Make>, for example.
+
 =item B<log_invocation>
 
-=item B<cmd_start>
-
-=item B<cmd_finish>
+Mostly internal - the default implementation of the logging operation used when
+invoking the subcommand.
 
 =back
 
 =head1 BUGS
 
-None that we are aware of. Of course, if you find a bug, let us know, and we will be sure to fix it. 
+None that we are aware of. Of course, if you find a bug, let us know, and we
+will be sure to fix it. 
 
 =head1 CODE COVERAGE
 
-We use B<Devel::Cover> to test the code coverage of the tests, please refer to COVERAGE section of the L<Verby> module for more information.
+We use B<Devel::Cover> to test the code coverage of the tests, please refer to
+COVERAGE section of the L<Verby> module for more information.
 
 =head1 SEE ALSO
+
+L<Verby::Action::Copy> - a L<Verby::Action::RunCmd> subclass.
 
 =head1 AUTHOR
 

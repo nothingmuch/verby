@@ -16,7 +16,7 @@ sub start {
 
 	my $wd = $c->workdir;
 
-	$self->cmd_start($c, [qw/perl Makefile.PL/], undef, sub { chdir $wd });
+	$self->cmd_start($c, [qw/perl Makefile.PL/], { init => sub { chdir $wd } });
 }
 
 sub log_extra {
