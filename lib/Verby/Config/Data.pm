@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-package Config::Data;
+package Verby::Config::Data;
 
 use strict;
 use warnings;
@@ -107,11 +107,11 @@ __END__
 
 =head1 NAME
 
-Config::Data - 
+Verby::Config::Data - 
 
 =head1 SYNOPSIS
 
-	use Config::Data;
+	use Verby::Config::Data;
 
 =head1 DESCRIPTION
 

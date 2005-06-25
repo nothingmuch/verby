@@ -6,7 +6,7 @@ use warnings;
 use Test::More tests => 23;
 use Test::Exception;
 
-my $m; BEGIN { use_ok($m = "Config::Data") };
+my $m; BEGIN { use_ok($m = "Verby::Config::Data") };
 
 can_ok($m, "new");
 isa_ok(my $p = $m->new, $m);
@@ -39,7 +39,7 @@ is($p->foo, "value", "parent unchanged");
 
 {
 	package Config::Foo;
-	use base qw/Config::Data/;
+	use base qw/Verby::Config::Data/;
 }
 
 isa_ok(my $o = $c->derive("Config::Foo"), $m);

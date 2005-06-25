@@ -60,11 +60,11 @@ about 3-5 times for each step.
 A config hub is a union of several config sources. For example, a typical
 command line app would have three config sources:
 
-	my $args = Config::Source::ARGV->new; # foo --key=value
-	my $config_file = Config::Source::XML->new("config.xml");
-	my $conifg_prompt = Config::Source::Prompt; # last resort
+	my $args = Verby::Config::Source::ARGV->new; # foo --key=value
+	my $config_file = Verby::Config::Source::XML->new("config.xml");
+	my $conifg_prompt = Verby::Config::Source::Prompt; # last resort
 
-	my $config_hub = Config::Data->new($args, $config_file, $config_prompt);
+	my $config_hub = Verby::Config::Data->new($args, $config_file, $config_prompt);
 
 	$config_hub->key;
 

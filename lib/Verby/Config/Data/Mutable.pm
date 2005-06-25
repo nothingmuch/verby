@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-package Config::Data::Mutable;
-use base qw/Config::Data/;
+package Verby::Config::Data::Mutable;
+use base qw/Verby::Config::Data/;
 
 use strict;
 use warnings;
@@ -45,11 +45,11 @@ __END__
 
 =head1 NAME
 
-Config::Data::Mutable - 
+Verby::Config::Data::Mutable - 
 
 =head1 SYNOPSIS
 
-	use Config::Data::Mutable;
+	use Verby::Config::Data::Mutable;
 
 =head1 DESCRIPTION
 

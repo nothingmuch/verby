@@ -1,12 +1,12 @@
 #!/usr/bin/perl
 
-package Config::Interpreter;
+package Verby::Config::Interpreter;
 
 use strict;
 use warnings;
 
 use File::Spec;
-use Config::Data;
+use Verby::Config::Data;
 
 use Verby::Step::Closure qw/step/;
 use Verby::Step::Mysql::LoadDataFile;
@@ -40,7 +40,7 @@ sub prepare_dispatcher {
 
 	$self->traverse($self->{config}{steps});
 
-	my $cfg = Config::Data->new;
+	my $cfg = Verby::Config::Data->new;
 	%{ $cfg->data } = %{ $self->{config}{conf} };
 
 	$d->config_hub($cfg);
@@ -241,18 +241,18 @@ __END__
 
 =head1 NAME
 
-Config::Interpreter - Takes the deep structure produced by
-L<Config::Source::XML>, and uses the data therein to prepare a
+Verby::Config::Interpreter - Takes the deep structure produced by
+L<Verby::Config::Source::XML>, and uses the data therein to prepare a
 L<Verby::Dispatcher>.
 
 =head1 SYNOPSIS
 
 	# create the objects involved
 	my $d = Verby::Dispatcher->new;
-	my $c = Config::Source::XML->new;
+	my $c = Verby::Config::Source::XML->new;
 
 	# load the steps into the dispatcher
-	my $i = Config::Interpreter->new($c->load("config.xml"));
+	my $i = Verby::Config::Interpreter->new($c->load("config.xml"));
 	$i->prepare_dispatcher($d);
 
 	# do the work
@@ -261,7 +261,7 @@ L<Verby::Dispatcher>.
 =head1 DESCRIPTION
 
 This is the code that "understands" the configuration tree produced by
-L<Config::Source::XML>.
+L<Verby::Config::Source::XML>.
 
 The hash ref returned by the XML parser has two keys, C<config> and C<steps>.
 C<config> is copied into the context hub, it's pretty boring.
@@ -347,12 +347,12 @@ Not yet implemented.
 
 =item new $config
 
-Create a new interpreter. The parameter should be the one returned by L<Config::Source::XML/load>.
+Create a new interpreter. The parameter should be the one returned by L<Verby::Config::Source::XML/load>.
 
 =item prepare_dispatcher $dispatcher
 
 Traverses the config given to C<new>, unwraps extra dependencies, makes a
-C<Config::Data> out of the $config's C<config> key, sets $dispatcher's
+C<Verby::Config::Data> out of the $config's C<config> key, sets $dispatcher's
 C<config_hub> to that, and then adds all the steps to $dispatcher.
 
 =back

@@ -5,7 +5,7 @@ use warnings;
 
 use Test::More tests => 15;
 
-my $m; BEGIN { use_ok($m = "Config::Data::Mutable") };
+my $m; BEGIN { use_ok($m = "Verby::Config::Data::Mutable") };
 
 can_ok($m, "new");
 isa_ok(my $p = $m->new, $m);

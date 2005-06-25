@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-package Config::Source;
-use base qw/Config::Data/;
+package Verby::Config::Source;
+use base qw/Verby::Config::Data/;
 
 use strict;
 use warnings;
@@ -29,11 +29,11 @@ __END__
 
 =head1 NAME
 
-Config::Source - 
+Verby::Config::Source - 
 
 =head1 SYNOPSIS
 
-	use Config::Source;
+	use Verby::Config::Source;
 
 =head1 DESCRIPTION
 

@@ -21,7 +21,7 @@ L4P
 
 Log::Log4perl::init(\$l4pconf);
 
-my $cfg = Config::Data->new;
+my $cfg = Verby::Config::Data->new;
 %{ $cfg->data } = (
 	untar_dir => cwd,
 );

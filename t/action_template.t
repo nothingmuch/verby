@@ -9,7 +9,7 @@ use Test::Exception;
 
 use File::Temp qw/tempfile/;
 use File::Spec;
-use Config::Data;
+use Verby::Config::Data;
 
 my $m; BEGIN { use_ok($m = "Verby::Action::Template") };
 
@@ -19,7 +19,7 @@ foo='[% c.foo() %]'
 ding ding ding
 TMPL
 
-my $c = Config::Data->new;
+my $c = Verby::Config::Data->new;
 %{ $c->data } = (
 	template => \$template,
 	logger => Test::MockObject->new,

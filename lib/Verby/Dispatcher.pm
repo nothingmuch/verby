@@ -296,9 +296,9 @@ Makefile.
 =head1 SYNOPSIS
 
 	use Verby::Dispatcher;
-	use Config::Data; # or something equiv
+	use Verby::Config::Data; # or something equiv
 
-	my $c = Config::Data->new(); # ... needs the "logger" field set
+	my $c = Verby::Config::Data->new(); # ... needs the "logger" field set
 
 	my $d = Verby::Dispatcher->new;
 	$d->config_hub($c);
@@ -339,7 +339,7 @@ L<Algorithm::Dependency::Objects::Ordered>. Subclass if you don't like it.
 
 =item config_hub ?$new_config_hub
 
-A setter getter for the L<Config::Data> (or compatible) object from which we
+A setter getter for the L<Verby::Config::Data> (or compatible) object from which we
 will derive the global context, and it's sub-contexts.
 
 =item global_context

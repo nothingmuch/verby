@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 
-package Config::Hub;
+package Verby::Config::Hub;
 use Module::Pluggable (
 	sub_name => "sources",
-	search_path => ["Config::Source"],
+	search_path => ["Verby::Config::Source"],
 	instantiate => "new",
 );
 
@@ -28,11 +28,11 @@ __END__
 
 =head1 NAME
 
-Config::Hub - 
+Verby::Config::Hub - 
 
 =head1 SYNOPSIS
 
-	use Config::Hub;
+	use Verby::Config::Hub;
 
 =head1 DESCRIPTION
 

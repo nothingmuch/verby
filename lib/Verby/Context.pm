@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 package Verby::Context;
-use base qw/Config::Data::Mutable/;
+use base qw/Verby::Config::Data::Mutable/;
 
 use strict;
 use warnings;
@@ -53,7 +53,7 @@ A context has two roles in L<Verby>. The first is to control what a
 L<Verby::Action> will do, by providing it with parameters, and the other is to
 share variables that the action sets, so that other steps may have them too.
 
-It is a mutable L<Config::Data> that derives from the global context.
+It is a mutable L<Verby::Config::Data> that derives from the global context.
 
 =head1 EXAMPLE USAGE
 

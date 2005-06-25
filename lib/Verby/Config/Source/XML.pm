@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-package Config::Source::XML;
+package Verby::Config::Source::XML;
 
 use strict;
 use warnings;
@@ -19,7 +19,7 @@ sub load {
     my ($self, $file) = @_;
     (-e $file && -f $file)
         || croak "Bad config file '$file' either it doesn't exist or it's not a file";    
-    my $handler = Config::Source::XML::SAX::Handler->new();
+    my $handler = Verby::Config::Source::XML::SAX::Handler->new();
     my $p = XML::SAX::ParserFactory->parser(Handler => $handler);
     $p->parse_uri($file);
     $self->{_config} = $handler->config();
@@ -27,7 +27,7 @@ sub load {
 
 sub config { (shift)->{_config} }
 
-package Config::Source::XML::SAX::Handler;
+package Verby::Config::Source::XML::SAX::Handler;
 
 use strict;
 use warnings;
@@ -223,11 +223,11 @@ __END__
 
 =head1 NAME
 
-Config::Source::XML - 
+Verby::Config::Source::XML - 
 
 =head1 SYNOPSIS
 
-	use Config::Source::XML;
+	use Verby::Config::Source::XML;
 
 =head1 DESCRIPTION
 

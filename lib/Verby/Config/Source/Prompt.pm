@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-package Config::Source::Prompt;
-use base qw/Config::Source/;
+package Verby::Config::Source::Prompt;
+use base qw/Verby::Config::Source/;
 
 use strict;
 use warnings;
@@ -49,11 +49,11 @@ __END__
 
 =head1 NAME
 
-Config::Source::Prompt - 
+Verby::Config::Source::Prompt - 
 
 =head1 SYNOPSIS
 
-	use Config::Source::Prompt;
+	use Verby::Config::Source::Prompt;
 
 =head1 DESCRIPTION
 

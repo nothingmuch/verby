@@ -7,7 +7,7 @@ die "usage: $0 path/to/datafiles/*.{csv,txt}" unless @ARGV;
 
 use Verby::Step::Mysql::LoadDataFile;
 use Verby::Dispatcher;
-use Config::Data;
+use Verby::Config::Data;
 use File::Basename;
 use File::Spec;
 use DBI;
@@ -20,7 +20,7 @@ my $l4pconf = <<L4P;
 L4P
 Log::Log4perl::init(\$l4pconf);
 
-my $cfg = Config::Data->new;
+my $cfg = Verby::Config::Data->new;
 $cfg->data->{dbh} = DBI->connect("dbi:mysql:test");
 
 my $d = Verby::Dispatcher->new;

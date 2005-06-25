@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-package Config::Source::ARGV;
-use base qw/Config::Data/;
+package Verby::Config::Source::ARGV;
+use base qw/Verby::Config::Data/;
 
 use strict;
 use warnings;
@@ -25,14 +25,14 @@ __END__
 
 =head1 NAME
 
-Config::Source::ARGV - L<Config::Data> fields from the command line
+Verby::Config::Source::ARGV - L<Verby::Config::Data> fields from the command line
 
 =head1 SYNOPSIS
 
-	use Config::Source::ARGV;
+	use Verby::Config::Source::ARGV;
 
-	my $argv = Config::Source::ARGV->new
-	my $config_hub = Config::Data->new($argv, $other_source);
+	my $argv = Verby::Config::Source::ARGV->new
+	my $config_hub = Verby::Config::Data->new($argv, $other_source);
 
 Use a field
 

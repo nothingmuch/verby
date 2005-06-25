@@ -7,25 +7,11 @@ use Test::More no_plan => 1;
 
 BEGIN {
 
-    # Log/Log4perl/Layout/SimpleLayout
-    use_ok('Log::Log4perl::Layout::SimpleLayout::Multiline');
-
-    # Config
-    use_ok('Config::Data');
-    use_ok('Config::Hub');
-    use_ok('Config::Source');
-
-        # Config/Source
-        use_ok('Config::Source::ARGV');
-        use_ok('Config::Source::XML');
-
-        # Config/Data
-        use_ok('Config::Data::Mutable');
 
     # Verby
-    use_ok('Verby::Dispatcher');    
     use_ok('Verby::Action');
     use_ok('Verby::Context');
+    use_ok('Verby::Dispatcher');
     use_ok('Verby::Step');
 
         # Verby/Step
@@ -34,6 +20,20 @@ BEGIN {
 
             # Verby/Step/Mysql
             use_ok('Verby::Step::Mysql::LoadDataFile');
+
+        # Verby/Config
+        use_ok('Verby::Config::Data');
+        use_ok('Verby::Config::Hub');
+        use_ok('Verby::Config::Interpreter');
+        use_ok('Verby::Config::Source');
+
+            # Verby/Config/Source
+            use_ok('Verby::Config::Source::ARGV');
+            use_ok('Verby::Config::Source::Prompt');
+            use_ok('Verby::Config::Source::XML');
+
+            # Verby/Config/Data
+            use_ok('Verby::Config::Data::Mutable');
 
         # Verby/Action
         use_ok('Verby::Action::AnalyzeDataFile');
@@ -58,6 +58,28 @@ BEGIN {
                 use_ok('Verby::Action::Mysql::CreateTable::Demographics');
                 use_ok('Verby::Action::Mysql::CreateTable::Hewitt');
                 use_ok('Verby::Action::Mysql::CreateTable::Results');
+
+    # Mysql
+
+        # Mysql/Table
+        use_ok('Mysql::Table::MetaData');
+
+    # Log
+
+        # Log/Log4perl
+
+            # Log/Log4perl/Layout
+
+                # Log/Log4perl/Layout/SimpleLayout
+                use_ok('Log::Log4perl::Layout::SimpleLayout::Multiline');
+
+    # Algorithm
+
+        # Algorithm/Dependency
+        use_ok('Algorithm::Dependency::Objects');
+
+            # Algorithm/Dependency/Objects
+            use_ok('Algorithm::Dependency::Objects::Ordered');
 
 };
 

@@ -10,7 +10,7 @@ use Test::Deep;
 use Test::MockObject;
 use List::MoreUtils qw/uniq/;
 
-use Config::Data;
+use Verby::Config::Data;
 
 my $m; BEGIN { use_ok($m = "Verby::Dispatcher") };
 
@@ -27,7 +27,7 @@ $_->mock(do => sub { push @log, shift }) for @items;
 
 isa_ok(my $d = $m->new, $m);
 
-my $cfg = Config::Data->new;
+my $cfg = Verby::Config::Data->new;
 $cfg->data->{logger} = Test::MockObject->new;
 $d->config_hub($cfg);
 

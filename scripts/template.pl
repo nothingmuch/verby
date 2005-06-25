@@ -4,7 +4,7 @@ use File::Temp qw/tempdir/;
 
 use Verby::Dispatcher;
 use Verby::Step::Closure qw/step/;
-use Config::Data;
+use Verby::Config::Data;
 use File::Basename;
 
 my $l4pconf = <<L4P;
@@ -15,7 +15,7 @@ my $l4pconf = <<L4P;
 L4P
 Log::Log4perl::init(\$l4pconf);
 
-my $cfg = Config::Data->new;
+my $cfg = Verby::Config::Data->new;
 %{ $cfg->data } = (
 	project_root => my $out_dir = tempdir(CLEANUP => 1),
 	company_name => "Beer rocks!",
