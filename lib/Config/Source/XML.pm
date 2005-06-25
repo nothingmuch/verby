@@ -118,9 +118,16 @@ sub _get_all_values {
     my ($self, $el) = @_;
     return map {
             my ($key) = /^\{\}(.*)$/;
-            ($key => $el->{Attributes}->{$_}->{Value})
+			my $value = $el->{Attributes}->{$_}->{Value};
+			$value =~ s/\$(\{\w+\}|\w+)/$self->_fetch_config_var($1)/e;
+            ($key => $value)
         }
         keys %{$el->{Attributes}};        
+}
+
+sub _fetch_config_var {
+	my ($self, $var) = @_;
+	$self->{_config}{conf}{$var};
 }
 
 ## <config> utility functions
