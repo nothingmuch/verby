@@ -6,6 +6,8 @@ use base qw/Config::Data/;
 use strict;
 use warnings;
 
+use Carp qw/croak/;
+
 sub set {
 	my $self = shift;
 	my $field = shift;
@@ -24,7 +26,7 @@ sub export {
 			$parent->set($field, $value);
 		}
 	} else {
-		die "key $field does not exist in $self";
+		croak "key $field does not exist in $self";
 	}
 }
 

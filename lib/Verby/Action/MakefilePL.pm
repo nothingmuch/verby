@@ -8,15 +8,20 @@ use warnings;
 
 use File::Spec;
 
-sub do {
+sub start {
 	my $self = shift;
 	my $c = shift;
 
 	my $wd = $c->workdir;
 
-	$self->run($c, [qw/perl Makefile.PL/], undef, sub { chdir $wd });
+	$self->cmd_start($c, [qw/perl Makefile.PL/], undef, sub { chdir $wd });
+}
 
-	$self->confirm($c);
+sub finish {
+	my $self = shift;
+	my $c = shift;
+
+	$self->SUPER::finish($c);
 }
 
 sub log_extra {

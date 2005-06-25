@@ -8,10 +8,13 @@ use warnings;
 
 use Archive::Tar;
 use File::Spec;
+use Sub::Override;
 
 sub start {
 	my $self = shift;
 	my $c = shift;
+
+	my $o = $self->_override_tar_error($c);
 
 	my $tarball = $c->tarball;
 	my $dest = $c->dest;
@@ -52,11 +55,14 @@ sub verify {
 	my $self = shift;
 	my $c = shift;
 
+	my $o = $self->_override_tar_error($c);
+
 	my $dest = $c->dest;
 
 	my $tar_root;
 
 	my $i;
+
 	foreach my $file (Archive::Tar->list_archive($c->tarball)){
 		$tar_root ||= (File::Spec->splitdir($file))[0];
 		unless (-e File::Spec->catfile($dest, $file)){
@@ -69,6 +75,13 @@ sub verify {
 	$c->src_dir(File::Spec->catdir($dest, $tar_root));
 
 	return 1;
+}
+
+sub _override_tar_error {
+	my $self = shift;
+	my $c = shift;
+
+	Sub::Override->new("Archive::Tar::_error" => sub { $c->logger->logdie(caller() . ": $_[1]") });
 }
 
 __PACKAGE__
