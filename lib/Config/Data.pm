@@ -66,7 +66,7 @@ sub extract {
 sub exists {
 	my $self = shift;
 	my $key = shift;
-	exists $self->{data}{$key};
+	$self->{data}{$key} || exists $self->{data}{$key}; # XXX workaround for Tie::Memoize
 }
 
 sub search {

@@ -10,12 +10,14 @@ use Tie::Memoize;
 
 sub new {
 	my $pkg = shift;
-	tie my %data, 'Tie::Memoize', sub { $pkg->extract(shift) };
 
-	bless { data => \%data }, $pkg;
+	my $self;
+	tie my %data, 'Tie::Memoize', sub { $self->get_key(shift) };
+
+	$self = bless { data => \%data }, $pkg;
 }
 
-sub extract {
+sub query {
 	die "subclass should extract keys from real config source";
 }
 
