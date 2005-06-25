@@ -1,0 +1,97 @@
+00000001Premier					
+00000002	US				
+00000003		Division A			
+31001130			BU 1		
+31000605			BU 2		
+31008603			BU 3		
+00000004		Division B			
+31008003			BU 1		
+00000005		Division C			
+00000006			BU 1		
+00000007				Department 1	
+31009908					Cost Center 1
+00000008			BU 2		
+00000009				Department 1	
+31009903					Cost Center 1
+31009902					Cost Center 2
+00000010				Department 2	
+31009906					Cost Center 1
+00000011				Department 3	
+31002001					Cost Center 1
+00000012				Department 4	
+31009905					Cost Center 1
+31009912					Cost Center 2
+31009907					Cost Center 3
+31000610					Cost Center 4
+31002741					Cost Center 5
+31000408					Cost Center 6
+31018900					Cost Center 7
+00000013				Department 5	
+31003234					Cost Center 1
+00000014			BU 3		
+00000015				Department 1	
+31003232					Cost Center 1
+00000016				Department 2	
+31003230					Cost Center 1
+00000017				Department 3	
+31000440					Cost Center 1
+31009961					Cost Center 2
+31009960					Cost Center 3
+00000018			BU 4		
+31000775				Department 1	
+00000019			BU 5		
+00000020				Department 1	
+31002034					Cost Center 1
+31000430					Cost Center 2
+00000021				Department 2	
+31002032					Cost Center 1
+00000022				Department 3	
+31002031					Cost Center 1
+31002038					Cost Center 2
+31009811					Cost Center 3
+00000023				Department 4	
+31010600					Cost Center 1
+31002040					Cost Center 2
+31262100					Cost Center 3
+31010605					Cost Center 4
+31018910					Cost Center 5
+00000150	Asia				
+00000151		Division A			
+60114060			BU 1		
+60314060			BU 2		
+00000152		Division B			
+60054360			BU 1		
+60324060			BU 2
+00000153		Division C	
+60014360			BU 1
+60344060			BU 2
+00000154	Canada		
+00000155		Division A	
+70007906			BU 1
+00000156		Division B	
+70017902			BU 1
+00000157		Division C	
+70037911			BU 1
+00000159	South America		
+00000160		Division A	
+00000161		Division B	
+00000162		Division C	
+00000163	Europe		
+00000164		Division A		
+00000165			BU 1	
+62008630				Department 1
+00000166			BU 2	
+62000602				Department 1
+00000170		Division B		
+00000171			BU 1	
+00000172			BU 2	
+00000173			BU 3	
+00000183		Division C		
+00000184			BU 1	
+62059801				Department 1
+62059802				Department 2
+62059803				Department 3
+00000223	HR			
+00000224	Information Systems			
+00000225	Marketing
+00000226	Sales

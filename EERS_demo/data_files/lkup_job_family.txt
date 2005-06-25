@@ -1,0 +1,53 @@
+1	Accountants
+2	Accounts Payable/Receivable
+3	Aides
+4	Analyst
+5	Attorney
+6	Auditors
+7	Bldg/Grounds Maint/Engineering
+8	Buyers
+9	Carpenters/Painters
+10	Project Managers
+11	Chef/Cooks/Bakers
+12	Clerical-General
+13	Clerical-Specialized
+14	Coding
+15	Computer Operator
+16	Computer Technical
+17	Counselor
+18	Credentialing
+19	Credit/Collection
+20	Data Management
+21	Driver/Courier
+22	Executive
+23	Generalist
+24	Guards
+25	Insurance, Billing, Adjustment
+26	Sales-West
+27	Sales-East
+28	Sales-North
+29	Management
+30	Sales-South
+31	Sales-Europe
+32	Sales-Asia
+33	Sales-South
+34	Sales-Canada
+35	Sales-Executive
+36	Programmer
+37	Programmer/Analyst
+38	Reception/Switchboard
+39	Supervisor
+40	Sales
+41	Scheduling
+42	Secretary-Administrative
+43	Secretary-Exective
+44	Secretary-Legal
+45	Secretary-Sales
+46	Specialist-Administrative
+47	Specialist-Technical
+48	HR
+49	Six Sigma
+50	Technologist
+51	Plant Manager
+52	Training/Educator
+53	Distribution
