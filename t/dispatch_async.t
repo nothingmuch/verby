@@ -29,6 +29,8 @@ my $cfg = Config::Data->new;
 $cfg->data->{logger} = Test::MockObject->new;
 $d->config_hub($cfg);
 
+$cfg->logger->set_true($_) for qw/info debug/;
+
 can_ok($d, "add_step");
 $d->add_step($_) for @items;
 

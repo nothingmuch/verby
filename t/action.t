@@ -3,8 +3,9 @@
 use strict;
 use warnings;
 
-use Test::More tests => 12;
+use Test::More tests => 13;
 use Test::Exception;
+use Test::MockObject;
 
 my $m;
 BEGIN { use_ok($m = "Action") };
@@ -31,11 +32,24 @@ my @args;
 
 my $o = My::Action->new;
 
-lives_ok { $o->confirm("foo") } "confirm when verified";
-is_deeply(\@args, [ [ $o, "foo" ] ], "confirm proxied args");
+my $logger = Test::MockObject->new;
+$logger->mock(logdie => sub { shift; die "@_" });
+
+my $foo = Test::MockObject->new;
+$foo->set_always(logger => $logger);
+$foo->set_false("error");
+lives_ok { $o->confirm($foo) } "confirm when verified";
+is_deeply(\@args, [ [ $o, $foo ] ], "confirm proxied args");
+
+$logger->clear;
 
 $v = 0;
 @args = ();
-dies_ok { $o->confirm("bar") } "confirm when verification failed";
-is_deeply(\@args, [ [ $o, "bar" ] ], "confirm proxied args");
+my $bar = Test::MockObject->new;
+$bar->set_always(logger => $logger);
+$bar->set_false("error");
+dies_ok { $o->confirm($bar) } "confirm when verification failed";
+is_deeply(\@args, [ [ $o, $bar ] ], "confirm proxied args");
+
+$logger->called_ok("logdie");
 

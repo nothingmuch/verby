@@ -1,13 +1,10 @@
 #!/usr/bin/perl
 
 package Action::Make;
-use base qw/Action/;
+use base qw/Action::RunCmd/;
 
 use strict;
 use warnings;
-
-use IPC::Run qw/run/;
-use Fatal qw/run/;
 
 sub do {
 	my $self = shift;
@@ -16,11 +13,16 @@ sub do {
 	my $wd = $c->workdir;
 	my @targets = (($c->target || ()), @{ $c->targets || [] });
 
-	$c->logger->note("running make @targets in $wd");
+	my ($out, $err) = $self->run($c, [qw/make -C/, $wd, @targets]);
 
-	run [qw/make -C/, $wd, @targets], \(my ($in, $out, $err));
+	chomp($out) and $c->logger->info("test output:\n$out") if "@targets" eq "test";
+}
 
-	print "$out" if "@targets" eq "test";
+sub log_extra {
+	my $self = shift;
+	my $c = shift;
+
+	" in " . $c->workdir;
 }
 
 sub verify { undef }; # make does this kind of behavior for us

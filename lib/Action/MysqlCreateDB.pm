@@ -14,7 +14,7 @@ sub do {
 
 	my $dbh = $c->dbh;
 	
-	$c->logger->note("creating database in $dbh");
+	$c->logger->info("creating database in $dbh");
 
 	{
 		local $dbh->{RaiseError} = 1;

@@ -51,11 +51,8 @@ sub do_all {
 
 	my $global_context = $self->global_context;
 
-	$global_context->logger(Log::Log4perl->get_logger("EERS::Installer"))
-		unless $global_context->logger;
-	
 	foreach my $step ($self->ordered_steps){
-		$self->start_step($step, $global_context);
+		$self->start_step($step);
 	}
 
 	$self->wait_all;
@@ -82,17 +79,21 @@ sub dep_engine_class {
 sub start_step {
 	my $self = shift;
 	my $step = shift;
-	my $context = shift;
-	
-	my $new_cxt = $context->derive;
+
+	my $g_cxt = $self->global_context;
+	my $new_cxt = $g_cxt->derive;
+
+	$g_cxt->logger->info("starting step $step");
 
 	# FIXME should be able to place a limit on the running set, akin to make -j N
 	$self->wait_all;
 
 	if ($step->can("start") and $step->can("finish")){
+		$g_cxt->logger->debug("$step is async");
 		$step->start($new_cxt);
 		$self->mark_running($step, $new_cxt)
 	} else {
+		$g_cxt->logger->debug("$step is sync");
 		$step->do($new_cxt);
 		$self->satisfied_set->insert($step);
 	}
@@ -101,6 +102,8 @@ sub start_step {
 sub wait_all {
 	my $self = shift;
 	# finish all running tasks
+
+	$self->global_context->logger->info("waiting for all running steps");
 
 	my $satisfied = $self->satisfied_set;
 	

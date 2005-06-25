@@ -3,26 +3,27 @@
 use strict;
 use warnings;
 
+use Log::Log4perl qw/:easy/;
+
 use Cwd;
 use List::Util qw/shuffle/;
 
 use Step::Closure qw/step/;
 use Dispatcher;
 
-{
-	package Blurter;
-	sub AUTOLOAD {
-		our $AUTOLOAD =~ /::([^:]+)$/;
-		shift;
-		warn "$1: @_\n";
-	}
-}
+my $l4pconf = <<L4P;
+	log4perl.rootLogger 			= INFO, term
+
+	log4perl.appender.term			= Log::Log4perl::Appender::ScreenColoredLevels
+	log4perl.appender.term.layout	= Log::Log4perl::Layout::SimpleLayout::Multiline
+L4P
+
+Log::Log4perl::init(\$l4pconf);
 
 my $cfg = Config::Data->new;
 %{ $cfg->data } = (
 	untar_dir => cwd,
 	tarball => shift,
-	logger => "Blurter",
 );
 
 my $mkdir = step "Action::MkPath" => sub {

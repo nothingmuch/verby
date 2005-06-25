@@ -34,13 +34,13 @@ $dbh_dsns->mock(do => sub {
 	$self->do(@_);
 });
 
-my $logger = Test::MockObject->new;
-$logger->set_true("note");
-
 my $c = Hash::AsObject->new;
-$c->logger($logger);
 $c->dbh($dbh_dsns);
 $c->db_name("foo");
+$c->logger(my $logger = Test::MockObject->new);
+
+$logger->set_true("info");
+$logger->mock(logdie => sub { shift; die "@_" });
 
 isa_ok(my $a = $m->new, $m);
 
@@ -54,7 +54,7 @@ $c->db_name("bar");
 ok(!$a->verify($c), "db bar does not exist");
 dies_ok { $a->confirm($c) } "confirm dies";
 
-ok(!$logger->called("note"), "no log message noted yet");
+ok(!$logger->called("info"), "no log message yet");
 
 my $history = $dbh->{mock_all_history};
 is(@$history, 0, "no history yet");
@@ -70,5 +70,5 @@ is($sth->bound_params->[0], "bar", "bound param was 'bar'");
 ok($a->verify($c), "db bar now exists");
 lives_ok { $a->confirm($c) } "confirm lives";
 
-$logger->called_ok("note");
+$logger->called_ok("info");
 

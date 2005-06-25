@@ -24,8 +24,9 @@ sub confirm {
 	my $self = shift;
 	my $cxt = shift;
 	$self->verify($cxt, @_) or
-		die "verification of $self failed: "
-		. ($cxt->error || "error unknown");
+		$cxt->logger->logdie(
+			"verification of $self failed: "
+			. ($cxt->error || "error unknown"));
 }
 
 __PACKAGE__

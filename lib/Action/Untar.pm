@@ -9,25 +9,41 @@ use warnings;
 use Archive::Tar;
 use File::Spec;
 
-sub do {
+sub start {
 	my $self = shift;
 	my $c = shift;
 
 	my $tarball = $c->tarball;
 	my $dest = $c->dest;
 
-	$c->logger->note("unpacking '$tarball' into '$dest'");
-
 	# we're forking due to the chdir
-	die "couldn't fork: $!" unless defined(my $pid = fork);
+	defined(my $pid = fork)
+		or $c->logger->logdie("couldn't fork: $!");
 	
 	if ($pid){
-		waitpid $pid, 0;
+		$c->pid($pid);
 	} else {
+		$c->logger->info("unpacking '$tarball' into '$dest'");
 		chdir $dest;
-		Archive::Tar->extract_archive($tarball);
-		exit;
+		Archive::Tar->extract_archive($tarball)
+			or $c->logger->logdie("Archive::Tar->extract_archive did not return a true value");
+		exit 0;
 	}
+}
+
+sub finish {
+	my $self = shift;
+	my $c = shift;
+
+	my $pid = $c->pid;
+
+	$c->logger->debug("waiting for pid $pid");
+	
+	waitpid $pid, 0 or $c->logger->logdie("couldn't wait for $pid: $!");
+
+	my $exit = ($? & 0xff);
+	my $level = ($exit ? "warn" : "info");
+	$c->logger->$level("$pid exited with status $exit");
 
 	$self->confirm($c);
 }

@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 16;
+use Test::More tests => 17;
 use Test::MockObject;
 use Test::Exception;
 
@@ -16,7 +16,12 @@ my $m; BEGIN { use_ok($m = "Action::MkPath") }
 my $dir = tempdir(CLEANUP => 1);
 
 my $c = Test::MockObject->new;
+$c->set_false("error");
 $c->set_always(path => my $target = File::Spec->catdir($dir, qw/some nested dir/));
+$c->set_always(logger => my $logger = Test::MockObject->new);
+
+$logger->set_true("info");
+$logger->mock(logdie => sub { shift; die "@_" });
 
 isa_ok(my $a = $m->new, $m);
 
@@ -54,4 +59,6 @@ dies_ok { $b->do($c) } "can't do";
 dies_ok { $b->confirm($c) } "can't confirm";
 
 close $fh;
+
+$logger->called_ok("info");
 

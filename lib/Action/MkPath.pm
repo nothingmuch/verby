@@ -7,7 +7,6 @@ use strict;
 use warnings;
 
 use File::Path qw/mkpath/;
-use Fatal qw/mkpath/;
 
 sub do {
 	my $self = shift;
@@ -15,8 +14,9 @@ sub do {
 
 	my $path = $c->path;
 
-	$c->logger->note(sprintf "creating path '$path'");
-	mkpath($path);
+	$c->logger->info("creating path '$path'");
+	mkpath($path)
+		or $c->logger->logdie("couldn't mkpath('$path'): $!");
 
 	$self->confirm($c);
 }

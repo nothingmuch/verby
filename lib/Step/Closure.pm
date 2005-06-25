@@ -7,6 +7,7 @@ use strict;
 use warnings;
 
 use UNIVERSAL::require;
+use overload '""' => 'stringify';
 
 use Carp qw/croak/;
 
@@ -45,16 +46,38 @@ sub do {
 	$self->_wrapped("do", @_);
 }
 
+sub start {
+	my $self = shift;
+	$self->_wrapped("start", @_);
+}
+
+sub finish {
+	my $self = shift;
+	$self->_wrapped("finish", @_);
+}
+
+sub can {
+	my $self = shift;
+	my $method = shift;
+
+	# only claim we can start/finish if our action can
+	if ($method eq "start" or $method eq "finish"){
+		$self->action->can($method) and $self->SUPER::can($method);
+	} else {
+		$self->SUPER::can($method);
+	}
+}
+
 sub _wrapped {
 	my $self = shift;
 	my $action_method = shift;
 
 	my $sub = $self->code;
-	$self->$sub(@_);
+	$self->$sub(@_) unless $action_method eq "finish";
 
 	my $rv = $self->action->$action_method(@_);
 
-	if (my $post = $self->post){
+	if ($action_method ne "start" and my $post = $self->post){
 		$self->$post(@_);
 	}
 
@@ -71,6 +94,11 @@ sub step ($&;&) {
 	$step->action($action_class->new);
 
 	$step;
+}
+
+sub stringify {
+	my $self = shift;
+	ref $self->action || $self->action;
 }
 
 __PACKAGE__

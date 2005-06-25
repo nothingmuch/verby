@@ -1,13 +1,11 @@
 #!/usr/bin/perl
 
 package Action::MakefilePL;
-use base qw/Action/;
+use base qw/Action::RunCmd/;
 
 use strict;
 use warnings;
 
-use IPC::Run qw/run/;
-use Fatal qw/run/;
 use File::Spec;
 
 sub do {
@@ -16,13 +14,16 @@ sub do {
 
 	my $wd = $c->workdir;
 
-	$c->logger->note("running Makefile.PL in '$wd'");
-
-	run[qw/perl -e /, 'chdir shift; do "Makefile.PL" or die $!', $wd], \(my ($in, $out, $err));
-
-	warn "stderr: $err";
+	$self->run($c, [qw/perl Makefile.PL/], undef, sub { chdir $wd });
 
 	$self->confirm($c);
+}
+
+sub log_extra {
+	my $self = shift;
+	my $c = shift;
+
+	" in " . $c->workdir;
 }
 
 sub verify {
