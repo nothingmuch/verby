@@ -12,9 +12,9 @@ use File::Temp qw/tempdir/;
 		# IMHO /var/www is not much to type in the config, but a restriction on the templates
 
 		company_name => 'Employee Engagement Reporting System',
-		perl_module_namespace => 'Acme::Moose', # do we make a Moose.pm? I didn't really understand this part
+		perl_module_namespace => 'Acme::Moose',
 
-		project_url => '/premier', # is this for the apache conf?
+		project_url => '/premier',
 
 		dsn => ["dbi:mysql:premier", "premier", "premier.^789"], # used to make maple syroup.
 		svn_root => "svn://69.3.245.230/var/svn/infinity-work", # the base URL for the svn_co stuff below
@@ -23,17 +23,17 @@ use File::Temp qw/tempdir/;
 	
 	# just fed steight to LoadData
 	data => {
-		demographics => {
+		demographics => [
 			# includes proper name, i don't know where to put it though
 			# do they get written to a config file? or to a table?
-			'Age'           => 'lkup_age.csv',
-			'Ethnicity'     => 'lkup_ethnic_group.csv',
-			'FTE Status'    => 'lkup_fte_status.csv',
-			'Gender'        => 'lkup_gender.csv',
-			'Job Family'    => 'lkup_job_family.csv',
-			'Manager Level' => 'lkup_manager_level.csv',
-			'Organization'  => 'ogranization.tree', # the tree is implicitly flattenned by the load data step, it knows to depend on analyze file etc
-		},
+			{ proper_name => 'Age', file => 'lkup_age.csv' },
+			{ proper_name => 'Ethnicity', file => 'lkup_ethnic_group.csv' },
+			{ proper_name => 'FTE Status', file => 'lkup_fte_status.csv' },
+			{ proper_name => 'Gender', file => 'lkup_gender.csv' },
+			{ proper_name => 'Job Family', file => 'lkup_job_family.csv' },
+			{ proper_name => 'Manager Level', file => 'lkup_manager_level.csv' },
+			{ proper_name => 'Organization', file => 'ogranization.tree', table_name => 'lkup_org' }, # could make lkup_org.tree
+		],
 		tables => [
 			# data files without proper name are just loaded as is
 			qw/
@@ -45,15 +45,9 @@ use File::Temp qw/tempdir/;
 		],
 	},
 
-	# this layout has it's data distilled into a step dep tree:
-	# steps with nested children will be a dependedency of their children
-	# this is mostly useful for explicit steps, mostly doing mkpath ("dir" steps)
-	# the hash minus the 'type' key is passed to the constructor for the appropriate step
-	# which can then save that info in it's instance, or closure, and populate the context for the action in due time.
 	layout => [ # 'layout' is like sayingt { type => "dir", name => "project root", substeps => ... }
-		# a file system aware simplified step dependency tree
 		{ type => "dir", name => "htdocs", substeps => { # steps can nest, meaning that substeps depend on their parent
-			{ type => "copy", name => "static", source => "..." }, # i don't know what parameter you ment here
+			{ type => "copy", name => "static", source => "..." }, # probably should be svn_co
 			{ type => "copy", name => "images", source => "..." },
 			{ type => "copy", name => "javascript", source => "..." },
 			{ type => "copy", name => "css", source => "..." },
@@ -73,17 +67,17 @@ use File::Temp qw/tempdir/;
 
 		{ type => "dir", name => "conf", substeps => {
 			{ type => "template", template => "httpd.conf" }, # implicit 'out' param in pwd, httpd.conf searched in template root, relative to $0 perhaps
-			{ type => "template", template => "startup.pl" },
+			{ type => "template", template => "startup.pl", depends => "demographics" }, # depends looks up the steps created in any key by that name
 			{ type => "template", template => "startup.xml" },
 		}},
 
 		{ type => "dir", name => "perl", substeps => {
-		 	{ type => "template", template => "..." }, # this has to be the conversion of perl_module_namespace into a file path.
+		 	{ type => "perl_moduel", template => "main.pm", package_varname => "perl_module_namespace" },
 		}},
 
-		# I don't know where these will go based on sample.xml. Perhaps in the 'perl' dir?
-		{ type => "svn_co", name => "EERS", repo => "EERS/trunk" }
-		{ type => "svn_co", name => "perl", repo => "ii-framework/trunk/lib" }
-		{ type => "svn_co", name => "Premier", repo => "premier/trunk" }
-	]
+	],
+
+
+	{ type => "svn_co", name => "EERS", repo => "EERS/trunk" }
+	{ type => "svn_co", name => "perl", repo => "ii-framework/trunk/lib" }
 };
