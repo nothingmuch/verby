@@ -27,14 +27,12 @@ $d->config_hub($cfg);
 
 my $logger = Log::Log4perl::get_logger;
 
-$logger->info("Table prefix is $$");
-
 foreach my $file (grep { !/survey_results/ } @ARGV){
 	$logger->info("making steps for '$file'");
 	my $cxt_name = "cxt_" . (0+\$file);
 
 	my ($table_name, $path, $suffix) = fileparse($file, qr/\.(?:csv|txt|tree)/);
-	$table_name = join("_", $$, $table_name);
+	#$table_name = join("_", $$, $table_name);
 
 	my $steal_cxt = sub {
 		my $self = shift;
@@ -59,7 +57,9 @@ foreach my $file (grep { !/survey_results/ } @ARGV){
 	});
 
 	my $load = &step("Action::Mysql::LoadDataFile" => $steal_cxt);
-	my $create = &step("Action::Mysql::CreateTable::AdHoc" => $steal_cxt);
+
+	my $type = (($table_name =~ /hewitt_norms/) ? "Hewitt" : "Demographics");
+	my $create = &step("Action::Mysql::CreateTable::$type" => $steal_cxt);
 
 	$load->depends($create, $analyze);
 	$create->depends($analyze);
@@ -69,51 +69,3 @@ foreach my $file (grep { !/survey_results/ } @ARGV){
 
 $d->do_all;
 
-exit;
-
-{
-	package Action::Mysql::CreateTable::AdHoc;
-	use base qw/Action/;
-
-	use Data::Dumper;
-	
-	sub verify { undef }
-
-	sub do {
-		my $self = shift;
-		my $c = shift;
-
-		my $dbh = $c->dbh;
-		my $table_name = $c->table;
-
-		local $dbh->{PrintError} = 0;
-		local $dbh->{RaiseError} = 0;
-		local $dbh->{HandleError} = sub {
-			my $msg = shift;
-			$c->logger->warn($msg) unless $msg =~ /already exists/; # blah blah blah
-		};
-		
-		if ($table_name =~ /hewitt_norms/){
-			$c->logger->info("creating hewitt table");
-			$dbh->do(qq{
-				CREATE TABLE $table_name (
-					question_id MEDIUMINT UNSIGNED, 
-					scoretype_id TINYINT UNSIGNED,
-					score TINYINT UNSIGNED
-				);
-			});
-		} elsif ($c->columns == 2){
-			$c->logger->info("creating demographics table '$table_name'");
-			$dbh->do(qq{
-				CREATE TABLE $table_name (
-					id INT PRIMARY KEY,
-					description VARCHAR(255)
-				)
-			});
-		} else {
-			$c->logger->warn("Don't know how to create table: "
-			. Dumper({ map { $_ => $c->$_ } grep { !/^cxt_/ } keys %{ $c->data } }));
-		}
-	}
-
-}

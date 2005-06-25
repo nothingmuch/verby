@@ -32,6 +32,7 @@ sub do {
 	ATTEMPT: {
 		for my $local ("", "LOCAL"){
 			if (eval {
+				local $dbh->{RaiseError} = 1;
 				local $dbh->{HandleError} = sub { $c->logger->debug($_[0]); die $_[0] };
 				$dbh->prepare(qq{
 					LOAD DATA
@@ -43,10 +44,12 @@ sub do {
 			}){
 				$c->logger->info("Successfully loaded '$file', local=" . ($local ? 1 : 0));
 				last ATTEMPT;
-			};
+			} else {
+				$c->logger->debug("Couldn't execute SQL: $@");
+			}
 		}
 
-		$c->logger->logdie("Couldn't load '$file' into table '$table_name'");
+		$c->logger->logdie("Couldn't load '$file' into table '$table_name': " . ($dbh->errstr || ""));
 	}
 
 	$self->confirm($c);
@@ -76,7 +79,7 @@ sub verify {
 	$c->logger->logdie("schema of table '$table_name' doesn't match data file '$file'")
 		unless @{ $table_info->{columns} } == $c->columns;
 
-	return 1;
+	$table_info->{rows} > 0;
 }
 
 __PACKAGE__

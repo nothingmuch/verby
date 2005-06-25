@@ -86,14 +86,20 @@ sub start_step {
 	my $self = shift;
 	my $step = shift;
 
-	my $g_cxt = $self->global_context;
-	my $new_cxt = $g_cxt->derive;
-
-	$g_cxt->logger->debug("starting step $step");
-
 	# FIXME should be able to place a limit on the running set, akin to make -j N
 	$self->wait_all;
 
+	my $g_cxt = $self->global_context;
+	my $new_cxt = $g_cxt->derive;
+	
+	if ($step->is_satisfied($new_cxt)){
+		$g_cxt->logger->debug("step $step has been satisfied while it was waiting. Skipped.");
+		$self->satisfied_set->insert($step);
+		return;
+	}
+
+	$g_cxt->logger->debug("starting step $step");
+	
 	if ($step->can("start") and $step->can("finish")){
 		$g_cxt->logger->debug("$step is async");
 		$step->start($new_cxt);
