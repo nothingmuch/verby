@@ -13,7 +13,10 @@ sub do {
 	my $self = shift;
 	my $c = shift;
 
-	mkpath($c->path);
+	my $path = $c->path;
+
+	$c->logger->note(sprintf "creating path '$path'");
+	mkpath($path);
 
 	$self->confirm($c);
 }

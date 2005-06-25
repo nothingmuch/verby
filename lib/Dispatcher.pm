@@ -15,6 +15,8 @@ __PACKAGE__->mk_ro_accessors(
 	my @set_fields = qw/step_set running_set satisfied_set/
 );
 
+__PACKAGE__->mk_accessors(qw/config_hub/);
+
 sub new {
 	my $pkg = shift;
 	bless {
@@ -33,13 +35,20 @@ sub add_step {
 
 	$self->add_step($_) for $step->depends;
 	$steps->insert($step);
-	$satisfied->insert($step) if $step->is_satisfied;
+
+	my $context = $self->global_context->derive("Context");
+	$satisfied->insert($step) if $step->is_satisfied($context);
+}
+
+sub global_context {
+	my $self = shift;
+	$self->{global_context} ||= $self->config_hub->derive("Context");
 }
 
 sub do_all {
 	my $self = shift;
 
-	my $global_context = $self->config_hub->derive("Context");
+	my $global_context = $self->global_context;
 
 	$global_context->logger(Log::Log4perl->get_logger("EERS::Installer"))
 		unless $global_context->logger;
@@ -75,7 +84,7 @@ sub start_step {
 	my $context = shift;
 	
 	my $new_cxt = $context->derive;
-	
+
 	# FIXME should be able to place a limit on the running set, akin to make -j N
 	$self->wait_all;
 
@@ -107,13 +116,10 @@ sub steps {
 	$self->step_set->members;
 }
 
-sub config_hub {
-	die "not yet implemented";
-}
-
 sub is_satisfied {
 	my $self = shift;
 	my $step = shift;
+
 	croak "$step is not registered at all"
 		unless $self->step_set->contains($step);
 

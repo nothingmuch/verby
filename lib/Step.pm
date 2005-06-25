@@ -5,17 +5,18 @@ package Step;
 use strict;
 use warnings;
 
-use Scalar::Util qw/weaken/;
-
 sub new {
 	my $pkg = shift;
 	my $dispatcher = shift;
 
-	my $self = bless { dispatcher => $dispatcher }, $pkg;
-	weaken($self->{dispatcher});
+	my $self = bless { }, 
 }
 
 sub depends {
+	die "not implemented";
+}
+
+sub is_satisfied {
 	die "not implemented";
 }
 

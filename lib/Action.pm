@@ -5,17 +5,19 @@ package Action;
 use strict;
 use warnings;
 
+use Carp qw/longmess/;
+
 sub new {
 	my $pkg = shift;
 	bless {}, $pkg;
 }
 
 sub do {
-	die "not implemented";
+	die "do(@_) not implemented" . longmess;
 }
 
 sub verify {
-	die "not implemented";
+	die "verify(@_) not implemented" . longmess;
 }
 
 sub confirm {
