@@ -22,9 +22,15 @@ my $dbh_dsns = Test::MockObject::Extends->new($dbh);
 $dbh_dsns->set_always( data_sources => qw/dbi:Mock:foo/ );
 $dbh_dsns->mock(do => sub {
 	my $self = shift;
+
+	my ($sql, undef, $db_name) = @_;
 	
-	$self->set_list( data_sources => qw/dbi:Mock:foo dbi:Mock:bar/ );
-	$self->unmock("do");
+	if ($sql =~ /create database/i){
+		# if we are creating a DB, add it to the data sources, sort of.
+		$self->set_list( data_sources => $self->data_sources, "dbi:Mock:$db_name" );
+		# now our job is done, we can unmock
+		$self->unmock("do");
+	}
 	$self->do(@_);
 });
 
