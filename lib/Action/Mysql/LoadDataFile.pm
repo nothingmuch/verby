@@ -18,7 +18,11 @@ sub do {
 	my $table_name = $c->table;
 	my $file = $c->file;
 
-	local $dbh->{RaiseError} = 1;
+	# always logdie
+	local $dbh->{RaiseError} = 0;
+	local $dbh->{HandleError} = sub { $c->logger->logdie(shift) };
+
+	my @separators = $self->analyze_file($c);
 
 	$c->logger->info("Deleting table '$table_name'");
 	$dbh->do("delete from $table_name");
@@ -26,18 +30,19 @@ sub do {
 	ATTEMPT: {
 		for my $local ("", "LOCAL"){
 			if (eval {
+				local $dbh->{HandleError} = sub { $c->logger->debug($_[0]); die $_[0] };
 				$dbh->prepare(qq{
 					LOAD DATA
 						$local INFILE ?
 						INTO TABLE $table_name
 						FIELDS TERMINATED BY ?
 						LINES TERMINATED BY ?
-				})->execute($file, $self->analyze_file($c));
+				})->execute($file, @separators);
 			}){
 				$c->logger->info("Successfully loaded '$file', local=" . ($local ? 1 : 0));
 				last ATTEMPT;
 			} else {
-				$c->logger->warn("Couldn't load '$file', local=" . ($local ? 1 : 0));
+				$c->logger->warn("Couldn't load '$file', local=" . ($local ? 1 : 0) . ": $@");
 			}
 		}
 
@@ -54,7 +59,8 @@ sub analyze_file {
 	my $file = $c->file;
 
 	local $\ = \1024; # no need to read too much
-	open my $fh, "<", $file;
+	open my $fh, "<", $file
+		or $c->logger->logdie("Couldn't open file '$file': $!");
 
 	my ($field_sep, $line_sep);
 	local $_ = <$fh>;
@@ -62,11 +68,11 @@ sub analyze_file {
 
 	/(\015\012|[\r\n])/
 		? $line_sep = $1
-		: $c->logger->logdie("Can't guess line separator") unless defined $line_sep;
+		: $c->logger->logdie("Can't guess line separator");
 
 	/([\t,])/
 		? $field_sep = $1
-		: $c->logger->logdie("Can't guess field separator") unless defined $field_sep;
+		: $c->logger->logdie("Can't guess field separator");
 
 	return ($field_sep, $line_sep);
 }

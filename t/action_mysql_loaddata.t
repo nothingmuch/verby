@@ -15,7 +15,7 @@ use Fcntl qw/SEEK_SET/;
 use DBI;
 
 my $dbh;
-BEGIN { plan tests => 12, sub { $dbh = DBI->connect("dbi:mysql:test"); $dbh } }
+BEGIN { plan tests => 14, sub { $dbh = DBI->connect("dbi:mysql:test"); $dbh } }
 
 my $m;
 BEGIN { use_ok($m = "Action::Mysql::LoadDataFile") }
@@ -42,7 +42,8 @@ $c->set_always(table => "foo");
 $c->set_always(file => $tempfile);
 $c->set_always(logger => Test::MockObject->new);
 $c->logger->mock(logdie => sub { shift; die "@_" });
-$c->logger->set_true($_) for qw/info warn/;
+$c->logger->mock(warn => sub { shift; warn "@_" });
+$c->logger->set_true($_) for qw/info warn debug/;
 
 isa_ok(my $a = $m->new, $m);
 isa_ok($a, "Action");
@@ -80,5 +81,9 @@ cmp_deeply(
 	"data was loaded",
 );
 
-$dbh->do("drop table foo");
+$c->set_always(file => "/this/file/does_not/exist_at_alllll_NONONNO");
+dies_ok { $a->do($c) } "can't load if file doesn't exist";
 
+$c->set_always(file => $tempfile);
+$dbh->do("drop table foo");
+dies_ok { $a->do($c) } "can't load if table doesn't exist";
