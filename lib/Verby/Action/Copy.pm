@@ -46,11 +46,16 @@ __END__
 =head1 NAME
 
 Verby::Action::Copy - Action to copy a directory tree to from one location to
-another
+another using rsync.
 
 =head1 SYNOPSIS
 
-	use Verby::Action::Copy;
+	use Verby::Step::Closure qw/step/;
+	step "Verby::Action::Copy" => sub {
+		my ($self, $c) = @_;
+		$c->source("/path/to/copy/from");
+		$c->dest("/path/to/copy/to");
+	}
 
 =head1 DESCRIPTION
 
