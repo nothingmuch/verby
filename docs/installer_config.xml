@@ -31,7 +31,7 @@
     				<step type="load" proper_name='Manager Level', file='lkup_manager_level.csv' />
     				<step type="load" proper_name='Organization', file='organizations.tree' table_name='lkup_org' />
     		</step>
-    		</step id='tables'>
+    		<step id='tables'>
     				<!-- data files without proper name are just loaded as is -->
     				<step type="load" file="tbl_hewitt_norms.csv" />
     				<step type="load" file="tbl_questions.txt" />
@@ -41,17 +41,17 @@
     	</step>
 
     	<step id="project_layout" type="dir" path="/tmp/var/www">
-    		<step type="dir" name="$project_root">
-    			<step type="dir" name="htdocs">
-    				<step type="svn_co" name="static" repo="..." />
-    				<step type="svn_co" name="images" repo="..." />
-    				<step type="svn_co" name="javascript" repo="..." />
-    				<step type="svn_co" name="css" repo="..." />
-    				<step type="dir" name="pdfs" />
-    				<step type="dir" name="documents" />
+    		<step type="dir" path="$project_root">
+    			<step type="dir" path="htdocs">
+    				<step type="svn_co" path="static" repo="EERS/trunk/htdocs/static" />
+    				<step type="svn_co" path="images" repo="EERS/trunk/htdocs/images" />
+    				<step type="svn_co" path="javascript" repo="EERS/trunk/htdocs/javascript" />
+    				<step type="svn_co" path="css" repo="EERS/trunk/htdocs/css" />
+    				<step type="dir" path="pdfs" />
+    				<step type="dir" path="documents" />
     			</step>
 
-    			<step type="dir" name="t">
+    			<step type="dir" path="t">
     			    <!--
     				# here client name is interpolated by the XML parser, i think
     				# the interpretation of the config shouldn't have to do with the syntax it's written in
@@ -61,13 +61,13 @@
     				-->
     			</step>
 
-    			<step type="dir" name="database">
-    				<step type="copy" name="data" source="$data_dir" />
+    			<step type="dir" path="database">
+    				<step type="copy" path="data" source="$data_dir" />
                 </step>
 
-    			<step type="dir" name="csvdocs" />
+    			<step type="dir" path="csvdocs" />
 
-    			<step type="dir" name="conf">
+    			<step type="dir" path="conf">
     			    <!-- 
     			        implicit 'out' param in pwd, httpd.conf 
     			        searched in template root, relative to $0 perhaps 
@@ -77,13 +77,13 @@
     				<step type="template" template="startup.xml" />
     			</step>
 
-    			<step type="dir" name="perl">
+    			<step type="dir" path="perl">
     				<step type="perl_module" template="main.pm" package="$perl_module_namespace" />
     			</step>
     		</step>
 
-    		<step type="svn_co" name="EERS" repo="EERS/trunk" />
-    		<step type="svn_co" name="perl" repo="ii-framework/trunk/lib" />
+    		<step type="svn_co" path="EERS" repo="EERS/trunk" />
+    		<step type="svn_co" path="perl" repo="ii-framework/trunk/lib" />
     	</step>
 
     	<step type="test_run" depends="project_layout" />
