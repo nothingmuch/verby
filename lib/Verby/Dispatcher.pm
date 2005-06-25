@@ -9,8 +9,6 @@ package Verby::Dispatcher;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
-
 use Algorithm::Dependency::Objects::Ordered;
 use Set::Object;
 use Verby::Context;
