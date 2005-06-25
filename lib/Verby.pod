@@ -1,0 +1,155 @@
+=head1 NAME
+
+Verby - A framework for compositing and sequencing steps of execution.
+
+=head1 SYNOPSIS
+
+	use Verby::Dispatcher;
+	use Verby::Step::Closure qw/step/;
+
+	my $d = Verby::Dispatcher->new;
+
+	my $s = step "Verby::Action::Foo";
+
+	$d->add_step($s);
+
+	$d->do_all;
+
+=head1 DESCRIPTION
+
+L<Verby> was originally rewitten to implement the backend of an installer.
+
+An installer has two inputs, which are combined.
+
+The first is the user's configuration - the parameters to influence the
+installation, and the second is the sequence to install.
+
+L<Verby> provides concepts and a reusable implementation of the concepts to
+ease quick development of the combination of the two.
+
+=head1 CONFIGURATION
+
+This core concept discusses the way that user inputs are handed down to the
+execution sequence.
+
+=head1 Config Sources
+
+A config source is basically a key to value mapping.
+
+It's an object where you ask
+
+	$obj->key;
+
+and you get the value.
+
+If the object makes a query to the user, like displaying a prompt for a certain
+key, then the answer should be cached, as each key will probably be asked for
+about 3-5 times for each step.
+
+=head1 Config Hub
+
+A config hub is a union of several config sources. For example, a typical
+command line app would have three config sources:
+
+	my $args = Config::Source::ARGV->new; # foo --key=value
+	my $config_file = Config::Source::XML->new("config.xml");
+	my $conifg_prompt = Config::Source::Prompt; # last resort
+
+	my $config_hub = Config::Data->new($args, $config_file, $config_prompt);
+
+	$config_hub->key;
+
+The config hub is sort of like an aggregate config source. It will ask it's
+parents in order for the key, and the first one that can supply it will be
+delegated to.
+
+=head1 Context
+
+A context is like a lexical config, for each step.
+
+	my $context = $config_hub->derive;
+
+It is mutable:
+
+	$context->key("foo"); # set it
+
+It can be further derived
+
+	my $subcontext = $context->derive;
+	$subcontext->key; # "foo"
+
+It masks:
+
+	$subcontext->key("bar");
+	$subcontext->key; # "bar"
+	$context->key; # still "foo";
+
+And it can re-export:
+
+	$subcontext->export("key");
+	$context->key; # "bar" instead of "foo"
+
+...as long as it's parent is mutable:
+
+	$context->export("key"); # fatal error
+	# because $config_hub is not mutable
+
+It also provides a magic field:
+
+	my $l = $c->logger;
+
+Which returns a L<Log::Log4perl> logger, and tries to guess a proper namespace
+for the step/action asking for the it.
+
+=head1 EXECUTION
+
+The L<Verby> execution model is much like a C<Makefile>'s.
+
+There is a tree of dependant steps, which will all be executed when necessary
+and possible.
+
+By adding a step to a dispatcher, all it's dependencies are traversed and added
+too.
+
+Any step that is inserted is immediately asked whether it C<is_satisfied>.
+
+Subsequently L<Verby::Dispatcher/do_all> is called. Dependencies are resolved,
+and any step that has no dependencies, and has not yet claimed it's satisfied
+is executed.
+
+Every step gets it's own context to play around in. This context persists
+between invocations of all the methods.
+
+A step which C<provides_cxt> is a special case: Instead of deriving the global
+context generated for the whole run, an intermediate context is derived first,
+and then that step's context is derived from the intermediate one. Any step
+which depends on this step, will have it's context derived from the
+intermediate context too.
+
+=head1 STYLE GUIDE
+
+When writing actions to back steps up make sure they will fail properly. For
+example, missing fields in C<verify> might be due to the fact that some step
+did not export a necessary field yet. In this case C<verify> should just return
+false, and will be asked again in due time.
+
+An error, on the other hand, should be fatal. L<Verby> uses
+L<Log::Log4perl/logdie> to do this.
+
+Actions should be short and sweet, doing as little as possible. Remember that a
+step being a delegator for actions is not limited to using only one action, so
+if you need to combine procedures, still try to refactor them.
+
+Long running steps, especially ones which drive external processes, like ones
+using L<Verby::Action::RunCmd> should be asynchroneous. This allows
+non-interdependant steps to be executed in parallel.
+
+Actions should minimize partial side effects. Transactional behavior is desired
+for the incremental process to be robust. Ideally the C<do> part of an action
+will undo previous runs, and the C<verify> part will only be true if the side
+effect is marked as consistent. 
+
+Context fields should be exported from the verification stage, because
+sometimes a step will not be executed. If execution is necessary to figure out
+a field that may be exported, then verification should be false.
+
