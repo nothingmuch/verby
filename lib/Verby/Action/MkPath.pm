@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+u!/usr/bin/perl
 
 package Verby::Action::MkPath;
 use base qw/Verby::Action/;
@@ -42,7 +42,11 @@ Verby::Action::MkPath -
 
 =head1 SYNOPSIS
 
-	use Verby::Action::MkPath;
+	use Verby::Step::Closure qw/step/;
+	step "Verby::Action::MkPath" => sub {
+		my ($self, $c) = @_;
+		$c->path("/some/path/that/will/be/created");
+	}
 
 =head1 DESCRIPTION
 
