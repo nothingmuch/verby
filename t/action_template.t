@@ -13,7 +13,7 @@ use Config::Data;
 
 my $m; BEGIN { use_ok($m = "Action::Template") };
 
-my ($outfh, $outfile) = tempfile;
+my ($outfh, $outfile) = tempfile(UNLINK => 1);
 
 my $c = Config::Data->new;
 %{ $c->data } = (
