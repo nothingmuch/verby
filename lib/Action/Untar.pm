@@ -44,8 +44,7 @@ sub verify {
 	foreach my $file (Archive::Tar->list_archive($c->tarball)){
 		$tar_root ||= (File::Spec->splitdir($file))[0];
 		unless (-e File::Spec->catfile($dest, $file)){
-			my $level = $i ? "note" : "warn";
-			$c->logger->$level("file '$file' is missing from extracted directory");
+			$c->logger->warn("file '$file' is missing from extracted directory") if $i; # it's ok only for the first file to be missing
 			return undef;
 		}
 		$i++;
