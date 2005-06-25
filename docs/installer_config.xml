@@ -10,36 +10,29 @@
     		<password />
 		</database>    		
 		<svn_root>svn://69.3.245.230/var/svn/infinity-work</svn_root>
-		<!-- implies File::Spec->catdir(cwd(), "EERS_demo/data_files") -->
 		<data_dir>EERS_demo/data_files</data_dir> 
 		<template_dir>EERS_demo/templates</template_dir>
     </config>
-    
+ 
     <steps>
         <step id='data'>
-            <!-- this implies: substeps => [] -->
     		<step id='demographics'>
-    				<!-- 
-    				    includes proper name, i don't know where to put it though
-    				    do they get written to a config file? or to a table?
-    				-->
     				<step type="load" proper_name='Age' file='lkup_age.csv' />
-    				<step type="load" proper_name='Ethnicity', file='lkup_ethnic_group.csv' />
-    				<step type="load" proper_name='FTE Status', file='lkup_fte_status.csv' />
-    				<step type="load" proper_name='Gender', file='lkup_gender.csv' />
-    				<step type="load" proper_name='Job Family', file='lkup_job_family.txt' />
-    				<step type="load" proper_name='Manager Level', file='lkup_manager_level.csv' />
-    				<step type="load" proper_name='Organization', file='organizations.tree' table_name='lkup_org' />
+    				<step type="load" proper_name='Ethnicity' file='lkup_ethnic_group.csv' />
+    				<step type="load" proper_name='FTE Status' file='lkup_fte_status.csv' />
+    				<step type="load" proper_name='Gender' file='lkup_gender.csv' />
+    				<step type="load" proper_name='Job Family' file='lkup_job_family.txt' />
+    				<step type="load" proper_name='Manager Level' file='lkup_manager_level.csv' />
+    				<step type="load" proper_name='Organization' file='organizations.tree' table_name='lkup_org' />
     		</step>
     		<step id='tables'>
-    				<!-- data files without proper name are just loaded as is -->
     				<step type="load" file="tbl_hewitt_norms.csv" />
     				<step type="load" file="tbl_questions.txt" />
     				<step type="load" file_glob='tbl_survey_results_*.csv' />
     				<step type="load" file_glob='lkup_*_engagement_scores' />
             </step>
     	</step>
-
+    	   
     	<step id="project_layout" type="dir" path="/tmp/var/www">
     		<step type="dir" path="$project_root">
     			<step type="dir" path="htdocs">
@@ -52,13 +45,11 @@
     			</step>
 
     			<step type="dir" path="t">
-    			    <!--
     				# here client name is interpolated by the XML parser, i think
     				# the interpretation of the config shouldn't have to do with the syntax it's written in
     				#{ type => "template", template => "001_template_foo.t", output => "001_client_foo.t" },
     				#{ type => "template", template => "002_template_bar.t", output => "001_client_bar.t" },
     				#{ type => "template", template => "002_template_gorch.t", output => "001_client_gorch.t" },
-    				-->
     			</step>
 
     			<step type="dir" path="database">
@@ -68,10 +59,6 @@
     			<step type="dir" path="csvdocs" />
 
     			<step type="dir" path="conf">
-    			    <!-- 
-    			        implicit 'out' param in pwd, httpd.conf 
-    			        searched in template root, relative to $0 perhaps 
-    			    -->
     				<step type="template" template="httpd.conf" />
     				<step type="template" template="startup.pl" depends="demographics" />
     				<step type="template" template="startup.xml" />
@@ -87,5 +74,6 @@
     	</step>
 
     	<step type="test_run" depends="project_layout" />
-    </steps>  
+   	
+    </steps> 
 </installer>
