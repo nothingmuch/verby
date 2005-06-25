@@ -26,7 +26,7 @@ sub start {
 	if ($pid){
 		$c->pid($pid);
 	} else {
-		$c->logger->info("unpacking '$tarball' into '$dest'");
+		$c->logger->info("untarring '$tarball' into '$dest'");
 		chdir $dest;
 		Archive::Tar->extract_archive($tarball)
 			or $c->logger->logdie("Archive::Tar->extract_archive did not return a true value");
@@ -44,9 +44,9 @@ sub finish {
 	
 	waitpid $pid, 0 or $c->logger->logdie("couldn't wait for $pid: $!");
 
-	my $exit = ($? & 0xff);
+	my $exit = ($? >> 8);
 	my $level = ($exit ? "warn" : "info");
-	$c->logger->$level("$pid exited with status $exit");
+	$c->logger->$level("finished untarring " . $c->tarball . ": $pid exited with status $exit");
 
 	$self->confirm($c);
 }

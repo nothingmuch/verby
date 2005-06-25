@@ -86,7 +86,7 @@ sub cmd_finish {
 	$c->logger->info("finishing command '@{ $c->cmd_line }'");
 	
 	IPC::Run::finish($h)
-		or $c->logger->logdie("subcommand failed: \$!='$!'");
+		or $c->logger->logdie("subcommand '@{ $c->cmd_line }' failed with exit code $?");
 
 	my $out = ${ $c->stdout_ref };
 	my $err = ${ $c->stderr_ref };

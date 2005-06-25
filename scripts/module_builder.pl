@@ -30,7 +30,6 @@ my $d = Verby::Dispatcher->new;
 $d->config_hub($cfg);
 
 foreach my $tarball (@ARGV){
-	warn "creating steps for $tarball";
 	my $mkdir = step "Verby::Action::MkPath" => sub {
 		my $self = shift;
 		my $c = shift;
