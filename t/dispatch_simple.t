@@ -5,7 +5,7 @@ use warnings;
 
 use lib "t/lib";
 
-use Test::More tests => 20;
+use Test::More tests => 24;
 use Test::Deep;
 use Test::MockObject;
 use List::MoreUtils qw/uniq/;
@@ -41,6 +41,8 @@ cmp_deeply([ $d->satisfied_set->members ], [], "selected set contains no items")
 
 can_ok($d, "do_all");
 $d->do_all;
+
+ok($d->is_satisfied($_), "step satisfied") for @items;
 
 $_->called_ok("do") for @items;
 
