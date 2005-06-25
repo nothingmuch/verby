@@ -17,13 +17,6 @@ sub start {
 	$self->cmd_start($c, [qw/perl Makefile.PL/], undef, sub { chdir $wd });
 }
 
-sub finish {
-	my $self = shift;
-	my $c = shift;
-
-	$self->SUPER::finish($c);
-}
-
 sub log_extra {
 	my $self = shift;
 	my $c = shift;
