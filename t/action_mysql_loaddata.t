@@ -16,10 +16,12 @@ use File::Temp qw/tempfile/;
 use Fcntl qw/SEEK_SET/;
 use File::stat;
 
-use DBI;
-
 my $dbh;
-BEGIN { plan tests => 15, sub { $dbh = DBI->connect("dbi:mysql:test"); $dbh } }
+BEGIN { plan tests => 15,
+	need_module("DBI"),
+	need_module("DBD::mysql"),
+	sub { $dbh = DBI->connect("dbi:mysql:test"); $dbh }, # try to connect
+}
 
 my $m;
 BEGIN { use_ok($m = "Verby::Action::Mysql::LoadDataFile") }

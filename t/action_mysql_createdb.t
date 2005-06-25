@@ -3,14 +3,20 @@
 use strict;
 use warnings;
 
-use Test::More 'tests' => 16;
+use Test::More;
+use Test::Plan;
 use Test::Exception;
 
-use DBI;
 use Test::MockObject;
 use Test::MockObject::Extends;
 use Hash::AsObject;
 use Sub::Override;
+
+BEGIN { plan tests => 16,
+	need_module("DBI"),
+	need_module("DBD::Mock"),
+	need_module("Sub::Override");
+}
 
 my $m; BEGIN { use_ok($m = "Verby::Action::MysqlCreateDB") }
 
