@@ -151,23 +151,21 @@ sub _config_start {
 	# '<foo><bar>blah</bar> more text </foo>' is illegal
 	defined and not ref and croak "Node can't contain both text and sub elements" for $self->{_current_node}[-1];
 
-	my $node;
 	# put the same node  both on the stack, *and* in the right place in the structure
 	# note that setting the last element on the stack will also set the thing in the structue, since we are aliasing
-	hv_store(%{ $self->{_current_node}[-1] }, $tag_name, $node);
-	av_push(@{ $self->{_current_node} }, $node);
+	my $node; # this is a new container
+	hv_store(%{ $self->{_current_node}[-1] }, $tag_name, $node); # the same contaner (not value) is put in both the hash
+	av_push(@{ $self->{_current_node} }, $node); # and the last node of the array
 }
 
 sub _config_end {
     my ($self, $tag_name) = @_;
-	# if we don't want undefs: $self->{_current_node}[-1] ||= '';
     pop @{$self->{_current_node}};
 }
 
 sub _config_characters {
     my ($self, $data) = @_;
-	# setting the last element will also set the current thing in the structure due to aliasing. See above
-	$self->{_current_node}->[-1] = $data;
+	$self->{_current_node}->[-1] = $data; # since we aliased the structure's node will also be set. See above
 }
 
 sub _config_cleanup {
