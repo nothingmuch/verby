@@ -61,15 +61,20 @@ sub finish {
 	$self->_wrapped("finish", @_);
 }
 
+sub pump {
+	my $self = shift;
+	$self->action->pump(@_);
+}
+
 sub can {
 	my $self = shift;
 	my $method = shift;
 
 	# only claim we can start/finish if our action can
-	if ($method eq "start" or $method eq "finish"){
-		$self->action->can($method) and $self->SUPER::can($method);
+	if ($method eq "start" or $method eq "finish" or $method eq "pump"){
+		return $self->action->can($method);
 	} else {
-		$self->SUPER::can($method);
+		return $self->SUPER::can($method);
 	}
 }
 

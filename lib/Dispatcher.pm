@@ -100,9 +100,11 @@ sub do_all {
 	my $satisfied = $self->satisfied_set;
 
 	while (@steps){
+		$self->pump_running;
+
 		push @free_steps, shift(@steps)->[0] while (@steps and $steps[0][1]->subset($satisfied));
 		@free_steps = sort { $a->can("start") ? ($b->can("start") ? 0 : -1) : 1 } @free_steps;
-
+		
 		if (@free_steps){
 			$self->start_step(shift @free_steps);
 		} else {
@@ -159,6 +161,20 @@ sub start_step {
 	}
 }
 
+sub pump_running {
+	my $self = shift;
+
+	foreach my $entry (@{ $self->{running_queue} }){
+		my ($step, $cxt) = @$entry;
+		next unless $step->can("pump");
+		
+		unless ($step->pump($cxt)){
+			$self->global_context->logger->debug("step '$step' has finished");
+			$self->wait_specific($entry);
+		}
+	}
+}
+
 sub wait_all {
 	my $self = shift;
 	# finish all running tasks
@@ -176,8 +192,29 @@ sub wait_one {
 	my $entry = $self->pop_running || return;
 	my ($step, $cxt) = @$entry;
 	$self->global_context->logger->debug("waiting for step '$step'");
+
+	$self->finish_step($step, $cxt);
+}
+
+sub wait_specific {
+	my $self = shift;
+
+	my $entry = shift;
+
+	my ($step, $cxt) = @$entry;
+	@{ $self->{running_queue} } = grep { $_ != $entry } @{ $self->{running_queue} };
+
+	$self->finish_step($step, $cxt);
+}
+
+sub finish_step {
+	my $self = shift;
+	my $step = shift;
+	my $cxt = shift;
+
 	$step->finish($cxt);
 	$self->satisfied_set->insert($step);
+	$self->running_set->remove($step);
 }
 
 sub _set_members_query {
@@ -215,18 +252,17 @@ sub pop_running {
 	my $step = shift;
 	my $cxt = shift;
 	my $entry = $self->pop_running_queue || return;
-	$self->running_set->remove($entry->[0]);
 	return $entry;
 }
 
 sub push_running_queue {
 	my $self = shift;
-	push @{ $self->{running_qeue} }, @_;
+	push @{ $self->{running_queue} }, @_;
 }
 
 sub pop_running_queue {
 	my $self = shift;
-	shift @{ $self->{running_qeue} };
+	shift @{ $self->{running_queue} };
 }
 
 sub is_satisfied {

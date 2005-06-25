@@ -50,6 +50,7 @@ sub cmd_start {
 	my $h = IPC::Run::start($cli, ($in || ()), ">", $out_arg, "2>", $err_arg, ($init ? (init => $init) : ()))
 		or $c->logger->logdie("subcommand '@$cli' could not be started: \$!='$!'");
 
+	$c->cmd_line($cli);
 	$c->cmd_handle($h);
 	$c->stdout_ref(\$out);
 	$c->stderr_ref(\$err);
@@ -64,11 +65,26 @@ sub finish {
 	$c->confirm($c);
 }
 
+sub pump {
+	my $self = shift;
+	my $c = shift;
+
+	my $h = $c->cmd_handle;
+
+	return unless $h->pumpable;
+
+	$h->pump_nb;
+	return 1;
+}
+
 sub cmd_finish {
 	my $self = shift;
 	my $c = shift;
 
 	my $h = $c->cmd_handle;
+
+	$c->logger->info("finishing command '@{ $c->cmd_line }'");
+	
 	IPC::Run::finish($h)
 		or $c->logger->logdie("subcommand failed: \$!='$!'");
 
