@@ -50,7 +50,7 @@ sub add_step {
 	my $satisfied = $self->satisfied_set;
 
 	foreach my $step (@_) {
-		return if $steps->includes($step);
+		next if $steps->includes($step);
 
 		$self->add_step($step->depends);
 
@@ -178,6 +178,8 @@ sub start_step {
 
 sub pump_running {
 	my $self = shift;
+
+	$self->global_context->logger->debug("pumping all running steps");
 
 	foreach my $step (@{ $self->{running_queue} }){
 		next unless $step->can("pump");
