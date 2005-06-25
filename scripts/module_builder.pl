@@ -3,6 +3,8 @@
 use strict;
 use warnings;
 
+our $VERSION = '0.01';
+
 use Log::Log4perl qw/:easy/;
 
 use Cwd;
@@ -134,5 +136,18 @@ Now we run make(1) again, but this time with the C<test> target.
 
 Since most actions are asynchroneous, modules will be built in parallel. Isn't
 that cool?
+
+=head1 AUTHOR
+
+Yuval Kogman, E<lt>nothingmuch@woobling.orgE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2005 by Infinity Interactive, Inc.
+
+L<http://www.iinteractive.com>
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself. 
 
 =cut
