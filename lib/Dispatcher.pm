@@ -9,15 +9,20 @@ use Algorithm::Dependency::Objects::Ordered;
 use Set::Object;
 use Context;
 use Carp qw/croak/;
+use Tie::RefHash;
 
 sub new {
 	my $pkg = shift;
+	tie my %cxt_of_step, "Tie::RefHash";
+	tie my %derivable_cxts, "Tie::RefHash";
 	bless {
-		step_set      => Set::Object->new,
-		running_set   => Set::Object->new,
-		satisfied_set => Set::Object->new,
-		running_queue => [],
-		config_hub    => undef
+		step_set       => Set::Object->new,
+		running_set    => Set::Object->new,
+		satisfied_set  => Set::Object->new,
+		cxt_of_step    => \%cxt_of_step,
+		derivable_cxts => \%derivable_cxts,
+		running_queue  => [],
+		config_hub     => undef
 	}, $pkg;
 }
 
@@ -45,7 +50,7 @@ sub add_step {
 	(my $logger = $self->global_context->logger)->debug("adding step $step");
 	$steps->insert($step);
 
-	my $context = $self->global_context->derive("Context");
+	my $context = $self->get_cxt($step);
 
 	if ($step->is_satisfied($context)) {
 		$logger->debug("step is already satisfied");
@@ -56,6 +61,32 @@ sub add_step {
 sub global_context {
 	my $self = shift;
 	$self->{global_context} ||= $self->config_hub->derive("Context");
+}
+
+sub get_cxt {
+	my $self = shift;
+	my $step = shift;
+
+	$self->{cxt_of_step}{$step} ||= Context->new($self->get_derivable_cxts($step));
+}
+
+sub get_derivable_cxts {
+	my $self = shift;
+	my $step = shift;
+
+	@{ $self->{derivable_cxts}{$step} ||= (
+		$step->provides_cxt
+			? [ Context->new($self->get_parent_cxts($step)) ]
+			: [ $self->get_parent_cxts($step) ]
+	)};
+}
+
+sub get_parent_cxts {
+	my $self = shift;
+	my $step = shift;
+
+	return $self->global_context unless $step->depends;
+	map { $self->get_derivable_cxts($_) } $step->depends;
 }
 
 sub do_all {
@@ -96,9 +127,10 @@ sub start_step {
 	$self->wait_all;
 
 	my $g_cxt = $self->global_context;
-	my $new_cxt = $g_cxt->derive;
+
+	my $cxt = $self->get_cxt($step);
 	
-	if ($step->is_satisfied($new_cxt)){
+	if ($step->is_satisfied($cxt)){
 		$g_cxt->logger->debug("step $step has been satisfied while it was waiting. Skipped.");
 		$self->satisfied_set->insert($step);
 		return;
@@ -108,11 +140,11 @@ sub start_step {
 	
 	if ($step->can("start") and $step->can("finish")){
 		$g_cxt->logger->debug("$step is async");
-		$step->start($new_cxt);
-		$self->mark_running($step, $new_cxt)
+		$step->start($cxt);
+		$self->mark_running($step, $cxt)
 	} else {
 		$g_cxt->logger->debug("$step is sync");
-		$step->do($new_cxt);
+		$step->do($cxt);
 		$self->satisfied_set->insert($step);
 	}
 }

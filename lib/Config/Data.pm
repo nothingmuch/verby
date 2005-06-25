@@ -6,21 +6,18 @@ use strict;
 use warnings;
 
 use Scalar::Util qw/weaken/;
-use Tie::HashDefaults;
+use List::MoreUtils qw/uniq/;
 use Carp qw/croak/;
 
 sub new {
 	my $pkg = shift;
-	my $parent = shift;
 
-	my $self = bless {}, $pkg;
+	my $self = bless {
+		data => {},
+		parents => [ uniq @_ ],
+	}, $pkg;
 
-	if ($parent) {
-		$self->{parent} = $parent;
-		weaken($self->{parent});
-		tie my %data, "Tie::HashDefaults", $parent->data;
-		$self->{data} = \%data;
-	} else { $self->{data} = {} };
+	weaken($_) for @{ $self->{parents} };
 
 	$self;
 }
@@ -57,7 +54,33 @@ sub set {
 sub get {
 	my $self = shift;
 	my $key = shift;
+	($self->search($key) || return)->extract($key);
+}
+
+sub extract {
+	my $self = shift;
+	my $key = shift;
 	$self->{data}{$key};
+}
+
+sub exists {
+	my $self = shift;
+	my $key = shift;
+	exists $self->{data}{$key};
+}
+
+sub search {
+	my $self = shift;
+	my $key = shift;
+
+	my @candidates = ($self);
+	while (@candidates) {
+		my @providers = grep { $_->exists($key) } @candidates;
+		return $providers[0] if @providers == 1;
+		@candidates = uniq map { $_->parents } @candidates;
+	}
+
+	return;
 }
 
 sub derive {
@@ -71,9 +94,9 @@ sub data {
 	$self->{data};
 }
 
-sub parent {
+sub parents {
 	my $self = shift;
-	$self->{parent};
+	@{ $self->{parents} };
 }
 
 __PACKAGE__

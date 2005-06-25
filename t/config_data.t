@@ -28,8 +28,8 @@ is($p->foo, $p->get("foo"), "get('foo') is the same as ->foo");
 can_ok($p, "derive");
 isa_ok(my $c = $p->derive, $m);
 
-can_ok($c, "parent");
-is($c->parent, $p, "c->parent is correct");
+can_ok($c, "parents");
+is_deeply([ $c->parents ], [$p], "c->parents is correct");
 
 is($c->foo, $p->foo, "child inherits parents values");
 

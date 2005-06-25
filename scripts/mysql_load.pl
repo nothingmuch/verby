@@ -37,14 +37,6 @@ foreach my $file (@ARGV){
 	my $cxt_name = "cxt_" . (0+\$file);
 
 	my ($table_name, $path, $suffix) = fileparse($file, qr/\.(?:csv|txt|tree)/);
-	#$table_name = join("_", $$, $table_name);
-
-	my $steal_cxt = sub {
-		my $self = shift;
-		my $c = shift;
-
-		(tied %{ $c->data })->[1] = (tied %{ $c->$cxt_name->data })->[1];
-	};
 
 	my $flatten;
 	if ($file =~ /\.tree$/){
@@ -63,22 +55,13 @@ foreach my $file (@ARGV){
 	}
 	
 	my $analyze = step("Action::AnalyzeDataFile" => sub {
-		my $self = shift;
-		my $c = shift;
-
-		$c->file($file);
-		$c->table($table_name);
+		$_[1]->file($file);
 	}, sub {
-		# reexport the actual context... see above
-		my $self = shift;
-		my $c = shift;
-		$c->$cxt_name($c);
-		$c->export($cxt_name);
+		$_[1]->export_all;
 	});
 
+	$analyze->provides_cxt(1);
 	$analyze->depends($flatten || ());;
-
-	my $load = &step("Action::Mysql::LoadDataFile" => $steal_cxt);
 
 	my $type;
 	for ($table_name){
@@ -86,7 +69,13 @@ foreach my $file (@ARGV){
 		$type = "Results" if /survey_results/;
 		$type ||= "Demographics";
 	}
-	my $create = &step("Action::Mysql::CreateTable::$type" => $steal_cxt);
+	my $create = step "Action::Mysql::CreateTable::$type" => sub {
+		$_[1]->table($table_name);
+		$_[1]->export("table");
+	};
+	$create->provides_cxt(1);
+	
+	my $load = step "Action::Mysql::LoadDataFile";
 
 	if ($table_name =~ /survey_results/){
 		push @create_results, $create;

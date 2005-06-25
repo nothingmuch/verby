@@ -16,6 +16,7 @@ foreach my $s ([0, 2], [0, 1], [2], [0, 1, 2], [0], [1]){ # not quite random. No
 	my $n = do { my %s; @s{@$s} = (); [ grep { not exists $s{$_} } 0 .. 3 ] }; # the inverse of $s
 
 	my @items = map { Test::MockObject->new } 1 .. 4;
+	$_->set_always(provides_cxt => undef) for @items;
 	$_->set_always(is_satisfied => undef) for @items[@$n];
 	$_->set_always(is_satisfied => 1) for @items[@$s];
 	$_->set_list(depends => ()) for @items;

@@ -20,6 +20,10 @@ sub is_satisfied {
 	die "not implemented";
 }
 
+sub provides_cxt {
+	undef;
+}
+
 __PACKAGE__
 
 __END__

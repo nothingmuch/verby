@@ -18,8 +18,21 @@ sub export {
 	my $self = shift;
 	my $field = shift;
 
-	my $parent = $self->parent;
-	$parent->set($field, $self->$field);
+	if ($self->exists($field)){
+		my $value = $self->extract($field);
+		foreach my $parent ($self->parents){
+			$parent->set($field, $value);
+		}
+	} else {
+		die "key $field does not exist in $self";
+	}
+}
+
+sub export_all {
+	my $self = shift;
+	foreach my $field (keys %{ $self->{data} }){
+		$self->export($field);
+	}
 }
 
 __PACKAGE__

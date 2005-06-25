@@ -13,7 +13,9 @@ my $m;
 BEGIN { use_ok($m = "Dispatcher") }
 
 my @items = map { Test::MockObject->new } 1 .. 4;
-$_->set_always(is_satisfied => undef) for @items;
+foreach my $meth (qw/is_satisfied provides_cxt/){
+	$_->set_always($meth => undef) for @items;
+}
 $_->set_list(depends => ()) for @items;
 $items[1]->set_list(depends => @items[0, 2]);
 $items[3]->set_list(depends => ($items[1]));
