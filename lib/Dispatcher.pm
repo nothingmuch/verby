@@ -42,24 +42,30 @@ sub config_hub {
 
 sub add_step {
 	my $self = shift;
-	my $step = shift;
 
-	my $steps = $self->step_set;
-	my $satisfied = $self->satisfied_set;
+	foreach my $step (@_) {
+		my $steps = $self->step_set;
+		my $satisfied = $self->satisfied_set;
 
-	return if $steps->includes($step);
+		return if $steps->includes($step);
 
-	$self->add_step($_) for $step->depends;
+		$self->add_step($_) for $step->depends;
 
-	(my $logger = $self->global_context->logger)->debug("adding step $step");
-	$steps->insert($step);
+		(my $logger = $self->global_context->logger)->debug("adding step $step");
+		$steps->insert($step);
 
-	my $context = $self->get_cxt($step);
+		my $context = $self->get_cxt($step);
 
-	if ($step->is_satisfied($context)) {
-		$logger->debug("Step '$step' is already satisfied");
-		$satisfied->insert($step);
+		if ($step->is_satisfied($context)) {
+			$logger->debug("Step '$step' is already satisfied");
+			$satisfied->insert($step);
+		}
 	}
+}
+
+sub add_steps {
+	my $self = shift;
+	$self->add_step(@_);
 }
 
 sub global_context {
@@ -289,12 +295,64 @@ __END__
 
 =head1 NAME
 
-Dispatcher - 
+Dispatcher - Takes steps and executes them. Sort of like what make(1) is to a
+Makefile.
 
 =head1 SYNOPSIS
 
 	use Dispatcher;
+	use Config::Data; # or something equiv
+
+	my $c = Config::Data->new(); # ... needs the "logger" field set
+
+	my $d = Dispatcher->new;
+	$d->config_hub($c);
+
+	$d->add_steps(@steps);
+
+	$d->do_all;
 
 =head1 DESCRIPTION
+
+
+=head1 METHODS
+
+=over 4
+
+=item new
+
+Returns a new L<Dispatcher>. Duh!
+
+=item add_steps *@steps
+
+=item add_step *@steps
+
+Add a number of steps into the dispatcher pool.
+
+Anything returned from L<Step/depends> is aggregated recursively here, and
+added into the batch too.
+
+=item do_all
+
+Calculate all the dependencies using L<Algorithm::Dependency::Objects>, and
+then dispatch in order.
+
+=item dep_engine_class
+
+The class used to instantiate the dependecy resolver. Defaults to
+L<Algorithm::Dependency::Objects::Ordered>. Subclass if you don't like it.
+
+=item config_hub ?$new_config_hub
+
+A setter getter for the L<Config::Data> (or compatible) object from which we
+will derive the global context, and it's sub-contexts.
+
+=item global_context
+
+Returns the global context for the dispatcher.
+
+If necessary derives a context from L</config_hub>.
+
+=back
 
 =cut
