@@ -32,7 +32,7 @@ Verby - A framework for compositing and sequencing steps of execution.
 
 =head1 DESCRIPTION
 
-L<Verby> was originally rewitten to implement the backend of an installer.
+L<Verby> was originally written to implement the backend of an installer.
 
 An installer conceptually has two inputs, which are combined to get the job
 done.
