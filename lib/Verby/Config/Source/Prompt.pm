@@ -1,12 +1,14 @@
 #!/usr/bin/perl
 
 package Verby::Config::Source::Prompt;
-use base qw/Verby::Config::Source/;
 
 use strict;
 use warnings;
+use Moose;
 
 our $VERSION = '0.01';
+
+extends 'Verby::Config::Source';
 
 sub new {
 	my $pkg = shift;

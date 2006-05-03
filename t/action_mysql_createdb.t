@@ -13,6 +13,7 @@ use Hash::AsObject;
 use Sub::Override;
 
 BEGIN { plan tests => 16,
+    need_module("Verby::Action::MysqlCreateDB");
 	need_module("DBI"),
 	need_module("DBD::Mock"),
 	need_module("Sub::Override");

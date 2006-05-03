@@ -1,17 +1,18 @@
 #!/usr/bin/perl
 
 package Verby::Step::Closure;
-use base qw/Verby::Step/;
 
 use strict;
 use warnings;
+use Moose;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
+
+extends 'Verby::Step';
 
 use overload '""' => 'stringify';
 
 use UNIVERSAL::require;
-use Scalar::Util qw/blessed/;
 use Carp qw/croak/;
 
 # stevan hates Exporter, so this is not a bug ;-)
@@ -22,54 +23,24 @@ sub import {
     *{ (caller())[0] . "::step"} = \&step if $_[0] eq 'step';
 }
 
-# he also hates Class::Accessor, so don't tell him I left this in
-#__PACKAGE__->mk_accessors(qw/action depends pre post provides_cxt/);
-# shhh, don't tell Yuval I took out his Class::Accessor stuff
+has 'depends'      => (default => sub { [] });
+has 'pre'          => (is => 'rw', required => 1);
+has 'post'         => (is => 'rw', required => 1);
+has 'action'       => (is => 'rw');
+has 'provides_cxt' => (is => 'rw');
 
 sub new {
 	my $pkg = shift;
 	my $pre = shift;
 	my $post = shift;
 
-	my $self = bless {
-		depends => [],
-		pre => $pre,
-		post => $post,
-		action => undef,
-		provides_cxt => undef,
-	}, $pkg;
-
-	$self;
+    $pkg->SUPER::new(pre => $pre, post => $post);
 }
 
 sub depends {
     my ($self, @depends) = @_;
     $self->{depends} = [ @depends ] if scalar @depends;
     @{$self->{depends}};
-}
-
-sub action {
-    my $self = shift;
-    $self->{action} = shift if @_;
-    $self->{action};
-}
-
-sub pre {
-    my $self = shift;
-    $self->{pre} = shift if @_;
-    $self->{pre};
-}
-
-sub post {
-    my $self = shift;
-    $self->{post} = shift if @_;
-    $self->{post};
-}
-
-sub provides_cxt {
-    my $self = shift;
-    $self->{provides_cxt} = shift if @_;
-    $self->{provides_cxt};
 }
 
 sub add_deps {
@@ -79,6 +50,8 @@ sub add_deps {
 
 sub get {
 	my $self = shift;
+	# NOTE:
+	# there is no SUPER::get??
 	my $rv = $self->SUPER::get(@_);
 
 	(ref $rv eq "ARRAY") ? @$rv : $rv;
@@ -87,7 +60,8 @@ sub get {
 sub set {
 	my $self = shift;
 	my $key = $_[0];
-
+	# NOTE:
+	# there is no SUPER::get??
 	$self->SUPER::set(@_);
 }
 
@@ -123,7 +97,8 @@ sub can {
 	# only claim we can start/finish if our action can
 	if ($method eq "start" or $method eq "finish" or $method eq "pump"){
 		return $self->action->can($method);
-	} else {
+	} 
+	else {
 		return $self->SUPER::can($method);
 	}
 }
