@@ -12,7 +12,7 @@ extends 'Verby::Step';
 
 use overload '""' => 'stringify';
 
-use UNIVERSAL::require;
+use Class::Inspector;
 use Carp qw/croak/;
 
 # stevan hates Exporter, so this is not a bug ;-)
@@ -126,10 +126,11 @@ sub step ($;&&) {
 	my $step = Verby::Step::Closure->new(@_);
 
 	unless (blessed $action){
-		unless ($action->can("new")){
-			$action->require
-				or die "Couldn't require $action: $UNIVERSAL::require::ERROR";
+		unless (Class::Inspector->loaded($action)) {
+            (my $file = "${action}.pm") =~ s{::}{/}g;
+            require $file;
 		}
+
 		$action = $action->new;
 	}
 
