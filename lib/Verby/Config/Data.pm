@@ -4,24 +4,23 @@ package Verby::Config::Data;
 
 use strict;
 use warnings;
-use Moose;
 
-our $VERSION = '0.02';
+our $VERSION = '0.01';
 
 use Scalar::Util qw/weaken/;
 use List::MoreUtils qw/uniq/;
 use Carp qw/croak/;
 
-has 'data'    => (is => 'ro', isa => 'HashRef',  default => sub { {} });
-has 'parents' => (isa => 'ArrayRef');
-
 sub new {
 	my $pkg = shift;
 
-	my $self = $pkg->SUPER::new(
-	    parents => [ uniq @_ ]
-	);
-	weaken($_) for $self->parents;
+	my $self = bless {
+		data => {},
+		parents => [ uniq @_ ],
+	}, $pkg;
+
+	weaken($_) for @{ $self->{parents} };
+
 	$self;
 }
 
@@ -63,13 +62,13 @@ sub get {
 sub extract {
 	my $self = shift;
 	my $key = shift;
-	$self->data->{$key};
+	$self->{data}{$key};
 }
 
 sub exists {
 	my $self = shift;
 	my $key = shift;
-	$self->data->{$key} || exists $self->data->{$key}; # XXX workaround for Tie::Memoize
+	$self->{data}{$key} || exists $self->{data}{$key}; # XXX workaround for Tie::Memoize
 }
 
 sub search {
@@ -90,6 +89,11 @@ sub derive {
 	my $self = shift;
 	my $class = shift || ref $self;
 	$class->new($self);
+}
+
+sub data {
+	my $self = shift;
+	$self->{data};
 }
 
 sub parents {

@@ -4,9 +4,15 @@ package Verby::Step;
 
 use strict;
 use warnings;
-use Moose;
 
-our $VERSION = '0.02';
+our $VERSION = '0.01';
+
+sub new {
+	my $pkg = shift;
+	my $dispatcher = shift;
+
+	my $self = bless { }, 
+}
 
 sub depends {
 	die "not implemented";

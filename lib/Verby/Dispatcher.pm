@@ -8,7 +8,6 @@ package Verby::Dispatcher;
 
 use strict;
 use warnings;
-use Moose;
 
 use Algorithm::Dependency::Objects::Ordered;
 use Set::Object;
@@ -17,27 +16,32 @@ use Carp qw/croak/;
 use Tie::RefHash;
 require overload;
 
-our $VERSION = '0.02';
+our $VERSION = 0.01;
 
-has 'step_set'       => (is => 'ro', isa => 'Set::Object', default => sub { Set::Object->new });
-has 'running_set'    => (is => 'ro', isa => 'Set::Object', default => sub { Set::Object->new });                                   
-has 'satisfied_set'  => (is => 'ro', isa => 'Set::Object', default => sub { Set::Object->new });    
-has 'running_queue'  => (is => 'ro', isa => 'ArrayRef',    default => sub { [] });
-has 'config_hub'     => (is => 'rw');
-has 'global_context' => (is => 'ro', lazy => 1, default => sub {
-                            my $self = shift;
-                            $self->config_hub->derive("Verby::Context");
-                        });
-has 'cxt_of_step'    => (is => 'ro', 
-                         default => sub {  
-                             tie my %cxt_of_step, "Tie::RefHash";
-                             \%cxt_of_step;
-                        });
-has 'derivable_cxts' => (is => 'ro', 
-                         default => sub {  
-                             tie my %derivable_cxts, "Tie::RefHash";
-                             \%derivable_cxts;
-                        });                                    
+sub new {
+	my $pkg = shift;
+	tie my %cxt_of_step, "Tie::RefHash";
+	tie my %derivable_cxts, "Tie::RefHash";
+	bless {
+		step_set       => Set::Object->new,
+		running_set    => Set::Object->new,
+		satisfied_set  => Set::Object->new,
+		cxt_of_step    => \%cxt_of_step,
+		derivable_cxts => \%derivable_cxts,
+		running_queue  => [],
+		config_hub     => undef
+	}, $pkg;
+}
+
+sub step_set      { (shift)->{step_set}      }
+sub running_set   { (shift)->{running_set}   }
+sub satisfied_set { (shift)->{satisfied_set} }
+
+sub config_hub {
+    my $self = shift;
+    $self->{config_hub} = shift if @_;
+    $self->{config_hub};
+}
 
 sub add_step {
 	my $self = shift;
@@ -65,6 +69,11 @@ sub add_step {
 sub add_steps {
 	my $self = shift;
 	$self->add_step(@_);
+}
+
+sub global_context {
+	my $self = shift;
+	$self->{global_context} ||= $self->config_hub->derive("Verby::Context");
 }
 
 sub get_cxt {
@@ -255,12 +264,12 @@ sub is_running {
 
 sub push_running {
 	my $self = shift;
-	push @{ $self->running_queue }, @_;
+	push @{ $self->{running_queue} }, @_;
 }
 
 sub pop_running {
 	my $self = shift;
-	shift @{ $self->running_queue };
+	shift @{ $self->{running_queue} };
 }
 
 sub is_satisfied {

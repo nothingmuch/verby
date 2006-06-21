@@ -1,14 +1,12 @@
 #!/usr/bin/perl
 
 package Verby::Config::Source;
+use base qw/Verby::Config::Data/;
 
 use strict;
 use warnings;
-use Moose;
 
 our $VERSION = '0.01';
-
-extends 'Verby::Config::Data';
 
 use Tie::Memoize;
 

@@ -4,11 +4,15 @@ package Verby::Action;
 
 use strict;
 use warnings;
-use Moose;
 
 our $VERSION = '0.01';
 
 use Carp qw/longmess/;
+
+sub new {
+	my $pkg = shift;
+	bless {}, $pkg;
+}
 
 sub do {
 	die "do(@_) not implemented" . longmess;

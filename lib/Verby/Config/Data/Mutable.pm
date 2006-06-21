@@ -1,14 +1,12 @@
 #!/usr/bin/perl
 
 package Verby::Config::Data::Mutable;
+use base qw/Verby::Config::Data/;
 
 use strict;
 use warnings;
-use Moose;
 
-our $VERSION = '0.02';
-
-extends 'Verby::Config::Data';
+our $VERSION = '0.01';
 
 use Carp qw/croak/;
 
