@@ -20,7 +20,7 @@ my $dbh;
 BEGIN { plan tests => 15,
 	need_module("DBI"),
 	need_module("DBD::mysql"),
-	sub { $dbh = DBI->connect("dbi:mysql:test"); $dbh }, # try to connect
+	sub { $dbh = eval { DBI->connect("dbi:mysql:test") } }, # try to connect
 }
 
 my $m;
