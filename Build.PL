@@ -9,7 +9,7 @@ Module::Build->new(
 	dist_version_from => 'lib/Verby/Dispatcher.pm',
 	license => 'perl',
 	requires => {
-		'perl'                           => '>= 5.008',
+		'perl'                           => '5.008',
 		'Set::Object'                    => 0,
 		'Log::Log4perl'                  => 0,
 		'Algorithm::Dependency::Objects' => 0,
