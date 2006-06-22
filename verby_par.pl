@@ -1,12 +1,19 @@
 #!/usr/bin/perl
 
 # usage:
-# perl -Ilib  verby_par.pl -o module_builder examples/module_builder.pl 
+# perl -Ilib  verby_par.pl @opts $input_script $output_exe
+#
+# creates $output_exe and $output_exe.par
+# you can use 'pp -P -o $output_exe $output_exe.par' on a different platform as long as the .xs modules are installed on that machine
+# or drop the -P to not rely on a perl installation at all
+#
+# note that this will try to parse 'step "Verby::Action::Moose"' lines and add them to -M
 
 use strict;
 use warnings;
 
-my $script = pop @ARGV;
+my $output = pop @ARGV or die "You must supply an output file";
+my $script = pop @ARGV or die "You must supply an input script";;
 
 open my $fh, "<", $script or die "can't open($script): $!";
 
@@ -21,6 +28,7 @@ close $fh;
 warn join("\n", "Bundling extra modules (from step 'Foo' syntax):", map { "- $_" } @extra) . "\n";
 
 $ENV{PERL5LIB} = join(":", @INC);
-exec(qw/pp -P -x/, (map { ("-M", $_) } @extra), @ARGV, $script );
 
+system(qw/pp -d -p -x -v -z 9/, -o => "${output}.par", (map { ("-M", $_) } @extra), @ARGV, $script ) && die "error during .par archive creation";
+system(qw/pp -P/, -o => $output, "${output}.par") && die "error during executable creation";
 
