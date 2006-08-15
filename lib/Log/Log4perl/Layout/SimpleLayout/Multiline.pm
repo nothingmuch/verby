@@ -6,8 +6,6 @@ use base qw/Log::Log4perl::Layout::SimpleLayout/;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
-
 sub render {
 	my $self = shift;
 	my $output = $self->SUPER::render(@_);
@@ -28,7 +26,8 @@ __END__
 
 =head1 NAME
 
-Log::Log4perl::Layout::SimpleLayout::Multiline - 
+Log::Log4perl::Layout::SimpleLayout::Multiline - A subclass of SimpleLayout
+that looks nicer when there are new lines in messages.
 
 =head1 SYNOPSIS
 

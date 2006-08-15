@@ -1,12 +1,9 @@
 #!/usr/bin/perl
 
 package Verby::Action::Template;
-use base qw/Verby::Action/;
+use Moose;
 
-use strict;
-use warnings;
-
-our $VERSION = '0.01';
+extends qw/Verby::Action/;
 
 use Template;
 use Template::Constants qw( :debug );

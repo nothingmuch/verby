@@ -1,18 +1,9 @@
 #!/usr/bin/perl
 
 package Verby::Step;
+use Moose;
 
-use strict;
-use warnings;
-
-our $VERSION = '0.01';
-
-sub new {
-	my $pkg = shift;
-	my $dispatcher = shift;
-
-	my $self = bless { }, 
-}
+# FIXME use Moose::Role
 
 sub depends {
 	die "not implemented";
@@ -39,9 +30,12 @@ L<Verby::Dispatcher>.
 
 =head1 SYNOPSIS
 
-	use base qw/Verby::Step/;
+	package MyStep;
+	use Moose;
 
-Or perhaps more appropriate
+	with qw/Verby::Step/;
+
+Or perhaps more easily using:
 
 	use Verby::Step::Closure qw/step/;
 	my $step = step "Some::Action",

@@ -1,18 +1,14 @@
 #!/usr/bin/perl
 
 package Verby::Action::Copy;
-use base qw/Verby::Action::RunCmd/;
+use Moose;
 
-use strict;
-use warnings;
-
-our $VERSION = '0.01';
+extends qw/Verby::Action::RunCmd/;
 
 use File::Rsync;
 
 sub start {
-	my $self = shift;
-	my $c = shift;
+	my ( $self, $c ) = @_;
 
 	my $source = $c->source;
 	my $dest = $c->dest;
@@ -26,8 +22,7 @@ sub start {
 }
 
 sub finish {
-	my $self = shift;
-	my $c = shift;
+	my ( $self, $c ) = @_;
 
 	$c->done(1);
 	$self->SUPER::finish($c);

@@ -1,12 +1,12 @@
 #!/usr/bin/perl
 
 package Verby::Context;
-use base qw/Verby::Config::Data::Mutable/;
+use Moose;
+
+extends qw/Verby::Config::Data::Mutable/;
 
 use strict;
 use warnings;
-
-our $VERSION = '0.01';
 
 use Log::Log4perl ();
 use Devel::Caller::Perl ();

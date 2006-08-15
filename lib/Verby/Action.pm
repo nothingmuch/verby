@@ -1,18 +1,9 @@
 #!/usr/bin/perl
 
 package Verby::Action;
-
-use strict;
-use warnings;
-
-our $VERSION = '0.01';
+use Moose;
 
 use Carp qw/longmess/;
-
-sub new {
-	my $pkg = shift;
-	bless {}, $pkg;
-}
 
 sub do {
 	die "do(@_) not implemented" . longmess;
@@ -43,7 +34,11 @@ Verby::Action - The baseclass for an action in Verby.
 
 =head1 SYNOPSIS
 
-	use base qw/Verby::Action/;
+	package MyAction;
+	use Moose;
+
+	with qw/Verby::Action/;
+
 	sub do { ... }
 	sub confirm { ... }
 

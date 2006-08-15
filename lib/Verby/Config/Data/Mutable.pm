@@ -1,26 +1,20 @@
 #!/usr/bin/perl
 
 package Verby::Config::Data::Mutable;
-use base qw/Verby::Config::Data/;
+use Moose;
 
-use strict;
-use warnings;
-
-our $VERSION = '0.01';
+extends qw/Verby::Config::Data/;
 
 use Carp qw/croak/;
 
 sub set {
-	my $self = shift;
-	my $field = shift;
-	my $value = shift;
+	my ( $self, $field, $value ) = @_;
 
-	$self->{data}{$field} = $value;
+	$self->data->{$field} = $value;
 }
 
 sub export {
-	my $self = shift;
-	my $field = shift;
+	my ( $self, $field ) = @_;
 
 	if ($self->exists($field)){
 		my $value = $self->extract($field);
@@ -34,7 +28,7 @@ sub export {
 
 sub export_all {
 	my $self = shift;
-	foreach my $field (keys %{ $self->{data} }){
+	foreach my $field (keys %{ $self->data }){
 		$self->export($field);
 	}
 }

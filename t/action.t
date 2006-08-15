@@ -25,7 +25,9 @@ my $v = 1;
 my @args;
 {
 	package My::Action;
-	use base qw/Verby::Action/;
+	use Moose;
+
+	extends qw/Verby::Action/;
 
 	sub verify { push @args, [ @_ ]; $v }
 }

@@ -1,10 +1,9 @@
 #!/usr/bin/perl
 
 package Verby::Action::Mysql::CreateDB;
-use base qw/Verby::Action/;
+use Moose;
 
-use strict;
-use warnings;
+extends qw/Verby::Action/;
 
 use DBI;
 

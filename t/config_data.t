@@ -39,7 +39,9 @@ is($p->foo, "value", "parent unchanged");
 
 {
 	package Config::Foo;
-	use base qw/Verby::Config::Data/;
+	use Moose;
+
+	extends qw/Verby::Config::Data/;
 }
 
 isa_ok(my $o = $c->derive("Config::Foo"), $m);

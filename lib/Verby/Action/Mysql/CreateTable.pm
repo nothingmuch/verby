@@ -1,12 +1,9 @@
 #!/usr/bin/perl
 
 package Verby::Action::Mysql::CreateTable;
-use base qw/Verby::Action::Mysql::DoSql/;
+use Moose;
 
-use strict;
-use warnings;
-
-our $VERSION = '0.01';
+extends qw/Verby::Action::Mysql::DoSql/;
 
 use Verby::Action::Mysql::Util;
 

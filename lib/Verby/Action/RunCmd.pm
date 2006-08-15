@@ -1,12 +1,9 @@
 #!/usr/bin/perl
 
 package Verby::Action::RunCmd;
-use base qw/Verby::Action/;
+use Moose;
 
-use strict;
-use warnings;
-
-our $VERSION = '0.01';
+extends qw/Verby::Action/;
 
 use IPC::Run ();
 
@@ -18,10 +15,8 @@ sub run {
 }
 
 sub cmd_start {
-	my $self = shift;
-	my $c = shift;
-	my $cli = shift;
-	my %opts = (log_stderr => 1, %{ shift @_ || {} });
+	my ( $self, $c, $cli, $opts ) = @_;
+	my %opts = (log_stderr => 1, %{ $opts || {}  });
 
 	$self->log_invocation($c, "running '@$cli'");
 
@@ -67,8 +62,7 @@ sub finish {
 }
 
 sub pump {
-	my $self = shift;
-	my $c = shift;
+	my ( $self, $c ) = @_;
 
 	my $h = $c->cmd_handle;
 
@@ -79,8 +73,7 @@ sub pump {
 }
 
 sub cmd_finish {
-	my $self = shift;
-	my $c = shift;
+	my ( $self, $c ) = @_;
 
 	my $h = $c->cmd_handle;
 
@@ -96,9 +89,7 @@ sub cmd_finish {
 }
 
 sub log_invocation {
-	my $self = shift;
-	my $c = shift;
-	my $msg = shift;
+	my ( $self, $c, $msg ) = @_;
 
 	$c->logger->info($msg . $self->log_extra($c));
 }
@@ -113,11 +104,15 @@ __END__
 
 =head1 NAME
 
-Verby::Action::RunCmd - a base class for actions which exec external commands.
+Verby::Action::RunCmd - a base role for actions which execute external
+commands.
 
 =head1 SYNOPSIS
 
-	use base qw/Verby::Action::RunCmd/; # not usable on it's own
+	package MyAction;
+	use Moose;
+
+	with qw/Verby::Action::RunCmd/;
 	
 	sub start {
 		my ($self, $c) = @_;

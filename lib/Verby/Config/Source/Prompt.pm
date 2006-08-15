@@ -1,25 +1,24 @@
 #!/usr/bin/perl
 
 package Verby::Config::Source::Prompt;
-use base qw/Verby::Config::Source/;
+use Moose;
 
-use strict;
-use warnings;
+extends qw/Verby::Config::Source/;
 
-our $VERSION = '0.01';
+has questions => (
+	isa => "Hashref",
+	is  => "ro",
+	required => 1,
+);
 
-sub new {
-	my $pkg = shift;
-	my $questions = shift;
-	my $options = shift;
+has asap => (
+	isa => "Bool",
+	is  => "ro",
+	default => 0,
+);
 
-	my $self = $pkg->SUPER::new;
-
-	$self->{questions} = $questions;
-	
-	$self->prompt_all if ($options->{asap});
-
-	$self;
+sub BUILD {
+	$self->prompt_all if $self->asap;
 }
 
 # this is a copy of ExtUtils::MakeMaker::prompt, hacked up for Verby
@@ -65,9 +64,9 @@ sub prompt ($;$) {
 }
 
 sub get_key {
-	my $self = shift;
-	my $key = shift;
-	my $prompt = $self->{questions}{$key};
+	my ( $self, $key ) = @_;
+
+	my $prompt = $self->questions->{$key};
 
 	Log::Log4perl::get_logger->logdie("Configuration key '$key' is unresolvable") unless $prompt;
 
@@ -77,7 +76,7 @@ sub get_key {
 sub prompt_all {
 	my $self = shift;
 
-	(tied %{ $self->{data} })->FETCH($_) for (keys %{ $self->{questions} });
+	(tied %{ $self->data })->FETCH($_) for (keys %{ $self->questions });
 }
 
 __PACKAGE__

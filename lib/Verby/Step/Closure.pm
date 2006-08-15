@@ -1,12 +1,9 @@
 #!/usr/bin/perl
 
 package Verby::Step::Closure;
-use base qw/Verby::Step/;
+use Moose;
 
-use strict;
-use warnings;
-
-our $VERSION = '0.02';
+extends qw/Verby::Step/;
 
 use overload '""' => 'stringify';
 
@@ -14,6 +11,7 @@ use Class::Inspector;
 use Carp qw/croak/;
 
 # stevan hates Exporter, so this is not a bug ;-)
+# FIXME - use Sub::Exporter
 sub import {
     shift;            # remove pkg
     return unless @_; # dont export it if they dont ask
@@ -25,69 +23,36 @@ sub import {
 #__PACKAGE__->mk_accessors(qw/action depends pre post provides_cxt/);
 # shhh, don't tell Yuval I took out his Class::Accessor stuff
 
-sub new {
-	my $pkg = shift;
-	my $pre = shift;
-	my $post = shift;
+has depends => (
+	isa => "ArrayRef",
+	is  => "rw",
+	default    => sub { [] },
+	auto_deref => 1,
+);
 
-	my $self = bless {
-		depends => [],
-		pre => $pre,
-		post => $post,
-		action => undef,
-		provides_cxt => undef,
-	}, $pkg;
+has action => (
+	isa => "Object", # "Verby::Action",
+	is => "rw",
+);
 
-	$self;
-}
+has pre => (
+	isa => "CodeRef",
+	is  => "rw",
+);
 
-sub depends {
-    my ($self, @depends) = @_;
-    $self->{depends} = [ @depends ] if scalar @depends;
-    @{$self->{depends}};
-}
+has post => (
+	isa => "CodeRef",
+	is  => "rw",
+);
 
-sub action {
-    my $self = shift;
-    $self->{action} = shift if @_;
-    $self->{action};
-}
-
-sub pre {
-    my $self = shift;
-    $self->{pre} = shift if @_;
-    $self->{pre};
-}
-
-sub post {
-    my $self = shift;
-    $self->{post} = shift if @_;
-    $self->{post};
-}
-
-sub provides_cxt {
-    my $self = shift;
-    $self->{provides_cxt} = shift if @_;
-    $self->{provides_cxt};
-}
+has provides_cxt => (
+	isa => "Bool",
+	is  => "rw",
+);
 
 sub add_deps {
 	my $self = shift;
-	$self->depends($self->depends, @_);
-}
-
-sub get {
-	my $self = shift;
-	my $rv = $self->SUPER::get(@_);
-
-	(ref $rv eq "ARRAY") ? @$rv : $rv;
-}
-
-sub set {
-	my $self = shift;
-	my $key = $_[0];
-
-	$self->SUPER::set(@_);
+	push @{ $self->depends }, @_;
 }
 
 sub is_satisfied {
@@ -145,9 +110,7 @@ sub _wrapped {
 }
 
 sub step ($;&&) {
-	my $action = shift;
-
-	my $step = Verby::Step::Closure->new(@_);
+	my ( $action, $pre, $post ) = @_;
 
 	unless (blessed $action){
 		unless (Class::Inspector->loaded($action)) {
@@ -158,7 +121,11 @@ sub step ($;&&) {
 		$action = $action->new;
 	}
 
-	$step->action($action);
+	my $step = Verby::Step::Closure->new(
+		pre    => $pre,
+		post   => $post,
+		action => $action
+	);
 
 	$step;
 }

@@ -1,22 +1,21 @@
 #!/usr/bin/perl
 
 package Verby::Config::Source::ARGV;
-use base qw/Verby::Config::Data/;
+use Moose;
 
-use strict;
-use warnings;
-
-our $VERSION = '0.01';
+extends qw/Verby::Config::Data/;
 
 use Getopt::Casual;
 
-sub new {
-	my $self = shift->SUPER::new(@_);
+sub BUILD {
+	my $self = shift;
 
-	%{ $self->{data} } = map {
+	my %data = map {
 		(my $key = $_) =~ s/^-+//; # Getopt::Casual exposes '--foo', etc.
 		$key => $ARGV{$_};
 	} keys %ARGV;
+
+	$self->data( \%data );
 }
 
 __PACKAGE__

@@ -81,6 +81,6 @@ my $m; BEGIN { use_ok($m = "Verby::Step::Closure", "step") };
 	is_deeply([ $s1->depends ], [ $s2 ], "dep appended");
 	$s1->add_deps($s3);
 	is_deeply([ $s1->depends ], [ $s2, $s3 ], "dep appended");
-	$s1->depends($s2);
+	$s1->depends([ $s2 ]);
 	is_deeply([ $s1->depends ], [ $s2 ], "dep replaced");
 }

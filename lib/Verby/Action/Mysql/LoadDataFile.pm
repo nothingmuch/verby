@@ -1,12 +1,9 @@
 #!t/usr/bin/perl
 
 package Verby::Action::Mysql::LoadDataFile;
-use base qw/Verby::Action::Mysql::DoSql/;
+use Moose
 
-use strict;
-use warnings;
-
-our $VERSION = '0.01';
+extends qw/Verby::Action::Mysql::DoSql/;
 
 use Verby::Action::Mysql::Util;
 use Time::Piece;

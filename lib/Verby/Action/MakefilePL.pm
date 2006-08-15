@@ -1,12 +1,9 @@
 #!/usr/bin/perl
 
 package Verby::Action::MakefilePL;
-use base qw/Verby::Action::RunCmd/;
+use Moose;
 
-use strict;
-use warnings;
-
-our $VERSION = '0.01';
+extends qw/Verby::Action::RunCmd/;
 
 use File::Spec;
 
