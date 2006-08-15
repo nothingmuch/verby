@@ -1,13 +1,11 @@
 #!/usr/bin/perl
 
 package Verby::Dispatcher;
+use Moose;
 
 # FIXME
 # do_all and wait_specific could be optimized to be a little less O(N) ish.
 # with small data sets it doesn't really matter.
-
-use strict;
-use warnings;
 
 use Algorithm::Dependency::Objects::Ordered;
 use Set::Object;
@@ -16,32 +14,59 @@ use Carp qw/croak/;
 use Tie::RefHash;
 require overload;
 
-our $VERSION = 0.01;
+has step_set => (
+	isa => "Set::Object",
+	is  => "ro",
+	default => sub { Set::Object->new },
+);
 
-sub new {
-	my $pkg = shift;
-	tie my %cxt_of_step, "Tie::RefHash";
+has running_set => (
+	isa => "Set::Object",
+	is  => "ro",
+	default => sub { Set::Object->new },
+);
+
+has satisfied_set => (
+	isa => "Set::Object",
+	is  => "ro",
+	default => sub { Set::Object->new },
+);
+
+has cxt_of_step => (
+	isa => "HashRef",
+	is  => "ro",
+	default => sub {
+		tie my %cxt_of_step, "Tie::RefHash";
+		return \%cxt_of_step;
+	},
+);
+
+has derivable_cxts => (
+	isa => "HashRef",
+	is  => "ro",
+	default => sub {
 	tie my %derivable_cxts, "Tie::RefHash";
-	bless {
-		step_set       => Set::Object->new,
-		running_set    => Set::Object->new,
-		satisfied_set  => Set::Object->new,
-		cxt_of_step    => \%cxt_of_step,
-		derivable_cxts => \%derivable_cxts,
-		running_queue  => [],
-		config_hub     => undef
-	}, $pkg;
-}
+		return \%derivable_cxts;
+	},
+);
 
-sub step_set      { (shift)->{step_set}      }
-sub running_set   { (shift)->{running_set}   }
-sub satisfied_set { (shift)->{satisfied_set} }
+has running_queue => (
+	isa => "ArrayRef",
+	is  => "ro",
+	default => sub { [] },
+);
 
-sub config_hub {
-    my $self = shift;
-    $self->{config_hub} = shift if @_;
-    $self->{config_hub};
-}
+has config_hub => (
+	isa => "Object",
+	is  => "rw",
+);
+
+has global_context => (
+	isa => "Object",
+	is  => "ro",
+	lazy    => 1,
+	default => sub { $_[0]->config_hub->derive("Verby::Context") },
+);
 
 sub add_step {
 	my $self = shift;
@@ -71,23 +96,18 @@ sub add_steps {
 	$self->add_step(@_);
 }
 
-sub global_context {
-	my $self = shift;
-	$self->{global_context} ||= $self->config_hub->derive("Verby::Context");
-}
-
 sub get_cxt {
 	my $self = shift;
 	my $step = shift;
 
-	$self->{cxt_of_step}{$step} ||= Verby::Context->new($self->get_derivable_cxts($step));
+	$self->cxt_of_step->{$step} ||= Verby::Context->new($self->get_derivable_cxts($step));
 }
 
 sub get_derivable_cxts {
 	my $self = shift;
 	my $step = shift;
 
-	@{ $self->{derivable_cxts}{$step} ||= (
+	@{ $self->derivable_cxts->{$step} ||= (
 		$step->provides_cxt
 			? [ Verby::Context->new($self->get_parent_cxts($step)) ]
 			: [ $self->get_parent_cxts($step) ]
