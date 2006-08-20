@@ -3,7 +3,6 @@
 package Verby::Dispatcher;
 use Moose;
 
-
 # FIXME
 # do_all and wait_specific could be optimized to be a little less O(N) ish.
 # with small data sets it doesn't really matter.
@@ -102,8 +101,11 @@ sub get_parent_cxts {
 	my $self = shift;
 	my $step = shift;
 
-	return $self->global_context unless @{ $step->depends };
-	map { $self->get_derivable_cxts($_) } $step->depends;
+	if ( my @cxts = map { $self->get_derivable_cxts($_) } $step->depends ) {
+		return @cxts;
+	} else {
+		return $self->global_context;
+	}
 }
 
 sub create_poe_sessions {

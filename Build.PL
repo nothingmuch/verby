@@ -6,7 +6,6 @@ use Module::Build;
 
 Module::Build->new(
 	module_name => 'Verby',
-	dist_version_from => 'lib/Verby/Dispatcher.pm',
 	license => 'perl',
 	requires => {
 		'perl'                => '5.008',

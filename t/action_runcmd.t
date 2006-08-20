@@ -15,7 +15,7 @@ my $m; BEGIN { use_ok($m = "Verby::Action::RunCmd") };
 isa_ok(my $a = $m->new, $m);
 
 my $logger = Test::MockObject->new;
-$logger->mock($_ => sub { shift; warn "@_"; } ) for qw/info warn/;
+$logger->set_true($_) for qw/info warn/;
 $logger->mock("logdie" => sub { shift; die "@_" });
 
 can_ok($a, "create_poe_session");
@@ -75,8 +75,6 @@ FOO
 
 	run_poe { $a->create_poe_session( c => $c, cli => [$wc, "-l"], in => \$in ) };
 	ok( !$@, "wc -l didn't die" ) || diag($@);
-	use Data::Dumper;
-	warn Dumper( $c );
 	my ($out, $err) = ( $c->stdout, $c->stderr );
 	like($out, qr/^\s*\d+\s*$/, "output of wc -l looks sane");
 	is( ($err || ""), "", "no stderr");

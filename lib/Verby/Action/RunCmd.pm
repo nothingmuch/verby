@@ -53,23 +53,17 @@ sub confirm_exit_code {
 sub poe_start {
 	my ( $self, $kernel, $session, $heap ) = @_[OBJECT, KERNEL, SESSION, HEAP];
 
-	eval { $self->setup_wheel( $kernel, $session, $heap ) };
-	warn $@ if $@;
-	die $@ if $@;
-	warn "start finished";
+	$self->setup_wheel( $kernel, $session, $heap );
 }
 
 sub sigchld_handler {
     my ( $self, $kernel, $session, $heap, $pid, $child_error ) = @_[ OBJECT, KERNEL, SESSION, HEAP, ARG1, ARG2 ];
-	warn "got sigchld";
     return unless exists $heap->{pid_to_wheel}{$pid};
-
-	warn "got appropriate sigchild";
 	
-	$kernel->refcount_decrement( $session->ID, "running_processes" );
-
     my $wheel = delete $heap->{pid_to_wheel}{$pid};
     delete $heap->{id_to_wheel}{ $wheel->ID };
+	
+	$kernel->sig( "CHLD" ) unless scalar keys %{ $heap->{id_to_wheel} };
 	
 	$heap->{program_exit} = $child_error;
 }
@@ -81,13 +75,10 @@ sub setup_wheel {
 
 	$kernel->sig( CHLD => "sigchld_handler" );
 
-	$kernel->refcount_increment( $session->ID, "running_processes" );
-
 	$heap->{pid_to_wheel}->{ $wheel->PID } = $wheel;
 	$heap->{id_to_wheel}->{ $wheel->ID }   = $wheel;
 
 	$self->send_child_input( $wheel, $heap );
-	warn "wheel was set up";
 }
 
 sub create_wheel {
@@ -145,8 +136,6 @@ sub send_child_input {
 	my ( $self, $wheel, $heap ) = @_;
 
 	if ( my $in = $heap->{in} ) {
-		warn "sending input: $in";
-
 		if ( ref($in) eq "SCALAR" ) {
 			$in = $$in;
 			$heap->{in} = undef;
@@ -154,8 +143,6 @@ sub send_child_input {
 			$in = $in->();
 			$heap->{in} = undef unless defined $in;
 		}
-
-		warn "sending input: $in";
 
 		$wheel->put( $in );
 	} else {
@@ -165,12 +152,10 @@ sub send_child_input {
 
 sub DIE {
 	my ( $heap, $exception ) = @_[HEAP, ARG0];
-	warn "exception: @_";
 	push @{ $heap->{exceptions} ||= [] }, $exception;
 }
 
 sub poe_stop {
-	warn "stop starting";
 	my ( $self, $kernel, $heap ) = @_[OBJECT, KERNEL, HEAP];
 
 	if ( scalar keys %{ $heap->{pid_to_wheel} } ) {
@@ -193,12 +178,11 @@ sub poe_stop {
 
 sub error {
 	my ( $self, $heap ) = @_[OBJECT, HEAP];
-	$heap->{c}->logger->warn("subprogram $heap->{program_debug_string} error: @_[ARG0 .. $#_]");
+	$heap->{c}->logger->info("subprogram $heap->{program_debug_string} error: @_[ARG0 .. $#_]");
 }
 
 sub stdin {
 	my ( $self, $heap, $wheel_id ) = @_[OBJECT, HEAP, ARG0];
-	warn "stdin ready";
 	$self->send_child_input( $heap->{id_to_wheel}{$wheel_id}, $heap );
 }
 
@@ -225,7 +209,6 @@ sub log_output {
 
 sub close {
 	my ( $self, $heap ) = @_[OBJECT, HEAP];
-	warn "closing";
 	$heap->{c}->logger->info("finishing program $heap->{program_debug_string}");
 }
 
