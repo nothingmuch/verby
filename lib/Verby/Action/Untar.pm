@@ -7,72 +7,77 @@ extends qw/Verby::Action::RunCmd/;
 
 use Archive::Tar;
 use File::Spec;
+use File::stat;
 use Sub::Override;
 
 sub do {
-	my ( $self, $c, $poe ) = @_;
-
-	my $o = $self->_override_tar_error($c);
+	my ( $self, $c ) = @_;
 
 	my $tarball = $c->tarball;
 	my $dest = $c->dest;
-
 	
+	$c->logger->info("untarring '$tarball' into '$dest'");
 
-	# we're forking due to the chdir
-	defined(my $pid = fork)
-		or $c->logger->logdie("couldn't fork: $!");
-	
-	if ($pid) {
-		$c->pid($pid);
-	} else {
-		$c->logger->info("untarring '$tarball' into '$dest'");
-		chdir $dest;
-		Archive::Tar->extract_archive($tarball)
-			or $c->logger->logdie("Archive::Tar->extract_archive did not return a true value");
-		exit 0;
-	}
+	$self->create_poe_session(
+		c       => $c,
+		program => sub {
+			my $o = $self->_override_tar_error($c);
+
+			chdir $dest;
+
+			$self->tar_archive( $c )->extract
+				or $c->logger->logdie("Archive::Tar->extract did not return a true value");
+
+			exit 0;
+		},
+		program_debug_string => "Archive::Tar child",
+	);
 }
 
-sub finish {
-	my $self = shift;
-	my $c = shift;
-
-	my $pid = $c->pid;
-
-	$c->logger->debug("waiting for pid $pid");
-	
-	waitpid $pid, 0 or $c->logger->logdie("couldn't wait for $pid: $!");
-
-	my $exit = ($? >> 8);
-	my $level = ($exit ? "warn" : "info");
-	$c->logger->$level("finished untarring " . $c->tarball . ": $pid exited with status $exit");
-
+sub finished {
+	my ( $self, $c ) = @_;
+	$c->logger->info("finished untarring");
 	$self->confirm($c);
 }
 
 sub verify {
-	my $self = shift;
-	my $c = shift;
+	my ( $self, $c ) = @_;
 
 	my $o = $self->_override_tar_error($c);
 
 	my $dest = $c->dest;
 
-	my $tar_root;
+	my $main_dir; # the main directory in the archive, if any
 
 	my $i;
 
-	foreach my $file (Archive::Tar->list_archive($c->tarball)){
-		$tar_root ||= (File::Spec->splitdir($file))[0];
-		unless (-e File::Spec->catfile($dest, $file)){
-			$c->logger->warn("file '$file' is missing from extracted directory") if $i; # it's ok only for the first file to be missing
+	my $tarball = $self->tar_archive( $c );
+
+	foreach my $spec ( $tarball->list_files([qw/name size mtime/]) ) {
+		my ( $name, $size, $mtime ) = @{ $spec }{qw/name size mtime/};
+
+		# determine the top level unpack directory
+		my $top_dir = (File::Spec->splitdir($name))[0];
+		if ( defined $main_dir ) {
+			if ( $top_dir ne $main_dir ) {
+				$c->logger->warn("Archive has no main directory");
+				$main_dir = '';
+			}
+		} else {
+			$main_dir = $top_dir;
+		}
+
+		my $destfile = File::Spec->catfile($dest, $name);
+		my $existing = stat($destfile);
+		unless ( $existing ) { # and $existing->mtime == $mtime and ( -d $destfile || $existing->size == $size ) ) {
+			$c->logger->warn("file '$name' requires reextraction") if $i; # it's ok only for the first file to be missing
 			return undef;
 		}
+
 		$i++;
 	}
 
-	$c->src_dir(File::Spec->catdir($dest, $tar_root));
+	$c->main_dir(File::Spec->catdir($dest, $main_dir));
 
 	return 1;
 }
@@ -82,6 +87,11 @@ sub _override_tar_error {
 	my $c = shift;
 
 	Sub::Override->new("Archive::Tar::_error" => sub { $c->logger->logdie(caller() . ": $_[1]") });
+}
+
+sub tar_archive {
+	my ( $self, $c ) = @_;
+	$c->archive_object || $c->archive_object(Archive::Tar->new($c->tarball));
 }
 
 __PACKAGE__

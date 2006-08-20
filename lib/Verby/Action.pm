@@ -14,12 +14,11 @@ sub verify {
 }
 
 sub confirm {
-	my $self = shift;
-	my $cxt = shift;
-	$self->verify($cxt, @_) or
-		$cxt->logger->logdie(
+	my ( $self, $c, @args ) = @_;
+	$self->verify($c, @args) or
+		$c->logger->logdie(
 			"verification of $self failed: "
-			. ($cxt->error || "error unknown"));
+			. ($c->error || "error unknown"));
 }
 
 __PACKAGE__

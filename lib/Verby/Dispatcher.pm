@@ -111,31 +111,31 @@ sub get_parent_cxts {
 sub create_poe_sessions {
 	my ( $self ) = @_;
 
+	my $g_cxt = $self->global_context;
+	$self->global_context->logger->debug("Creating POE sessions for steps");
+
 	my $all_steps = $self->step_set;
 	my $satisfied = $self->satisfied_set;
 
 	my $pending = $all_steps->difference( $satisfied );
 
-	my @sessions;
+	my $sessions = Set::Object->new;
 
 	foreach my $step ( $pending->members ) {
-		push @sessions, POE::Session->create(
+		$sessions->insert( POE::Session->create(
 			inline_states => {
 				_start => sub {
 					my ( $kernel, $session) = @_[KERNEL, SESSION];
-					#warn "_start handler";
 					$kernel->sig("VERBY_STEP_FINISHED" => "step_finished");
 					$kernel->refcount_increment( $session->ID, "step_unexecuted" );
 					$kernel->yield("try_executing_step");
 				},
 				step_finished => sub {
 					my ( $kernel, $heap, $done ) = @_[KERNEL, HEAP, ARG0];
-					#warn "some step finished: $done";
 
 					my $deps = $heap->{dependencies};
 
 					if ( $deps->includes($done) ) {
-						#warn "$done has finished, affecting $heap->{step}";
 						$deps->remove( $done );
 						$kernel->yield("try_executing_step");
 					}
@@ -146,26 +146,32 @@ sub create_poe_sessions {
 					return if $heap->{dependencies}->size; # don't run if we're waiting
 					return if $heap->{ran}++; # don't run twice
 
-					$kernel->sig("VERBY_STEP_FINISHED"); # we're no longer waiting for other steps to finish
-					$kernel->refcount_decrement( $session->ID, "step_unexecuted" ); # this session can go away afterwords
-					@sessions = grep { $_ != $session } @sessions;
-					#warn "remaining sessions: @sessions";
+					my $step = $heap->{step};
+					
+					$heap->{g_cxt}->logger->debug("All dependencies of '$step' have finished, starting");
 
-					#warn "staring $heap->{step}";
-					$heap->{verby_dispatcher}->start_step( $heap->{step}, \@_ );
+					$kernel->sig("VERBY_STEP_FINISHED"); # we're no longer waiting for other steps to finish
+					$sessions->remove( $session ); # yuck yuck yuck
+
+					eval { $heap->{verby_dispatcher}->start_step( $step, \@_ ) };
+
+					# this session can go away unless it's got anything else to do
+					$kernel->refcount_decrement( $session->ID, "step_unexecuted" );
 				},
 				_stop => sub {
 					my ( $kernel, $heap ) = @_[KERNEL, HEAP];
 					my $step = $heap->{step};
-					#warn "finished $step";
+					$heap->{g_cxt}->logger->info("step $step has finished.");
 
 					$heap->{satisfied}->insert($step);
 
 					$_->() for @{ $heap->{post_hooks} };
 
-					#warn "signaling all sessions: @sessions";
-					$kernel->call( $_, "step_finished", $step ) for @sessions;
+					# FIXME $kernel->signal( $kernel, "VERBY_STEP_FINISHED", $step );
+					$kernel->call( $_, "step_finished", $step ) for $sessions->members;
 				},
+				DIE => sub { $_[HEAP]{g_cxt}->logger->warn("cought exception: @_") },
+				_child => sub { $_[HEAP]{g_cxt}->logger->debug("Step $_[HEAP]{step} _child event: $_[ARG0]") },
 			},
 			heap => {
 				step             => $step,
@@ -174,14 +180,16 @@ sub create_poe_sessions {
 				verby_dispatcher => $self,
 				satisfied        => $satisfied,
 				post_hooks       => [],
+				g_cxt            => $g_cxt, # convenience
 			},
-		);
+		) );
 	}
 }
 
 sub do_all {
 	my $self = shift;
 	$self->create_poe_sessions;
+	$self->global_context->logger->debug("Starting POE main loop");
 	$poe_kernel->run;
 }
 
@@ -191,8 +199,8 @@ sub start_step {
 	my $g_cxt = $self->global_context;
 	my $cxt = $self->get_cxt($step);
 
-	if ($step->is_satisfied($cxt)){
-		$g_cxt->logger->debug("step $step has been satisfied while it was waiting. Skipped.");
+	if ($step->is_satisfied($cxt, $poe)){
+		$g_cxt->logger->debug("step $step has already been satisfied, running isn't necessary.");
 		return;
 	}
 

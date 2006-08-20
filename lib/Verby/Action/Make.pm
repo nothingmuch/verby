@@ -5,32 +5,34 @@ use Moose;
 
 extends qw/Verby::Action::RunCmd/;
 
-sub start {
-	my $self = shift;
-	my $c = shift;
+sub do {
+	my ( $self, $c ) = @_;
 
 	my $wd = $c->workdir;
 	my @targets = (($c->target || ()), @{ $c->targets || [] });
 
 	$c->is_make_test(1) if "@targets" eq "test";
 
-	$self->cmd_start($c, [qw/make -C/, $wd, @targets]);
+	$self->create_poe_session(
+		c   => $c,
+		cli => [qw/make -C/, $wd, @targets],
+	);
 }
 
-sub finish {
-	my $self = shift;
-	my $c = shift;
+sub finished {
+	my ( $self, $c ) = @_;
 
 	$c->done(1);
-	$self->SUPER::finish($c);
-	
-	my $out = ${ $c->stdout_ref };
-	chomp($out) and $c->logger->info("test output:\n$out") if $c->is_make_test;
+
+	my $out = $c->stdout;
+	chomp($out);
+	$c->logger->info("test output:\n$out") if $c->is_make_test;
+
+	$self->confirm($c);
 }
 
 sub log_extra {
-	my $self = shift;
-	my $c = shift;
+	my ( $self, $c ) = @_;
 
 	" in " . $c->workdir;
 }

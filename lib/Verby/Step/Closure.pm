@@ -64,21 +64,20 @@ sub do {
 }
 
 sub _wrapped {
-	my $self = shift;
-	my $action_method = shift;
+	my ( $self, $action_method, @args ) = @_;
+	my ( $c, $poe ) = @args;
 
 	if (my $pre_hook = $self->pre){
-		$self->$pre_hook(@_);
+		$self->$pre_hook(@args);
 	}
 	
 	if (my $post_hook = $self->post){
-		warn Carp::longmess unless( $poe_kernel->get_active_session->can("get_heap") );
 		my $heap = $poe_kernel->get_active_session->get_heap;
 
-		push @{ $heap->{post_hooks} }, sub { $self->$post_hook(@_) };
+		push @{ $heap->{post_hooks} }, sub { $self->$post_hook(@args) };
 	}
 
-	$self->action->$action_method(@_);
+	$self->action->$action_method(@args);
 }
 
 sub step ($;&&) {

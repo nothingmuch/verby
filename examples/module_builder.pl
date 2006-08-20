@@ -7,8 +7,6 @@ our $VERSION = '0.01';
 
 use Log::Log4perl qw/:easy/;
 
-use Cwd;
-
 use Verby::Step::Closure qw/step/;
 use Verby::Dispatcher;
 
@@ -25,7 +23,7 @@ Log::Log4perl::init(\$l4pconf);
 
 my $cfg = Verby::Config::Data->new;
 %{ $cfg->data } = (
-	untar_dir => cwd,
+	untar_dir => "/tmp",
 );
 
 my $d = Verby::Dispatcher->new;
@@ -33,22 +31,19 @@ $d->config_hub($cfg);
 
 foreach my $tarball (@ARGV){
 	my $mkdir = step "Verby::Action::MkPath" => sub {
-		my $self = shift;
-		my $c = shift;
+		my ( $self, $c ) = @_;
 		$c->path($c->untar_dir);
 	};
 	$mkdir->provides_cxt(1);
 
 	my $untar = step "Verby::Action::Untar" => sub {
-		my $self = shift;
-		my $c = shift;
+		my ( $self, $c ) = @_;
 		$c->tarball($tarball);
 		$c->dest($c->untar_dir);
 	}, sub {
-		my $self = shift;
-		my $c = shift;
-		if ($c->exists("src_dir")) {
-			$c->workdir($c->src_dir);
+		my ( $self, $c ) = @_;
+		if ($c->exists("main_dir")) {
+			$c->workdir($c->main_dir);
 			$c->export("workdir");
 		}
 	};
@@ -61,8 +56,7 @@ foreach my $tarball (@ARGV){
 	$make->depends([ $plscript ]);
 
 	my $test = step "Verby::Action::Make" => sub {
-		my $self = shift;
-		my $c = shift;
+		my ( $self, $c ) = @_;
 		$c->target("test");
 	};
 	$test->depends([ $make ]);

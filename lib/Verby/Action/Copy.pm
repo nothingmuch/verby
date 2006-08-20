@@ -7,7 +7,7 @@ extends qw/Verby::Action::RunCmd/;
 
 use File::Rsync;
 
-sub start {
+sub do {
 	my ( $self, $c ) = @_;
 
 	my $source = $c->source;
@@ -17,20 +17,21 @@ sub start {
 
 	my $r = File::Rsync->new({ archive => 1, delete => 1 }) or $c->logger->logdie("couldn't create rsync obj");
 	my $cmd = $r->getcmd({ src => $source, dest => $dest }) or $c->logger->logdie("couldn't determine rsync command to run");
-	
-	$self->cmd_start($c, $cmd, { log_stdout => 1 });
+
+	$self->create_poe_session(
+		c          => $c,
+		cli        => $cmd,
+		log_stdout => 1,
+	);
 }
 
-sub finish {
+sub finished {
 	my ( $self, $c ) = @_;
-
 	$c->done(1);
-	$self->SUPER::finish($c);
+	$self->confirm( $c );
 }
 
-sub verify {
-	$_[1]->done;
-}
+sub verify { $_[1]->done }
 
 __PACKAGE__
 

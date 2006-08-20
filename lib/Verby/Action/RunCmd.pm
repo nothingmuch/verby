@@ -7,8 +7,7 @@ extends qw/Verby::Action/;
 
 use Carp qw/croak/;
 
-use POE;
-use POE::Wheel::Run;
+use POE qw/Wheel::Run Filter::Stream/;
 
 sub create_poe_session {
 	my ( $self, %heap ) = @_;
@@ -32,8 +31,9 @@ sub create_poe_session {
 sub poe_states {
 	my ( $self, $heap ) = @_;
 	return (
-		_start => "poe_start",
-		_stop  => "poe_stop",
+		_start  => "poe_start",
+		_stop   => "poe_stop",
+		_parent => "poe_parent",
 		(map { ("std$_") x 2 } qw/in out err/),
 		(map { ($_) x 2 } qw/
 			error
@@ -56,13 +56,17 @@ sub poe_start {
 	$self->setup_wheel( $kernel, $session, $heap );
 }
 
+sub poe_parent {
+	$_[HEAP]{c}->logger->debug("Attached to parent");
+}
+
 sub sigchld_handler {
     my ( $self, $kernel, $session, $heap, $pid, $child_error ) = @_[ OBJECT, KERNEL, SESSION, HEAP, ARG1, ARG2 ];
     return unless exists $heap->{pid_to_wheel}{$pid};
 	
     my $wheel = delete $heap->{pid_to_wheel}{$pid};
     delete $heap->{id_to_wheel}{ $wheel->ID };
-	
+
 	$kernel->sig( "CHLD" ) unless scalar keys %{ $heap->{id_to_wheel} };
 	
 	$heap->{program_exit} = $child_error;
@@ -99,7 +103,11 @@ sub create_wheel {
 
 sub additional_poe_wheel_options {
 	my ( $self, $heap ) = @_;
-	return;
+	return (
+		StdinFilter  => POE::Filter::Stream->new(),
+		StdoutFilter => POE::Filter::Stream->new(),
+		StderrFilter => POE::Filter::Stream->new(),
+	);
 }
 
 sub default_poe_wheel_events {
@@ -117,14 +125,14 @@ sub wheel_program {
 	my ( $self, $heap ) = @_;
 
 	if ( my $program = $heap->{program} ) {
-		$heap->{program_debug_string} = "'$program'";
+		$heap->{program_debug_string} ||= "'$program'";
 		return $program
 	} elsif( my $cli = $heap->{cli} ) {
 		if ( my $init = $heap->{init} ) {
-			$heap->{program_debug_string} = "'@$cli' with init block";
+			$heap->{program_debug_string} ||= "'@$cli' with init block";
 			return sub { $init->(); exec(@$cli) };
 		} else {
-			$heap->{program_debug_string} = "'@$cli'";
+			$heap->{program_debug_string} ||= "'@$cli'";
 			return $cli;
 		}
 	} else {
@@ -158,6 +166,8 @@ sub DIE {
 sub poe_stop {
 	my ( $self, $kernel, $heap ) = @_[OBJECT, KERNEL, HEAP];
 
+	$heap->{c}->logger->info("Wheel::Run subsession closing");
+
 	if ( scalar keys %{ $heap->{pid_to_wheel} } ) {
 		require Data::Dumper;
 		die "AAAAAAAHHH Running proces!" . Data::Dumper::Dumper($heap);
@@ -174,11 +184,13 @@ sub poe_stop {
 	$c->program_exit_full( $heap->{program_exit} );
 
 	$self->confirm_exit_code($c);
+
+	$self->finished($c) if $self->can("finished");
 }
 
 sub error {
 	my ( $self, $heap ) = @_[OBJECT, HEAP];
-	$heap->{c}->logger->info("subprogram $heap->{program_debug_string} error: @_[ARG0 .. $#_]");
+	#$heap->{c}->logger->info("subprogram $heap->{program_debug_string} error: @_[ARG0 .. $#_]");
 }
 
 sub stdin {

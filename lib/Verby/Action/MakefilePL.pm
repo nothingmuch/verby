@@ -6,14 +6,24 @@ use Moose;
 extends qw/Verby::Action::RunCmd/;
 
 use File::Spec;
+use File::stat;
 
-sub start {
-	my $self = shift;
-	my $c = shift;
+sub do {
+	my ( $self, $c ) = @_;
 
 	my $wd = $c->workdir;
 
-	$self->cmd_start($c, [qw/perl Makefile.PL/], { init => sub { chdir $wd } });
+	$self->create_poe_session(
+		c    => $c, 
+		cli  => [$^X, 'Makefile.PL'],
+		init => sub { chdir $wd },
+   	);
+}
+
+sub finished {
+	my ( $self, $c ) = @_;
+
+	$self->confirm( $c );
 }
 
 sub log_extra {
@@ -27,7 +37,10 @@ sub verify {
 	my $self = shift;
 	my $c = shift;
 
-	-e File::Spec->catfile($c->workdir, "Makefile");
+	my $makefile = File::Spec->catfile($c->workdir, "Makefile");
+	my $makefile_pl = File::Spec->catfile($c->workdir, "Makefile.PL");
+
+	return -e $makefile && stat($makefile)->mtime >= stat($makefile_pl)->mtime;
 }
 
 __PACKAGE__
