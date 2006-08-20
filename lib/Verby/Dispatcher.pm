@@ -3,6 +3,7 @@
 package Verby::Dispatcher;
 use Moose;
 
+
 # FIXME
 # do_all and wait_specific could be optimized to be a little less O(N) ish.
 # with small data sets it doesn't really matter.
@@ -12,29 +13,26 @@ use Set::Object;
 use Verby::Context;
 use Carp qw/croak/;
 use Tie::RefHash;
+
+use POE;
+
 require overload;
 
 has step_set => (
 	isa => "Set::Object",
-	is  => "ro",
-	default => sub { Set::Object->new },
-);
-
-has running_set => (
-	isa => "Set::Object",
-	is  => "ro",
+	is	=> "ro",
 	default => sub { Set::Object->new },
 );
 
 has satisfied_set => (
 	isa => "Set::Object",
-	is  => "ro",
+	is	=> "ro",
 	default => sub { Set::Object->new },
 );
 
 has cxt_of_step => (
 	isa => "HashRef",
-	is  => "ro",
+	is	=> "ro",
 	default => sub {
 		tie my %cxt_of_step, "Tie::RefHash";
 		return \%cxt_of_step;
@@ -43,28 +41,22 @@ has cxt_of_step => (
 
 has derivable_cxts => (
 	isa => "HashRef",
-	is  => "ro",
+	is	=> "ro",
 	default => sub {
 	tie my %derivable_cxts, "Tie::RefHash";
 		return \%derivable_cxts;
 	},
 );
 
-has running_queue => (
-	isa => "ArrayRef",
-	is  => "ro",
-	default => sub { [] },
-);
-
 has config_hub => (
 	isa => "Object",
-	is  => "rw",
+	is	=> "rw",
 );
 
 has global_context => (
 	isa => "Object",
-	is  => "ro",
-	lazy    => 1,
+	is	=> "ro",
+	lazy	=> 1,
 	default => sub { $_[0]->config_hub->derive("Verby::Context") },
 );
 
@@ -123,60 +115,68 @@ sub get_parent_cxts {
 }
 
 sub do_all {
-	my $self = shift;
+	my ( $self, @steps ) = @_;
 
-	my $global_context = $self->global_context;
-
-	my @free_steps;
-	my @steps = map { [ $_, Set::Object->new($_->depends) ] } $self->ordered_steps;
-
+	my $all_steps = $self->step_set;
 	my $satisfied = $self->satisfied_set;
 
-	while (@steps){
-		$self->pump_running;
+	my $pending = $all_steps->difference( $satisfied );
 
-		push @free_steps, shift(@steps)->[0] while (@steps and $steps[0][1]->subset($satisfied));
-		@free_steps = sort { $a->can("start") ? ($b->can("start") ? 0 : -1) : 1 } @free_steps;
-		
-		if (@free_steps){
-			$self->start_step(shift @free_steps);
-		} else {
-			$self->global_context->logger->debug("free step pool exhausted");
-			$self->wait_one;
-		}
+	my $sessions = Set::Object->new;
+
+	foreach my $step ( $pending->members ) {
+		my $deps = Set::Object->new( $step->depends )->difference($satisfied);
+
+		my $ran = 0;
+		my $session = eval { POE::Session->create(
+			# options => { trace => 1, debug => 1 },
+			inline_states => {
+				_start => sub {
+					my ( $kernel, $session) = @_[KERNEL, SESSION];
+					$kernel->refcount_increment( $session->ID, "step" );
+					$kernel->yield("review_state");
+				},
+				step_finished => sub {
+					my ( $kernel, $done ) = @_[KERNEL, ARG0];
+					if ( $deps->includes($done) ) {
+						$deps->remove( $done );
+						$kernel->yield("review_state");
+					}
+				},
+				review_state => sub {
+					my $kernel = $_[KERNEL];
+					return if $ran;
+					return if $deps->size;
+					$ran++;
+					eval { $self->start_step( $step, @_ ) };
+					$kernel->yield("done");
+				},
+				done => sub {
+					my ( $kernel, $session ) = @_[KERNEL, SESSION];
+					$sessions->remove($session);
+					$satisfied->insert($step);
+					foreach my $session ( $sessions->members ) {
+						$kernel->post( $session, "step_finished", $step );
+					}
+					$kernel->refcount_decrement( $session->ID, "step" );
+				},
+			},
+		) || 1 };
+
+		$sessions->insert( $session );
 	}
 
-	$self->start_step($_) for @free_steps;
+	$sessions->weaken;
 
-	$self->wait_all;
-}
-
-sub ordered_steps {
-	my $self = shift;
-	my @steps = $self->mk_dep_engine->schedule_all;
-}
-
-sub mk_dep_engine {
-	my $self = shift;
-
-	$self->dep_engine_class->new(
-		objects => $self->step_set,
-		selected => $self->satisfied_set,
-	);
-}
-
-sub dep_engine_class {
-	"Algorithm::Dependency::Objects::Ordered";
+	$poe_kernel->run;
 }
 
 sub start_step {
-	my $self = shift;
-	my $step = shift;
+	my ( $self, $step, @poe_args ) = @_;
 
 	my $g_cxt = $self->global_context;
-
 	my $cxt = $self->get_cxt($step);
-	
+
 	if ($step->is_satisfied($cxt)){
 		$g_cxt->logger->debug("step $step has been satisfied while it was waiting. Skipped.");
 		$self->satisfied_set->insert($step);
@@ -184,8 +184,10 @@ sub start_step {
 	}
 
 	$g_cxt->logger->debug("starting step $step");
-	
+
+	# presumably in the future we will queue up child sessions
 	if ($step->can("start") and $step->can("finish")){
+		die "async steps not yet supported by the POE dispatcher";
 		$g_cxt->logger->debug("$step is async");
 		$step->start($cxt);
 		$self->mark_running($step)
@@ -203,7 +205,7 @@ sub pump_running {
 
 	foreach my $step (@{ $self->{running_queue} }){
 		next unless $step->can("pump");
-		
+
 		unless ($step->pump($self->get_cxt($step))){
 			$self->global_context->logger->debug("step '$step' has finished");
 			$self->wait_specific($step);
@@ -211,37 +213,9 @@ sub pump_running {
 	}
 }
 
-sub wait_all {
-	my $self = shift;
-	# finish all running tasks
-
-	$self->global_context->logger->debug("waiting for all running steps");
-	
-	while ($self->running_steps){
-		$self->wait_one;
-	}
-}
-
-sub wait_one {
-	my $self = shift;
-
-	# TODO
-	# in a subclass based around Event or POE make this sensitive to the watchers that actions hand out.
-	my $step = $self->pop_running || return;
-	$self->global_context->logger->debug("waiting for step '$step'");
-	$self->finish_step($step);
-}
-
-sub wait_specific {
-	my $self = shift;
-	my $step = shift;
-
-	@{ $self->{running_queue} } = grep { overload::StrVal($_) ne overload::StrVal($step) } @{ $self->{running_queue} };
-
-	$self->finish_step($step);
-}
-
 sub finish_step {
+	# FIXME.... Technical debt!
+	die "Can't finish an unstarted step... the universe is bending!";
 	my $self = shift;
 	my $step = shift;
 
@@ -261,35 +235,6 @@ sub _set_members_query {
 sub steps {
 	my $self = shift;
 	$self->_set_members_query($self->step_set);
-}
-
-sub running_steps {
-	my $self = shift;
-	$self->_set_members_query($self->running_set);
-}
-
-sub mark_running {
-	my $self = shift;
-	my $step = shift;
-	my $cxt = shift;
-	$self->running_set->insert($step);
-	$self->push_running($step);
-}
-
-sub is_running {
-	my $self = shift;
-	my $step = shift;
-	$self->running_set->includes($step);
-}
-
-sub push_running {
-	my $self = shift;
-	push @{ $self->{running_queue} }, @_;
-}
-
-sub pop_running {
-	my $self = shift;
-	shift @{ $self->{running_queue} };
 }
 
 sub is_satisfied {
@@ -473,11 +418,13 @@ claims that it's ready.
 
 =head1 BUGS
 
-None that we are aware of. Of course, if you find a bug, let us know, and we will be sure to fix it. 
+None that we are aware of. Of course, if you find a bug, let us know, and we
+will be sure to fix it.
 
 =head1 CODE COVERAGE
 
-We use B<Devel::Cover> to test the code coverage of the tests, please refer to COVERAGE section of the L<Verby> module for more information.
+We use B<Devel::Cover> to test the code coverage of the tests, please refer to
+COVERAGE section of the L<Verby> module for more information.
 
 =head1 SEE ALSO
 
@@ -493,6 +440,6 @@ Copyright 2005 by Infinity Interactive, Inc.
 L<http://www.iinteractive.com>
 
 This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. 
+it under the same terms as Perl itself.
 
 =cut

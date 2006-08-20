@@ -9,13 +9,12 @@ Module::Build->new(
 	dist_version_from => 'lib/Verby/Dispatcher.pm',
 	license => 'perl',
 	requires => {
-		'perl'                           => '5.008',
-		'Set::Object'                    => 0,
-		'Log::Log4perl'                  => 0,
-		'Algorithm::Dependency::Objects' => 0,
-		'List::MoreUtils'                => 0,
-		'Devel::Caller::Perl'            => 0,
-		'Class::Inspector'               => 0,
+		'perl'                => '5.008',
+		'Set::Object'         => '1.17',
+		'Log::Log4perl'       => 0,
+		'List::MoreUtils'     => 0,
+		'Devel::Caller::Perl' => 0,
+		'Class::Inspector'    => 0,
 	},
 	auto_features => {
 		'Verby::Config::Source::ARGV' => {
