@@ -18,6 +18,7 @@ has asap => (
 );
 
 sub BUILD {
+	my $self = shift;
 	$self->prompt_all if $self->asap;
 }
 
