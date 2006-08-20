@@ -10,6 +10,8 @@ use overload '""' => 'stringify';
 use Class::Inspector;
 use Carp qw/croak/;
 
+use POE;
+
 # stevan hates Exporter, so this is not a bug ;-)
 # FIXME - use Sub::Exporter
 sub import {
@@ -18,10 +20,6 @@ sub import {
 	no strict 'refs';
     *{ (caller())[0] . "::step"} = \&step if $_[0] eq 'step';
 }
-
-# he also hates Class::Accessor, so don't tell him I left this in
-#__PACKAGE__->mk_accessors(qw/action depends pre post provides_cxt/);
-# shhh, don't tell Yuval I took out his Class::Accessor stuff
 
 has depends => (
 	isa => "ArrayRef",
@@ -65,48 +63,22 @@ sub do {
 	$self->_wrapped("do", @_);
 }
 
-sub start {
-	my $self = shift;
-	$self->_wrapped("start", @_);
-}
-
-sub finish {
-	my $self = shift;
-	$self->_wrapped("finish", @_);
-}
-
-sub pump {
-	my $self = shift;
-	$self->action->pump(@_);
-}
-
-sub can {
-	my $self = shift;
-	my $method = shift;
-
-	# only claim we can start/finish if our action can
-	if ($method eq "start" or $method eq "finish" or $method eq "pump"){
-		return $self->action->can($method);
-	} else {
-		return $self->SUPER::can($method);
-	}
-}
-
 sub _wrapped {
 	my $self = shift;
 	my $action_method = shift;
+
+	if (my $pre_hook = $self->pre){
+		$self->$pre_hook(@_);
+	}
 	
-	if ($action_method ne "finish" and my $sub = $self->pre){
-		$self->$sub(@_);
+	if (my $post_hook = $self->post){
+		warn Carp::longmess unless( $poe_kernel->get_active_session->can("get_heap") );
+		my $heap = $poe_kernel->get_active_session->get_heap;
+
+		push @{ $heap->{post_hooks} }, sub { $self->$post_hook(@_) };
 	}
 
-	my $rv = $self->action->$action_method(@_);
-
-	if ($action_method ne "start" and my $post = $self->post){
-		$self->$post(@_);
-	}
-
-	$rv;
+	$self->action->$action_method(@_);
 }
 
 sub step ($;&&) {

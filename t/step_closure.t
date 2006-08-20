@@ -3,9 +3,11 @@
 use strict;
 use warnings;
 
-use Test::More tests => 26;
+use Test::More tests => 19;
 use Test::MockObject;
 use Test::Exception;
+
+use POE;
 
 # TODO
 # stringification
@@ -41,32 +43,33 @@ my $m; BEGIN { use_ok($m = "Verby::Step::Closure", "step") };
 
 {
 	my $t = Test::MockObject->new;
+	$t->set_true("do");
 
-	my ($before, $after);
+	my ($before, $after) = ( 0, 0 );
 	my $s = step $t, sub { $before++ }, sub { $after++ };
 
-	foreach my $spec (
-		[ "start", 1, 0 ],
-		[ "pump", 0, 0 ],
-		[ "finish", 0, 1 ],
-	){
-		$t->clear;
-		($before, $after) = (0, 0);
+	is( $before, 0, "before hook" );
+	is( $after,  0, "after hook" );
 
-		my ($method, $eb, $ea) = @{$spec};
+	POE::Session->create(
+		inline_states => {
+			_start => sub {
+				is( $before, 0, "before hook" );
+				$s->do();
+				is( $before, 1, "before hook" );
+				is( $after,  0, "after hook" );
+			},
+			_stop  => sub {
+				is( $before, 1, "before hook" );
+				is( $after,  0, "after hook" );
+				$_->() for @{ $_[HEAP]{post_hooks} };
+				is( $after,  1, "after hook" );
+			},
+		},
+		heap => { post_hooks => [] },
+	);
 
-		ok(!$s->can("$method"), "'can' lies when the underlying object can't do $method");
-		
-		$t->set_true($method);
-
-		can_ok($s, $method);
-		
-		$s->$method;
-
-		$t->called_ok($method);
-		is($before, $eb, "before callback ".($eb ? "" : "not ")."called for '$method'");
-		is($after, $ea, "after callback ".($ea ? "" : "not ")."called for '$method'");
-	}
+	$poe_kernel->run;
 }
 
 {

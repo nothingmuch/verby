@@ -64,7 +64,6 @@ sub add_step {
 	my $self = shift;
 
 	my $steps = $self->step_set;
-	my $satisfied = $self->satisfied_set;
 
 	foreach my $step (@_) {
 		next if $steps->includes($step);
@@ -73,13 +72,6 @@ sub add_step {
 
 		(my $logger = $self->global_context->logger)->debug("adding step $step");
 		$steps->insert($step);
-
-		my $context = $self->get_cxt($step);
-
-		if ($step->is_satisfied($context)) {
-			$logger->debug("Step '$step' is already satisfied");
-			$satisfied->insert($step);
-		}
 	}
 }
 
@@ -110,92 +102,100 @@ sub get_parent_cxts {
 	my $self = shift;
 	my $step = shift;
 
-	return $self->global_context unless $step->depends;
+	return $self->global_context unless @{ $step->depends };
 	map { $self->get_derivable_cxts($_) } $step->depends;
 }
 
-sub do_all {
-	my ( $self, @steps ) = @_;
+sub create_poe_sessions {
+	my ( $self ) = @_;
 
 	my $all_steps = $self->step_set;
 	my $satisfied = $self->satisfied_set;
 
 	my $pending = $all_steps->difference( $satisfied );
 
-	my $sessions = Set::Object->new;
+	my @sessions;
 
 	foreach my $step ( $pending->members ) {
-		my $deps = Set::Object->new( $step->depends )->difference($satisfied);
-
-		my $ran = 0;
-		my $session = eval { POE::Session->create(
-			# options => { trace => 1, debug => 1 },
+		push @sessions, POE::Session->create(
 			inline_states => {
 				_start => sub {
 					my ( $kernel, $session) = @_[KERNEL, SESSION];
-					$kernel->refcount_increment( $session->ID, "step" );
-					$kernel->yield("review_state");
+					#warn "_start handler";
+					$kernel->sig("VERBY_STEP_FINISHED" => "step_finished");
+					$kernel->refcount_increment( $session->ID, "step_unexecuted" );
+					$kernel->yield("try_executing_step");
 				},
 				step_finished => sub {
-					my ( $kernel, $done ) = @_[KERNEL, ARG0];
+					my ( $kernel, $heap, $done ) = @_[KERNEL, HEAP, ARG0];
+					#warn "some step finished: $done";
+
+					my $deps = $heap->{dependencies};
+
 					if ( $deps->includes($done) ) {
+						#warn "$done has finished, affecting $heap->{step}";
 						$deps->remove( $done );
-						$kernel->yield("review_state");
+						$kernel->yield("try_executing_step");
 					}
 				},
-				review_state => sub {
-					my $kernel = $_[KERNEL];
-					return if $ran;
-					return if $deps->size;
-					$ran++;
-					eval { $self->start_step( $step, @_ ) };
-					$kernel->yield("done");
+				try_executing_step => sub {
+					my ( $kernel, $session, $heap ) = @_[KERNEL, SESSION, HEAP];
+
+					return if $heap->{dependencies}->size; # don't run if we're waiting
+					return if $heap->{ran}++; # don't run twice
+
+					$kernel->sig("VERBY_STEP_FINISHED"); # we're no longer waiting for other steps to finish
+					$kernel->refcount_decrement( $session->ID, "step_unexecuted" ); # this session can go away afterwords
+					@sessions = grep { $_ != $session } @sessions;
+					#warn "remaining sessions: @sessions";
+
+					#warn "staring $heap->{step}";
+					$heap->{verby_dispatcher}->start_step( $heap->{step}, \@_ );
 				},
-				done => sub {
-					my ( $kernel, $session ) = @_[KERNEL, SESSION];
-					$sessions->remove($session);
-					$satisfied->insert($step);
-					foreach my $session ( $sessions->members ) {
-						$kernel->post( $session, "step_finished", $step );
-					}
-					$kernel->refcount_decrement( $session->ID, "step" );
+				_stop => sub {
+					my ( $kernel, $heap ) = @_[KERNEL, HEAP];
+					my $step = $heap->{step};
+					#warn "finished $step";
+
+					$heap->{satisfied}->insert($step);
+
+					$_->() for @{ $heap->{post_hooks} };
+
+					#warn "signaling all sessions: @sessions";
+					$kernel->call( $_, "step_finished", $step ) for @sessions;
 				},
 			},
-		) || 1 };
-
-		$sessions->insert( $session );
+			heap => {
+				step             => $step,
+				dependencies     => Set::Object->new( $step->depends )->difference($satisfied),
+				ran              => 0,
+				verby_dispatcher => $self,
+				satisfied        => $satisfied,
+				post_hooks       => [],
+			},
+		);
 	}
+}
 
-	$sessions->weaken;
-
+sub do_all {
+	my $self = shift;
+	$self->create_poe_sessions;
 	$poe_kernel->run;
 }
 
 sub start_step {
-	my ( $self, $step, @poe_args ) = @_;
+	my ( $self, $step, $poe ) = @_;
 
 	my $g_cxt = $self->global_context;
 	my $cxt = $self->get_cxt($step);
 
 	if ($step->is_satisfied($cxt)){
 		$g_cxt->logger->debug("step $step has been satisfied while it was waiting. Skipped.");
-		$self->satisfied_set->insert($step);
 		return;
 	}
 
 	$g_cxt->logger->debug("starting step $step");
-
-	# presumably in the future we will queue up child sessions
-	if ($step->can("start") and $step->can("finish")){
-		die "async steps not yet supported by the POE dispatcher";
-		$g_cxt->logger->debug("$step is async");
-		$step->start($cxt);
-		$self->mark_running($step)
-	} else {
-		$g_cxt->logger->debug("$step is sync");
-		$step->do($cxt);
-		$self->satisfied_set->insert($step);
-	}
+	$step->do($cxt, $poe);
 }
 
 sub pump_running {

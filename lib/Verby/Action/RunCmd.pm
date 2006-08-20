@@ -5,87 +5,228 @@ use Moose;
 
 extends qw/Verby::Action/;
 
-use IPC::Run ();
+use Carp qw/croak/;
 
-sub run {
-	my $self = shift;
+use POE;
+use POE::Wheel::Run;
 
-	$self->cmd_start(@_);
-	$self->cmd_finish(@_);
+sub create_poe_session {
+	my ( $self, %heap ) = @_;
+	$heap{log_stderr} = 1 unless exists $heap{log_stderr};
+
+	my $accum = $heap{accum} ||= {};
+
+	foreach my $output ( qw/stdout stderr/ ) {
+		next if exists $accum->{$output};
+		$accum->{$output} = "";
+	}
+
+	POE::Session->create(
+		object_states => [
+			$self => { $self->poe_states(\%heap) },
+		],
+		heap => \%heap,
+	);
 }
 
-sub cmd_start {
-	my ( $self, $c, $cli, $opts ) = @_;
-	my %opts = (log_stderr => 1, %{ $opts || {}  });
+sub poe_states {
+	my ( $self, $heap ) = @_;
+	return (
+		_start => "poe_start",
+		_stop  => "poe_stop",
+		(map { ("std$_") x 2 } qw/in out err/),
+		(map { ($_) x 2 } qw/
+			error
+			close
+			sigchld_handler
+			DIE
+			/),
+	);
+}
 
-	$self->log_invocation($c, "running '@$cli'");
+sub confirm_exit_code {
+	my ( $self, $c ) = @_;
+	$c->logger->logdie("subprogram " . $c->program_debug_string . " exited with non zero status: " . $c->program_exit)
+		unless $c->program_exit == 0;
+}
 
-	my $init = $opts{init};
+sub poe_start {
+	my ( $self, $kernel, $session, $heap ) = @_[OBJECT, KERNEL, SESSION, HEAP];
+
+	eval { $self->setup_wheel( $kernel, $session, $heap ) };
+	warn $@ if $@;
+	die $@ if $@;
+	warn "start finished";
+}
+
+sub sigchld_handler {
+    my ( $self, $kernel, $session, $heap, $pid, $child_error ) = @_[ OBJECT, KERNEL, SESSION, HEAP, ARG1, ARG2 ];
+	warn "got sigchld";
+    return unless exists $heap->{pid_to_wheel}{$pid};
+
+	warn "got appropriate sigchild";
 	
-	my $in = $opts{in};
-	my ($out, $err);
+	$kernel->refcount_decrement( $session->ID, "running_processes" );
 
-	my $mk_log_handler = sub {
-		my $name = shift;
-		my $var_ref = shift;
+    my $wheel = delete $heap->{pid_to_wheel}{$pid};
+    delete $heap->{id_to_wheel}{ $wheel->ID };
+	
+	$heap->{program_exit} = $child_error;
+}
 
-		return sub {
-			${$var_ref} .= "@_";
-		
-			my $output = "@_";
-			chomp($output) if ($output =~ tr/\n// == 1); # if it's one line, trim it
-			foreach my $line (split /\n/, $output){ # if it's not split it looks chaotic
-				$c->logger->warn("$name: $line");
-			}
+sub setup_wheel {
+	my ( $self, $kernel, $session, $heap ) = @_;
+
+	my $wheel = $self->create_wheel( $heap );
+
+	$kernel->sig( CHLD => "sigchld_handler" );
+
+	$kernel->refcount_increment( $session->ID, "running_processes" );
+
+	$heap->{pid_to_wheel}->{ $wheel->PID } = $wheel;
+	$heap->{id_to_wheel}->{ $wheel->ID }   = $wheel;
+
+	$self->send_child_input( $wheel, $heap );
+	warn "wheel was set up";
+}
+
+sub create_wheel {
+	my ( $self, $heap ) = @_;
+
+	my $wheel = POE::Wheel::Run->new(
+		Program => $self->wheel_program( $heap ),
+
+		$self->default_poe_wheel_events( $heap ),
+
+		$self->additional_poe_wheel_options( $heap ),
+	);
+	
+	$self->log_invocation($heap->{c}, "started $heap->{program_debug_string}");
+
+	return $wheel;
+}
+
+sub additional_poe_wheel_options {
+	my ( $self, $heap ) = @_;
+	return;
+}
+
+sub default_poe_wheel_events {
+	my ( $self, $heap ) = @_;
+	return (
+		StdinEvent  => "stdin",
+		StdoutEvent => "stdout",
+		StderrEvent => "stderr",
+		ErrorEvent  => "error",
+		CloseEvent  => "close",
+	);
+}
+
+sub wheel_program {
+	my ( $self, $heap ) = @_;
+
+	if ( my $program = $heap->{program} ) {
+		$heap->{program_debug_string} = "'$program'";
+		return $program
+	} elsif( my $cli = $heap->{cli} ) {
+		if ( my $init = $heap->{init} ) {
+			$heap->{program_debug_string} = "'@$cli' with init block";
+			return sub { $init->(); exec(@$cli) };
+		} else {
+			$heap->{program_debug_string} = "'@$cli'";
+			return $cli;
 		}
-	};
-
-	my $err_arg = ($opts{log_stderr} ? $mk_log_handler->(stderr => \$err) : \$err);
-	my $out_arg = ($opts{log_stdout} ? $mk_log_handler->(stdout => \$out) : \$out); 
-
-	my $h = IPC::Run::start($cli, ($in || ()), ">", $out_arg, "2>", $err_arg, ($init ? (init => $init) : ()))
-		or $c->logger->logdie("subcommand '@$cli' could not be started: \$!='$!'");
-
-	$c->cmd_line($cli);
-	$c->cmd_handle($h);
-	$c->stdout_ref(\$out);
-	$c->stderr_ref(\$err);
+	} else {
+		croak "Either 'program' or 'cli' must be provided";
+	}
 }
 
-sub finish {
-	my $self = shift;
-	my $c = shift;
+sub send_child_input {
+	my ( $self, $wheel, $heap ) = @_;
 
-	$self->cmd_finish($c);
+	if ( my $in = $heap->{in} ) {
+		warn "sending input: $in";
 
-	$c->confirm($c);
+		if ( ref($in) eq "SCALAR" ) {
+			$in = $$in;
+			$heap->{in} = undef;
+		} else {
+			$in = $in->();
+			$heap->{in} = undef unless defined $in;
+		}
+
+		warn "sending input: $in";
+
+		$wheel->put( $in );
+	} else {
+		$wheel->shutdown_stdin;
+	}
 }
 
-sub pump {
-	my ( $self, $c ) = @_;
-
-	my $h = $c->cmd_handle;
-
-	return unless $h->pumpable;
-
-	$h->pump_nb;
-	return 1;
+sub DIE {
+	my ( $heap, $exception ) = @_[HEAP, ARG0];
+	warn "exception: @_";
+	push @{ $heap->{exceptions} ||= [] }, $exception;
 }
 
-sub cmd_finish {
-	my ( $self, $c ) = @_;
+sub poe_stop {
+	warn "stop starting";
+	my ( $self, $kernel, $heap ) = @_[OBJECT, KERNEL, HEAP];
 
-	my $h = $c->cmd_handle;
+	if ( scalar keys %{ $heap->{pid_to_wheel} } ) {
+		require Data::Dumper;
+		die "AAAAAAAHHH Running proces!" . Data::Dumper::Dumper($heap);
+	}
 
-	$c->logger->info("finishing command '@{ $c->cmd_line }'");
-	
-	IPC::Run::finish($h)
-		or $c->logger->logdie("subcommand '@{ $c->cmd_line }' failed with exit code $?");
+	my $c = $heap->{c};
 
-	my $out = ${ $c->stdout_ref };
-	my $err = ${ $c->stderr_ref };
-	
-	return ($out, $err);
+	$c->command_line( $heap->{cli} ) if exists $heap->{cli};
+	$c->program( $heap->{program} ) if exists $heap->{program};
+	$c->program_debug_string( $heap->{program_debug_string} );
+	$c->stdout( $heap->{accum}{stdout} );
+	$c->stderr( $heap->{accum}{stderr} );
+	$c->program_exit( $heap->{program_exit} >> 8 );
+	$c->program_exit_full( $heap->{program_exit} );
+
+	$self->confirm_exit_code($c);
+}
+
+sub error {
+	my ( $self, $heap ) = @_[OBJECT, HEAP];
+	$heap->{c}->logger->warn("subprogram $heap->{program_debug_string} error: @_[ARG0 .. $#_]");
+}
+
+sub stdin {
+	my ( $self, $heap, $wheel_id ) = @_[OBJECT, HEAP, ARG0];
+	warn "stdin ready";
+	$self->send_child_input( $heap->{id_to_wheel}{$wheel_id}, $heap );
+}
+
+sub stdout {
+	my ( $self, $heap, $output ) = @_[OBJECT, HEAP, ARG0];
+	$heap->{accum}{stdout} .= $output;
+	$self->log_output( $heap->{c}, "stdout", $output ) if $heap->{log_stdout};
+}
+
+sub stderr {
+	my ( $self, $heap, $output ) = @_[OBJECT, HEAP, ARG0];
+	$heap->{accum}{stderr} .= $output;
+	$self->log_output( $heap->{c}, "stderr", $output ) if $heap->{log_stderr};
+}
+
+sub log_output {
+	my ( $self, $c, $name, $output ) = @_;
+
+	chomp($output) if ($output =~ tr/\n// == 1); # if it's one line, trim it
+	foreach my $line (split /\n/, $output){ # if it's not split it looks chaotic
+		$c->logger->warn("$name: $line");
+	}
+}
+
+sub close {
+	my ( $self, $heap ) = @_[OBJECT, HEAP];
+	warn "closing";
+	$heap->{c}->logger->info("finishing program $heap->{program_debug_string}");
 }
 
 sub log_invocation {
@@ -104,8 +245,7 @@ __END__
 
 =head1 NAME
 
-Verby::Action::RunCmd - a base role for actions which execute external
-commands.
+Verby::Action::RunCmd - a base role for actions which wrap L<POE::Wheel::Run>.
 
 =head1 SYNOPSIS
 

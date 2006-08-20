@@ -13,7 +13,12 @@ sub do {
 
 	my $path = $c->path;
 
+	if ( !defined($path) || !length($path) ){
+		$c->logger->logdie("invalid path");
+	}
+
 	$c->logger->info("creating path '$path'");
+
 	mkpath($path)
 		or $c->logger->logdie("couldn't mkpath('$path'): $!");
 

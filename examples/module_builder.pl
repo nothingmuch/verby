@@ -52,20 +52,20 @@ foreach my $tarball (@ARGV){
 			$c->export("workdir");
 		}
 	};
-	$untar->depends($mkdir);
+	$untar->depends([ $mkdir ]);
 
 	my $plscript = step "Verby::Action::MakefilePL";
-	$plscript->depends($untar);
+	$plscript->depends([ $untar ]);
 
 	my $make = step "Verby::Action::Make";
-	$make->depends($plscript);
+	$make->depends([ $plscript ]);
 
 	my $test = step "Verby::Action::Make" => sub {
 		my $self = shift;
 		my $c = shift;
 		$c->target("test");
 	};
-	$test->depends($make);
+	$test->depends([ $make ]);
 
 	$d->add_step($test);
 }

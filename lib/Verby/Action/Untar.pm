@@ -3,26 +3,27 @@
 package Verby::Action::Untar;
 use Moose;
 
-extends qw/Verby::Action/;
+extends qw/Verby::Action::RunCmd/;
 
 use Archive::Tar;
 use File::Spec;
 use Sub::Override;
 
-sub start {
-	my $self = shift;
-	my $c = shift;
+sub do {
+	my ( $self, $c, $poe ) = @_;
 
 	my $o = $self->_override_tar_error($c);
 
 	my $tarball = $c->tarball;
 	my $dest = $c->dest;
 
+	
+
 	# we're forking due to the chdir
 	defined(my $pid = fork)
 		or $c->logger->logdie("couldn't fork: $!");
 	
-	if ($pid){
+	if ($pid) {
 		$c->pid($pid);
 	} else {
 		$c->logger->info("untarring '$tarball' into '$dest'");

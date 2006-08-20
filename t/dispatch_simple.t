@@ -18,9 +18,9 @@ my @items = map { Test::MockObject->new } 1 .. 4;
 foreach my $meth (qw/is_satisfied provides_cxt/){
 	$_->set_always($meth => undef) for @items;
 }
-$_->set_list(depends => ()) for @items;
-$items[1]->set_list(depends => @items[0, 2]);
-$items[3]->set_list(depends => ($items[1]));
+$_->mock(depends => sub { wantarray ? () : [] }) for @items;
+$items[1]->mock( depends => sub { wantarray ? @items[0, 2] : [ @items[0, 2] ] });
+$items[3]->mock( depends => sub { wantarray ? $items[1] : [ $items[1] ] });
 
 my @log;
 $_->mock(do => sub { push @log, shift }) for @items;

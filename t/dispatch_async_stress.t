@@ -9,7 +9,7 @@ use Test::MockObject;
 use List::MoreUtils qw/uniq/;
 use Verby::Config::Data;
 
-my $steps = 1000;
+my $steps = $ENV{VERBY_STRESS_STEPS} || 200;
 
 my $m;
 BEGIN { use_ok($m = "Verby::Dispatcher") }
@@ -32,8 +32,18 @@ foreach my $slice (map { $_ * 10 }  1 .. (($steps / 10) - 1)) {
 }
 
 my @finished = grep { $_->is_satisfied } @items;
-$_->mock(finish => sub { push @finished, $_[0] }) for @items;
-$_->set_true("start") for @items;
+
+foreach my $item ( @items ) {
+	$item->mock( 'do' => sub {
+		my $state = shift;
+		POE::Session->create(
+			inline_states => {
+				_start => sub { },
+				_stop => sub { push @finished, $state },
+			}
+		);
+	});
+}
 
 foreach my $item (@items){
 	my $i = rand(rand(10));
