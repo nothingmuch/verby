@@ -12,3 +12,4 @@
 \.svn
 ^Makefile$
 \.old$
+examples/template.pl

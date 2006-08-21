@@ -25,7 +25,7 @@ __END__
 
 =head1 NAME
 
-Action::Stub - An action which just logs debug messages instead of dying.
+Verby::Action::Stub - An action which just logs debug messages.
 
 =head1 SYNOPSIS
 
