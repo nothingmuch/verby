@@ -3,7 +3,7 @@
 package Verby::Step::Closure;
 use Moose;
 
-extends qw/Verby::Step/;
+with qw/Verby::Step/;
 
 use overload '""' => 'stringify';
 
@@ -21,6 +21,7 @@ sub import {
     *{ (caller())[0] . "::step"} = \&step if $_[0] eq 'step';
 }
 
+sub depends {} # FIXME Moose::Role
 has depends => (
 	isa => "ArrayRef",
 	is  => "rw",
@@ -223,7 +224,7 @@ Yuval Kogman, E<lt>nothingmuch@woobling.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2005 by Infinity Interactive, Inc.
+Copyright 2005, 2006 by Infinity Interactive, Inc.
 
 L<http://www.iinteractive.com>
 

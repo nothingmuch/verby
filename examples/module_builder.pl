@@ -137,7 +137,7 @@ Yuval Kogman, E<lt>nothingmuch@woobling.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2005 by Infinity Interactive, Inc.
+Copyright 2005, 2006 by Infinity Interactive, Inc.
 
 L<http://www.iinteractive.com>
 

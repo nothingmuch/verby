@@ -1,17 +1,11 @@
 #!/usr/bin/perl
 
 package Verby::Step;
-use Moose;
+use Moose::Role;
 
-# FIXME use Moose::Role
+requires "depends";
 
-sub depends {
-	die "not implemented";
-}
-
-sub is_satisfied {
-	die "not implemented";
-}
+requires "is_satisfied";
 
 sub provides_cxt {
 	undef;
@@ -84,13 +78,7 @@ make assumptions, without asking the step to check that it is satisfied.
 
 =item B<do>
 
-=item B<start>
-
-=item B<finish>
-
-=item B<pump>
-
-These are basically delegations to the corresponding L<Verby::Action> methods.
+This is basically a delegation to the corresponding L<Verby::Action> method.
 
 The only interesting thing to do here is to fudge the context up a bit. For
 example, if your action assumes the C<path> key to be in the context, but you
@@ -115,11 +103,13 @@ free.
 
 =head1 BUGS
 
-None that we are aware of. Of course, if you find a bug, let us know, and we will be sure to fix it. 
+None that we are aware of. Of course, if you find a bug, let us know, and we
+will be sure to fix it. 
 
 =head1 CODE COVERAGE
 
-We use B<Devel::Cover> to test the code coverage of the tests, please refer to COVERAGE section of the L<Verby> module for more information.
+We use B<Devel::Cover> to test the code coverage of the tests, please refer to
+COVERAGE section of the L<Verby> module for more information.
 
 =head1 SEE ALSO
 
@@ -129,7 +119,7 @@ Yuval Kogman, E<lt>nothingmuch@woobling.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2005 by Infinity Interactive, Inc.
+Copyright 2005, 2006 by Infinity Interactive, Inc.
 
 L<http://www.iinteractive.com>
 
