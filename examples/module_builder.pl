@@ -3,8 +3,6 @@
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
-
 use Log::Log4perl qw/:easy/;
 
 use Verby::Step::Closure qw/step/;
