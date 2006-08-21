@@ -127,7 +127,7 @@ sub create_poe_sessions {
 				_start => sub {
 					my ( $kernel, $session) = @_[KERNEL, SESSION];
 					$kernel->sig("VERBY_STEP_FINISHED" => "step_finished");
-					$kernel->refcount_increment( $session->ID, "step_unexecuted" );
+					$kernel->refcount_increment( $session->ID, "unresolved_dependencies" );
 					$kernel->yield("try_executing_step");
 				},
 				step_finished => sub {
@@ -152,11 +152,15 @@ sub create_poe_sessions {
 
 					$kernel->sig("VERBY_STEP_FINISHED"); # we're no longer waiting for other steps to finish
 					$sessions->remove( $session ); # yuck yuck yuck
-
-					eval { $heap->{verby_dispatcher}->start_step( $step, \@_ ) };
-
 					# this session can go away unless it's got anything else to do
-					$kernel->refcount_decrement( $session->ID, "step_unexecuted" );
+					# FIXME has to happen later
+					# $kernel->refcount_decrement( $session->ID, "unresolved_dependencies" );
+
+					# this may create child sessions
+					$heap->{verby_dispatcher}->start_step( $step, \@_ );
+
+					# FIXME hack
+					$kernel->refcount_decrement( $session->ID, "unresolved_dependencies" );
 				},
 				_stop => sub {
 					my ( $kernel, $heap ) = @_[KERNEL, HEAP];
@@ -167,7 +171,8 @@ sub create_poe_sessions {
 
 					$_->() for @{ $heap->{post_hooks} };
 
-					# FIXME $kernel->signal( $kernel, "VERBY_STEP_FINISHED", $step );
+					# FIXME 
+					#$kernel->signal( $kernel, "VERBY_STEP_FINISHED", $step );
 					$kernel->call( $_, "step_finished", $step ) for $sessions->members;
 				},
 				DIE => sub { $_[HEAP]{g_cxt}->logger->warn("cought exception: @_") },
