@@ -112,83 +112,103 @@ sub create_poe_sessions {
 	my ( $self ) = @_;
 
 	my $g_cxt = $self->global_context;
-	$self->global_context->logger->debug("Creating POE sessions for steps");
+	$g_cxt->logger->debug("Creating parent POE session");
+	
+	POE::Session->create(
+		inline_states => {
+			_start => sub {
+				my ( $kernel, $heap ) = @_[KERNEL, HEAP];
+				my $self = $heap->{verby_dispatcher};
 
-	my $all_steps = $self->step_set;
-	my $satisfied = $self->satisfied_set;
+				# FIXME
+				# handle sigint
 
-	my $pending = $all_steps->difference( $satisfied );
+				my $g_cxt = $self->global_context;
 
-	my $sessions = Set::Object->new;
+				my $all_steps = $self->step_set;
+				my $satisfied = $self->satisfied_set;
 
-	foreach my $step ( $pending->members ) {
-		$sessions->insert( POE::Session->create(
-			inline_states => {
-				_start => sub {
-					my ( $kernel, $session) = @_[KERNEL, SESSION];
-					$kernel->sig("VERBY_STEP_FINISHED" => "step_finished");
-					$kernel->refcount_increment( $session->ID, "unresolved_dependencies" );
-					$kernel->yield("try_executing_step");
-				},
-				step_finished => sub {
-					my ( $kernel, $heap, $done ) = @_[KERNEL, HEAP, ARG0];
+				my $pending = $all_steps->difference( $satisfied );
 
-					my $deps = $heap->{dependencies};
+				foreach my $step ( $pending->members ) {
+					$g_cxt->logger->debug("Creating POE session for step $step");
 
-					if ( $deps->includes($done) ) {
-						$deps->remove( $done );
-						$kernel->yield("try_executing_step");
-					}
-				},
-				try_executing_step => sub {
-					my ( $kernel, $session, $heap ) = @_[KERNEL, SESSION, HEAP];
+					POE::Session->create(
+						inline_states => {
+							_start => sub {
+								my ( $kernel, $session) = @_[KERNEL, SESSION];
 
-					return if $heap->{dependencies}->size; # don't run if we're waiting
-					return if $heap->{ran}++; # don't run twice
+								$kernel->sig("VERBY_STEP_FINISHED" => "step_finished");
+								$kernel->refcount_increment( $session->ID, "unresolved_dependencies" );
 
-					my $step = $heap->{step};
-					
-					$heap->{g_cxt}->logger->debug("All dependencies of '$step' have finished, starting");
+								$kernel->yield("try_executing_step");
+							},
+							step_finished => sub {
+								my ( $kernel, $heap, $done ) = @_[KERNEL, HEAP, ARG1];
 
-					$kernel->sig("VERBY_STEP_FINISHED"); # we're no longer waiting for other steps to finish
-					$sessions->remove( $session ); # yuck yuck yuck
-					# this session can go away unless it's got anything else to do
-					# FIXME has to happen later
-					# $kernel->refcount_decrement( $session->ID, "unresolved_dependencies" );
+								my $deps = $heap->{dependencies};
 
-					# this may create child sessions
-					$heap->{verby_dispatcher}->start_step( $step, \@_ );
+								if ( $deps->includes($done) ) {
+									$deps->remove( $done );
+									$kernel->yield("try_executing_step");
+								}
+							},
+							try_executing_step => sub {
+								my ( $kernel, $session, $heap ) = @_[KERNEL, SESSION, HEAP];
 
-					# FIXME hack
-					$kernel->refcount_decrement( $session->ID, "unresolved_dependencies" );
-				},
-				_stop => sub {
-					my ( $kernel, $heap ) = @_[KERNEL, HEAP];
-					my $step = $heap->{step};
-					$heap->{g_cxt}->logger->info("step $step has finished.");
+								return if $heap->{dependencies}->size; # don't run if we're waiting
+								return if $heap->{ran}++; # don't run twice
 
+								my $step = $heap->{step};
+
+								$heap->{g_cxt}->logger->debug("All dependencies of '$step' have finished, starting");
+
+								$kernel->sig("VERBY_STEP_FINISHED"); # we're no longer waiting for other steps to finish
+								$kernel->refcount_decrement( $session->ID, "unresolved_dependencies" );
+
+								# this may create child sessions. If it doesn't this session will go away
+								$heap->{verby_dispatcher}->start_step( $step, \@_ );
+							},
+							_stop => sub {
+								my ( $kernel, $heap ) = @_[KERNEL, HEAP];
+								my $step = $heap->{step};
+
+								$heap->{g_cxt}->logger->info("step $step has finished.");
+
+								$_->() for @{ $heap->{post_hooks} };
+
+								return $step;
+							},
+							DIE     => sub { $_[HEAP]{g_cxt}->logger->warn("cought exception: @_") },
+							_child  => sub { $_[HEAP]{g_cxt}->logger->debug("Step $_[HEAP]{step} _child event: $_[ARG0]") },
+						},
+						heap => {
+							%{ $heap },
+							step         => $step,
+							dependencies => Set::Object->new( $step->depends )->difference($satisfied),
+							ran          => 0,
+							post_hooks   => [],
+						},
+					);
+				}
+			},
+			_child => sub {
+				my ( $kernel, $session, $heap, $type, $step ) = @_[KERNEL, SESSION, HEAP, ARG0, ARG2];
+
+				if ( $type eq "lose" ) {
 					$heap->{satisfied}->insert($step);
-
-					$_->() for @{ $heap->{post_hooks} };
-
-					# FIXME 
-					#$kernel->signal( $kernel, "VERBY_STEP_FINISHED", $step );
-					$kernel->call( $_, "step_finished", $step ) for $sessions->members;
-				},
-				DIE => sub { $_[HEAP]{g_cxt}->logger->warn("cought exception: @_") },
-				_child => sub { $_[HEAP]{g_cxt}->logger->debug("Step $_[HEAP]{step} _child event: $_[ARG0]") },
+					$kernel->signal( $session, "VERBY_STEP_FINISHED", $step );
+				}
 			},
-			heap => {
-				step             => $step,
-				dependencies     => Set::Object->new( $step->depends )->difference($satisfied),
-				ran              => 0,
-				verby_dispatcher => $self,
-				satisfied        => $satisfied,
-				post_hooks       => [],
-				g_cxt            => $g_cxt, # convenience
-			},
-		) );
-	}
+			DIE   => sub { $_[HEAP]{g_cxt}->logger->warn("cought exception: @_") },
+			_stop => sub { $_[HEAP]{g_cxt}->logger->debug("parent POE session closing") },
+		},
+		heap => {
+			verby_dispatcher => $self,
+			g_cxt            => $g_cxt, # convenience
+			satisfied        => $self->satisfied_set,
+		}
+	);
 }
 
 sub do_all {

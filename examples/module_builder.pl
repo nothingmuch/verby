@@ -49,7 +49,7 @@ foreach my $tarball (@ARGV){
 	};
 	$untar->depends([ $mkdir ]);
 
-	my $plscript = step "Verby::Action::MakefilePL";
+	my $plscript = step "Verby::Action::BuildTool";
 	$plscript->depends([ $untar ]);
 
 	my $make = step "Verby::Action::Make";
@@ -109,7 +109,7 @@ The C<after> handler sets the C<workdir> variable to the value of the
 C<src_dir> variable, and exports C<workdir> so that it's accessible to
 subsequent steps.
 
-=item L<Verby::Action::MakefilePL>
+=item L<Verby::Action::BuildTool>
 
 The next thing to do is run the C<Makefile.PL> file. We set C<workdir> to
 C<src_dir> in the previous step, and that's all we need.
