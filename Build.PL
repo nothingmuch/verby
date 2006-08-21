@@ -57,6 +57,7 @@ Module::Build->new(
 		'Test::MockObject' => 0,
 		'Test::Deep'       => 0,
 		'Test::Exception'  => 0,
+		'Test::use::ok'    => 0,
 		'File::Temp'       => 0,
 		'Hash::AsObject'   => 0,
 		'Test::Plan'       => 0,

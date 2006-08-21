@@ -1,37 +1,37 @@
 #!/usr/bin/perl
 
 package Verby::Action::Mysql::Util;
+use Moose;
 
-use strict;
-use warnings;
+has dbh => (
+	isa => "Object",
+	is  => "ro",
+	required => 1,
+);
 
-our $VERSION = '0.01';
+has use_time_piece => (
+	isa => "Bool",
+	is  => "ro",
+	default => 0,
+);
 
-sub new {
-	my $pkg = shift;
-	my @params = @_;
-	unshift @params, "dbh" if @params == 1;
-
-	bless {@params}, $pkg;
-}
-
-sub use_time_piece {
-	my $self = shift;
-	$self->{use_time_piece} = shift if @_;
-	$self->{use_time_piece};
-}
+has _table_info => (
+	isa => "HashRef",
+	is  => "ro",
+	default => sub { return {} },
+);
 
 sub _time_piecify {
-	my $self = shift;
+	my ( $self, @info ) = @_;
 	
-	return (wantarray ? @_ : $_[0]) unless $self->use_time_piece;
+	return (wantarray ? @info : $info[0]) unless $self->use_time_piece;
 
 	require Time::Piece;
 	require Time::Piece::MySQL;
 
 	my @ret; # return *copies*
 	
-	foreach my $hash (@_){
+	foreach my $hash (@info){
 		push @ret, undef and next unless $hash;
 		my %new = %$hash;
 		foreach my $time_key (grep { /_time$/ } keys %new){
@@ -47,21 +47,15 @@ sub _time_piecify {
 }
 
 sub get_info {
-	my $self = shift;
-	my @tables = shift;
+	my ( $self, @tables ) = @_;
 
-	my @need_query = grep { not exists $self->{tables}{$_} } @tables;
+	my @need_query = grep { not exists $self->_table_info->{$_} } @tables;
 
 	@need_query = () if @need_query > 1; # if it's more than one table, get them all
 	
 	$self->_load_table_status(@need_query);
 
-	$self->_time_piecify(@{ $self->{tables} }{@tables});
-}
-
-sub dbh {
-	my $self = shift;
-	$self->{dbh};
+	$self->_time_piecify(@{ $self->_table_info }{@tables});
 }
 
 sub _load_table_status {
@@ -76,14 +70,14 @@ sub _load_table_status {
     while (my $table_row = $status->fetchrow_hashref('NAME_lc') ) {
         my $name = $table_row->{name};
 
-		$self->{tables}{$name} = $table_row;
+		$self->_table_info->{$name} = $table_row;
 
 		# can't have placeholders for table names... *sigh*
 		my $desc = $dbh->prepare("DESCRIBE $name");
 		$desc->execute;
 		while (my $col = $desc->fetchrow_hashref){
-			push @{ $self->{tables}{$name}{columns} }, $col;
-			$self->{tables}{$name}{columns_hash}{$col->{Field}} = $col;
+			push @{ $self->_table_info->{$name}{columns} }, $col;
+			$self->_table_info->{$name}{columns_hash}{$col->{Field}} = $col;
 		}
 		$desc->finish;
     }

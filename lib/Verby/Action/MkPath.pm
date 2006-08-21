@@ -3,7 +3,7 @@
 package Verby::Action::MkPath;
 use Moose;
 
-extends qw/Verby::Action/;
+with qw/Verby::Action/;
 
 use File::Path qw/mkpath/;
 
@@ -45,6 +45,7 @@ Verby::Action::MkPath - Action to create a directory path
 =head1 SYNOPSIS
 
 	use Verby::Step::Closure qw/step/;
+
 	step "Verby::Action::MkPath" => sub {
 		my ($self, $c) = @_;
 		$c->path("/some/path/that/will/be/created");
@@ -60,7 +61,11 @@ This Action uses L<File::Path/mkpath> to create a directory path.
 
 =item B<do>
 
+Creates the directory C<< $c->path >>.
+
 =item B<verfiy>
+
+Ensures that the directory C<< $c->path >> exists.
 
 =back
 

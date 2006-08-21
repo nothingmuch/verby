@@ -3,15 +3,18 @@
 package Verby::Action::Stub;
 use Moose;
 
-extends qw/Verby::Action/;
+with qw/Verby::Action/;
 
 sub do {
-	$_[1]->logger->debug("stub do");
+	my ( $self, $c ) = @_;
+	$c->done(1);
+	$c->logger->debug("stub do");
 }
 
 sub verify {
-	$_[1]->logger->debug("stub verify");
-	undef;
+	my ( $self, $c ) = @_;
+	$c->logger->debug("stub verify");
+	$c->done;
 }
 
 __PACKAGE__
@@ -40,17 +43,23 @@ This action is good for use when you need to Stub certain actions.
 
 =item B<do>
 
+Sets C<< $c->done >>.
+
 =item B<verify>
+
+Returns C<< $c->done >>.
 
 =back
 
 =head1 BUGS
 
-None that we are aware of. Of course, if you find a bug, let us know, and we will be sure to fix it. 
+None that we are aware of. Of course, if you find a bug, let us know, and we
+will be sure to fix it. 
 
 =head1 CODE COVERAGE
 
-We use B<Devel::Cover> to test the code coverage of the tests, please refer to COVERAGE section of the L<Verby> module for more information.
+We use B<Devel::Cover> to test the code coverage of the tests, please refer to
+COVERAGE section of the L<Verby> module for more information.
 
 =head1 SEE ALSO
 

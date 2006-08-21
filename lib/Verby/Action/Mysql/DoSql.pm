@@ -1,18 +1,17 @@
 #!/usr/bin/perl
 
 package Verby::Action::Mysql::DoSql;
-use Moose
+use Moose;
 
-extends qw/Verby::Action/;
+with qw/Verby::Action/;
 
 sub do {
-	my $self = shift;
-	my $c = shift;
+	my ( $self, $c ) = @_;
 
 	my $dbh = $c->dbh;
 
-	local $dbh->{PrintError} = 0;
-	local $dbh->{RaiseError} = 0;
+	local $dbh->{PrintError}  = 0;
+	local $dbh->{RaiseError}  = 0;
 	local $dbh->{HandleError} = sub { $c->logger->logdie(shift(@_) . " $self " . Data::Dumper::Dumper($c->data)) };
 
 	$self->do_sql($c);
@@ -20,14 +19,21 @@ sub do {
 	$self->confirm($c);
 }
 
+sub verify {
+	my ( $self, $c ) = @_;
+	$c->sql_done;
+}
+
 sub do_sql {
-	my $self = shift;
-	my $c = shift;
+	my ( $self, $c ) = @_;
 
-	my $dbh = $c->dbh;
-	my $sql = $c->sql;
+	my $dbh    = $c->dbh;
+	my $sql    = $c->sql;
+	my @params = @{ $c->params || [] };
 
-	$dbh->do($sql);
+	$dbh->do($sql, @params);
+
+	$c->sql_done(1);
 }
 
 __PACKAGE__

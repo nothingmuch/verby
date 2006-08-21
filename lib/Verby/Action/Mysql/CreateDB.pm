@@ -3,40 +3,29 @@
 package Verby::Action::Mysql::CreateDB;
 use Moose;
 
-extends qw/Verby::Action/;
+extends qw/Verby::Action::Mysql::DoSql/;
 
-use DBI;
+before do => sub {
+	my ( $self, $c ) = @_;
 
-sub do {
-	my $self = shift;
-	my $c = shift;
+	$c->sql("create database ?");
+	$c->params([ undef, $c->db_name ]);
 
 	my $dbh = $c->dbh;
-	
 	$c->logger->info("creating database in $dbh");
-
-	{
-		local $dbh->{RaiseError} = 1;
-		local $dbh->{PrintError} = 0; # no need to print it if it's raised
-		$dbh->do("create database ?", undef, $c->db_name);
-	}
-
-	$self->confirm($c);
-}
+};
 
 sub verify {
-	my $self = shift;
-	my $c = shift;
+	my ( $self, $c ) = @_;
 
 	exists $self->databases($c)->{$c->db_name}
 }
 
 sub databases {
-	my $self = shift;
-	my $c = shift;
+	my ( $self, $c ) = @_;
 
 	# returns a hash ref like { test => "dbi:mysql:test" }
-	+{ map { (DBI->parse_dsn($_))[4] => $_ } $c->dbh->data_sources };
+	return { map { (DBI->parse_dsn($_))[4] => $_ } $c->dbh->data_sources };
 }
 
 __PACKAGE__

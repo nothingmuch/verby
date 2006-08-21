@@ -3,14 +3,13 @@
 package Verby::Action::AnalyzeDataFile;
 use Moose;
 
-extends qw/Verby::Action/;
+with qw/Verby::Action/;
 
 use File::stat;
 use Fcntl qw/SEEK_SET/;
 
 sub do {
-	my $self = shift;
-	my $c = shift;
+	my ( $self, $c ) = @_;
 
 	my $file = $c->file;
 
@@ -34,7 +33,7 @@ sub do {
 			local $_ = <$fh>;
 
 			# guess the separator
-			/([\t,])/
+			/([\t,\|:])/
 				? $c->field_sep(local $, = $1)
 				: $c->logger->logdie("Can't guess field separator");
 
@@ -59,8 +58,7 @@ sub do {
 }
 
 sub verify {
-	my $self = shift;
-	my $c = shift;
+	my ( $self, $c ) = @_;
 
 	defined $c->stat;
 }
@@ -73,7 +71,8 @@ __END__
 
 =head1 NAME
 
-Verby::Action::AnalyzeDataFile - 
+Verby::Action::AnalyzeDataFile - Analyze a text file containing delimiter
+separated data.
 
 =head1 SYNOPSIS
 

@@ -3,7 +3,7 @@
 package Verby::Action::Untar;
 use Moose;
 
-extends qw/Verby::Action::RunCmd/;
+with qw/Verby::Action::Run/;
 
 use Archive::Tar;
 use File::Spec;
@@ -14,7 +14,7 @@ sub do {
 	my ( $self, $c ) = @_;
 
 	my $tarball = $c->tarball;
-	my $dest = $c->dest;
+	my $dest    = $c->dest;
 	
 	$c->logger->info("untarring '$tarball' into '$dest'");
 
@@ -69,8 +69,8 @@ sub verify {
 
 		my $destfile = File::Spec->catfile($dest, $name);
 		my $existing = stat($destfile);
-		unless ( $existing ) { # and $existing->mtime == $mtime and ( -d $destfile || $existing->size == $size ) ) {
-			$c->logger->warn("file '$name' requires reextraction") if $i; # it's ok only for the first file to be missing
+		unless ( $existing and ( -d $destfile or $existing->size == $size && $existing->mtime == $mtime ) ) {
+			$c->logger->warn("file '$name' requires re-extraction") if $i; # it's ok only for the first file to be missing
 			return undef;
 		}
 
@@ -102,7 +102,7 @@ __END__
 
 =head1 NAME
 
-Verby::Action::Untar - Action to un-tar an archive
+Verby::Action::Untar - Action to un-tar an archive.
 
 =head1 SYNOPSIS
 
@@ -116,21 +116,46 @@ This Action, using L<Archive::Tar>, will untar a given archive.
 
 =over 4
 
-=item B<start>
+=item B<do>
 
-=item B<finish>
+Fork off command to unpack the tarfile using L<Verby::Action::Run>.
 
-=item B<verify>
+=back
+
+=head1 PARAMETERS
+
+=over 4
+
+=item B<tarball>
+
+The path to the archive that will require extraction.
+
+=item B<dest>
+
+The path to extract into.
+
+=back
+
+=head1 OUTPUT PARAMETERS
+
+=over 4
+
+=item B<main_dir>
+
+When the tar archive is a single-directory archive, this field will be set to
+that root directory.
 
 =back
 
 =head1 BUGS
 
-None that we are aware of. Of course, if you find a bug, let us know, and we will be sure to fix it. 
+None that we are aware of. Of course, if you find a bug, let us know, and we
+will be sure to fix it. 
 
 =head1 CODE COVERAGE
 
-We use B<Devel::Cover> to test the code coverage of the tests, please refer to COVERAGE section of the L<Verby> module for more information.
+We use B<Devel::Cover> to test the code coverage of the tests, please refer to
+COVERAGE section of the L<Verby> module for more information.
 
 =head1 SEE ALSO
 

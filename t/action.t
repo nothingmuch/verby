@@ -3,23 +3,13 @@
 use strict;
 use warnings;
 
-use Test::More tests => 13;
+use Test::More tests => 7;
 use Test::Exception;
 use Test::MockObject;
 
-my $m;
-BEGIN { use_ok($m = "Verby::Action") };
+use ok "Verby::Action";
 
-can_ok($m, "new");
-isa_ok(my $a = $m->new, $m);
-
-can_ok($m, "do");
-dies_ok { $m->do } "'do' is a stub";
-
-can_ok($m, "verify");
-dies_ok { $m->do } "'verify' is a stub";
-
-can_ok($m, "confirm");
+can_ok("Verby::Action", "confirm");
 
 my $v = 1;
 my @args;
@@ -27,7 +17,9 @@ my @args;
 	package My::Action;
 	use Moose;
 
-	extends qw/Verby::Action/;
+	with qw/Verby::Action/;
+
+	sub do { die }
 
 	sub verify { push @args, [ @_ ]; $v }
 }

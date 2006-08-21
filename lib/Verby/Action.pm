@@ -1,20 +1,17 @@
 #!/usr/bin/perl
 
 package Verby::Action;
-use Moose;
+use Moose::Role;
 
 use Carp qw/longmess/;
 
-sub do {
-	die "do(@_) not implemented" . longmess;
-}
+requires "do";
 
-sub verify {
-	die "verify(@_) not implemented" . longmess;
-}
+requires "verify";
 
 sub confirm {
 	my ( $self, $c, @args ) = @_;
+
 	$self->verify($c, @args) or
 		$c->logger->logdie(
 			"verification of $self failed: "
@@ -29,7 +26,7 @@ __END__
 
 =head1 NAME
 
-Verby::Action - The baseclass for an action in Verby.
+Verby::Action - The base role for an action in Verby.
 
 =head1 SYNOPSIS
 
@@ -39,22 +36,27 @@ Verby::Action - The baseclass for an action in Verby.
 	with qw/Verby::Action/;
 
 	sub do { ... }
-	sub confirm { ... }
+
+	sub verify { ... }
 
 =head1 DESCRIPTION
 
-A Verby::Action is basically a reusable bit of code.
-
-Assuming it gets a L<Verby::Context> object sent to both C<do> and C<verify>,
-it knows to check whether it needs to be done, and actually do the job.
-
-Think of it as an abstraction of a make target.
+A Verby::Action is an object encapsulating reusable code. Steps usually
+delegate to actions, for the actual grunt work.
 
 =head1 METHODS
 
 =over 4
 
 =item B<new>
+
+Instantiate an action. Actions should be able to live indefinitely, and should
+not carry internal state with them. All the parameters for C<do> or C<verify>
+are provided within the context.
+
+The action instance data should only be used to configure action "flavours",
+controlling behavior that should not be parameter sensitive (configuration
+data).
 
 =item B<do $cxt>
 
@@ -74,7 +76,8 @@ you want to run a command.
 
 =item B<verify $cxt>
 
-Perform a boolean check - whether or not the action needs to happen or not.
+Perform a boolean check - whether or not the action is completed, for a given
+set of arguments.
 
 For example, if C<do> downloads C<< $c->file >> from C<< $c->url >>, then the
 verify method would look like:
@@ -83,6 +86,9 @@ verify method would look like:
 		my ($self, $c) = @_;
 		-f $c->file;
 	}
+
+or it could even make a HEAD request and make sure that C<< $c->file >> is up
+to date.
 
 =item B<confirm $cxt>
 
@@ -96,29 +102,15 @@ Typically called at the end of an action's do:
 
 It will call C<< $c->logger->logdie >> unless C<verify> returns a true value.
 
+If C<< $c->error >> contains a string then it'll be printed as well.
+
 =back
 
-=head1 ASYNCHRONEOUS INTERFACE
+=head1 ASYNCHRONOUS ACTIONS
 
-An asynchroneous action typically implements two or three methods instead of
-C<do>, analogeous to C<IPC::Run>'s nonblocking interface:
-
-=over 4
-
-=item B<start $cxt>
-
-Initiate the action, returning as early as possible.
-
-=item B<finish $cxt>
-
-Clean up the action.
-
-=item B<pump $cxt>
-
-Perform any nonblocking operation needed to keep things moving.
-
-If this retrurns a false value, the action is considered finished, and
-C<finish> will be called by the C<Verby::Dispatcher>.
+Since L<Verby> is an abstraction layer over L<POE> and every step get's it's
+own L<POE::Session>, an actions C<do> method can create child sessions, and the
+parent session will wait till they are completed, as per default POE behavior.
 
 =back
 
@@ -134,7 +126,8 @@ L<Verby::Action> subclass.
 
 =head1 BUGS
 
-None that we are aware of. Of course, if you find a bug, let us know, and we will be sure to fix it. 
+None that we are aware of. Of course, if you find a bug, let us know, and we
+will be sure to fix it. 
 
 =head1 CODE COVERAGE
 
@@ -148,7 +141,7 @@ Yuval Kogman, E<lt>nothingmuch@woobling.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2005 by Infinity Interactive, Inc.
+Copyright 2005, 2006 by Infinity Interactive, Inc.
 
 L<http://www.iinteractive.com>
 

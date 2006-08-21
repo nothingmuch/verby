@@ -3,20 +3,36 @@
 package Verby::Action::Copy;
 use Moose;
 
-extends qw/Verby::Action::RunCmd/;
+with qw/Verby::Action::Run::Unconditional/;
 
 use File::Rsync;
 
+has rsync_path => (
+	isa => "Str",
+	is  => "rw",
+	default => undef,
+);
+
+has rsync_options => (
+	isa => 'HashRef',
+	is  => "rw",
+	default => sub { {} },
+);
+
+has rsync_object => (
+	isa => "Object",
+	is  => "rw",
+	lazy => 1,
+	default => sub { $_[0]->_make_rsync_object },
+);
+
 sub do {
 	my ( $self, $c ) = @_;
+	my ( $source, $dest ) = ( $c->source, $c->dest );
 
-	my $source = $c->source;
-	my $dest = $c->dest;
+	my $cmd = $self->rsync_cli( $c );
 
 	$c->logger->info("copying tree from '$source' to '$dest'");
-
-	my $r = File::Rsync->new({ archive => 1, delete => 1 }) or $c->logger->logdie("couldn't create rsync obj");
-	my $cmd = $r->getcmd({ src => $source, dest => $dest }) or $c->logger->logdie("couldn't determine rsync command to run");
 
 	$self->create_poe_session(
 		c          => $c,
@@ -25,13 +41,31 @@ sub do {
 	);
 }
 
-sub finished {
-	my ( $self, $c ) = @_;
-	$c->done(1);
-	$self->confirm( $c );
+sub rsync_cli {
+	my ( $self, %params ) = @_;
+	my ( $source, $dest ) = ( $c->source, $c->dest );
+
+	my $rsync_path = $self->rsync_path;
+
+	my $r = $self->rsync_object || $c->logger->logdie("couldn't create rsync obj");
+
+	return $r->getcmd({
+		src  => $source,
+		dest => $dest
+	}) || $c->logger->logdie("couldn't determine rsync command to run");
 }
 
-sub verify { $_[1]->done }
+sub _make_rsync_object {
+	my $self = shift;
+
+	return File::Rsync->new({
+		archive => 1,
+		delete  => 1,
+		quiet   => 1,
+		( $rsync_path ? 'rsync-path' => $rsync_path : () ),
+		%{ $self->rsync_options },
+	});
+}
 
 __PACKAGE__
 
@@ -62,23 +96,68 @@ to another.
 
 =over 4
 
-=item B<start>
+=item B<do>
 
-=item B<finish>
+Runs rsync from C<< $c->source >> to C<< $c->dest >> unconditionally. Since
+rsync has it's own verification logic this is still fairly fast.
 
-=item B<verfiy>
+=item B<rsync_cli>
+
+Returns an array reference of the command line to use. Calls C<getcmd> on
+C<rsync_object>.
+
+=back
+
+=head1 PARAMETERS
+
+The following parameters are taken from the context object:
+
+=over 4
+
+=item B<source>
+
+=item B<dest>
+
+The rsync source/destination paths to use.
+
+=back
+
+=head1 FIELDS
+
+The actions instance can contain additional configuration options.
+
+=over 4
+
+=item B<rsync_path>
+
+When undef, this is handled by L<File::Rsync>. Otherwise you can provide an
+alternate path for rsync.
+
+=item B<rsync_options>
+
+A hash reference with additional optiosn to override the defaults.
+
+=item B<rsync_object>
+
+This is a lazy field, that creates a L<File::Rsync> object based on the other
+fields. You may override this with any object that can handle L<File::Rsync>'s
+C<getcmd> method.
 
 =back
 
 =head1 BUGS
 
-None that we are aware of. Of course, if you find a bug, let us know, and we will be sure to fix it. 
+None that we are aware of. Of course, if you find a bug, let us know, and we
+will be sure to fix it. 
 
 =head1 CODE COVERAGE
 
-We use B<Devel::Cover> to test the code coverage of the tests, please refer to COVERAGE section of the L<Verby> module for more information.
+We use B<Devel::Cover> to test the code coverage of the tests, please refer to
+COVERAGE section of the L<Verby> module for more information.
 
 =head1 SEE ALSO
+
+L<File::Rsync>, L<Verby::Action::Run>
 
 =head1 AUTHOR
 
@@ -86,7 +165,7 @@ Yuval Kogman, E<lt>nothingmuch@woobling.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2005 by Infinity Interactive, Inc.
+Copyright 2005, 2006 by Infinity Interactive, Inc.
 
 L<http://www.iinteractive.com>
 

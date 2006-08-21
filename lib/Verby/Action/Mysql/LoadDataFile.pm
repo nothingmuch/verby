@@ -12,15 +12,14 @@ use File::stat;
 use DBI;
 
 sub do_sql {
-	my $self = shift;
-	my $c = shift;
+	my ( $self, $c ) = @_;
 
-	my $dbh = $c->dbh;
+	my $dbh        = $c->dbh;
 	my $table_name = $c->table;
-	my $file = $c->file;
+	my $file       = $c->file;
 
-	my $fs = $c->field_sep;
-	my $ls = $c->line_sep;
+	my $fs   = $c->field_sep;
+	my $ls   = $c->line_sep;
 	my $skip = $c->skip_lines || 0;
 
 	$c->logger->info("Deleting all records from table '$table_name'");
@@ -105,7 +104,8 @@ __END__
 
 =head1 NAME
 
-Verby::Action::Mysql::LoadDataFile - Action to validate and import data into a MySQL table
+Verby::Action::Mysql::LoadDataFile - Action to validate and import data into a
+MySQL table.
 
 =head1 SYNOPSIS
 

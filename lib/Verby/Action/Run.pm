@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 
-package Verby::Action::RunCmd;
-use Moose;
+package Verby::Action::Run;
+use Moose::Role;
 
-extends qw/Verby::Action/;
+with qw/Verby::Action/;
 
 use Carp qw/croak/;
 
@@ -182,6 +182,8 @@ sub poe_stop {
 	$c->stderr( $heap->{accum}{stderr} );
 	$c->program_exit( $heap->{program_exit} >> 8 );
 	$c->program_exit_full( $heap->{program_exit} );
+
+	$c->program_finished(1);
 
 	$self->confirm_exit_code($c);
 

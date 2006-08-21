@@ -3,39 +3,54 @@
 package Verby::Action::Template;
 use Moose;
 
-extends qw/Verby::Action/;
+with qw/Verby::Action/;
 
 use Template;
 use Template::Constants qw( :debug );
 
-sub do {
-	my $self = shift;
-	my $c = shift;
+has template_options => (
+	isa => "HashRef",
+	is  => "rw",
+	auto_deref => 1,
+	default    => sub { return {
+		ABSOLUTE => 1,
+		DEBUG    => DEBUG_UNDEF,
+	}},
+);
 
-	my $output = $c->output;
+has template_object => (
+	isa => "Object",
+	is  => "rw",
+	default => sub {
+		my $self = shift;
+		Template->new( $self->template_options ),
+	},
+);
+
+sub do {
+	my ( $self, $c ) = @_;
+
+	my $output   = $c->output;
 	my $template = $c->template;
 
 	$c->logger->info("templating '$template' into $output");
 
-	my $t = Template->new(ABSOLUTE => 1, DEBUG => DEBUG_UNDEF);
+	my $t = $self->template_object;
 
-	$t->process($template, $self->template_data($c), $output)
+	$t->process($template, $self->template_vars($c), $output)
 		|| $c->logger->logdie("couldn't process template: " . $t->error);
 }
 
-sub template_data {
-	my $self = shift;
-	my $c = shift;
-
-	+{ c => $c };
+sub template_vars {
+	my ( $self, $c ) = @_;
+	return { c => $c };
 }
 
 sub verify {
-	my $self = shift;
-	my $c = shift;
+	my ( $self, $c ) = @_;
 
 	my $output = $c->output;
-	
+
 	(defined($output) and not ref($output))
 		? -e $output
 		: undef;
@@ -57,7 +72,8 @@ Verby::Action::Template - Action to process Template Toolkit files
 
 =head1 DESCRIPTION
 
-This Action, given a set of template data, will process Template Toolkit files and return their output.
+This Action, given a set of template data, will process Template Toolkit files
+and return their output.
 
 =head1 METHODS 
 
@@ -65,9 +81,31 @@ This Action, given a set of template data, will process Template Toolkit files a
 
 =item B<do>
 
-=item B<template_data>
+Run the template.
+
+=item B<template_vars>
+
+Construct the tempalte variables.
 
 =item B<verify>
+
+Returns true if C<< $c->output >> is a plain string a file by that name exists.
+
+=back
+
+=head1 FIELDS
+
+=over 4
+
+=item B<template_options>
+
+A hash reference containing the default options for the TT constructor. Has
+DEBUG_UNDEF enabled, and ABSOLUTE set to true.
+
+=item B<template_object>
+
+A lazy field, whose default value is defined as
+C<< Template->new( $self->template_options ) >>.
 
 =back
 
