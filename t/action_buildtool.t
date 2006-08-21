@@ -10,7 +10,7 @@ use Test::MockObject;
 use POE;
 
 BEGIN {
-	plan 7,
+	plan tests => 7,
 	need_module("Directory::Scratch");
 }
 
