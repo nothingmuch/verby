@@ -55,7 +55,17 @@ sub verify {
 	my $target = File::Spec->catfile($c->workdir, $self->target);
 	my $script = File::Spec->catfile($c->workdir, $self->script);
 
-	return ( -e $target && stat($target)->mtime >= stat($script)->mtime );
+	unless (-e $target) {
+	   $c->error("$target doesn't exist");
+	   return;
+	}
+	
+	unless ( stat($target)->mtime >= stat($script)->mtime ) {
+		$c->error("$target is out of date");
+		return;
+	}
+
+	return 1;
 }
 
 __PACKAGE__
