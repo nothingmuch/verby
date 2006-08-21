@@ -3,6 +3,7 @@
 package Verby::Config::Data;
 use Moose;
 
+use Log::Log4perl ();
 use List::MoreUtils qw/uniq/;
 use Carp qw/croak/;
 
@@ -84,6 +85,7 @@ sub search {
 		if ( @matches == 1 ) {
 			return $matches[0];
 		} else {
+			Log::Log4perl::get_logger()->warn("Parents config sources conflict over $key: @matches") if @matches;
 			return;
 		}
 	}

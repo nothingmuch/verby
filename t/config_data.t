@@ -3,8 +3,9 @@
 use strict;
 use warnings;
 
-use Test::More tests => 23;
+use Test::More tests => 31;
 use Test::Exception;
+use Test::MockObject;
 
 my $m; BEGIN { use_ok($m = "Verby::Config::Data") };
 
@@ -52,3 +53,42 @@ delete $c->data->{foo};
 is($o->foo, $p->foo, "when key deleted in child, grandchild gets parent");
 
 dies_ok { $p->foo("new") } "can't set immutable object";
+
+my $logger = Test::MockObject->new;
+$logger->set_true("warn");
+
+no warnings 'redefine';
+sub Log::Log4perl::get_logger { $logger };
+
+{
+	my @parents = map { $m->new } 1 .. 3;
+	my $child = $m->new(@parents);
+
+	$parents[0]->data->{foo} = "moose";
+	is( $child->foo, "moose", "parent value inherited" );
+
+	ok( !$logger->called("warn"), "no warning" );
+
+	$parents[1]->data->{foo} = "elk";
+	is( $child->foo, undef, "when parents conflict, nobody wins");
+
+	$logger->called_ok("warn");
+}
+
+$logger->clear;
+
+{
+	my $grandparent = $m->new;
+	my @parents = map { $m->new($grandparent) } 1 .. 3;
+	my $child = $m->new(@parents);
+
+	$grandparent->data->{foo} = "moose";
+	is( $child->foo, "moose", "no conflict in diamond inheritence" );
+
+	ok( !$logger->called("warn"), "no warning" );
+
+	$parents[0]->data->{foo} = "elk";
+	is( $child->foo, undef, "diamond inheritence conflict, nobody wins");
+	
+	$logger->called_ok("warn");
+}

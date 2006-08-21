@@ -81,8 +81,11 @@ command line app would have three config sources:
 	$config_hub->key;
 
 The config hub is sort of like an aggregate config source. It will ask it's
-parents in order for the key, and the first one that can supply it will be
-delegated to.
+parents for the key.
+
+The key ordering is symmetric (like role composition order), that is if two
+parents both contain the key it's as if there is no match, and a warning is
+emitted.
 
 =head1 Context
 
