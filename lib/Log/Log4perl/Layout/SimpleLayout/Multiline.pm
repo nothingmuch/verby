@@ -13,7 +13,7 @@ sub render {
 	$output =~ /([A-Z]+ - )/;
 
 	my $spaces = ' ' x length($1);
-	$output =~ s/(\r?\n|\r)(?!$)/$1$spaces\t/g;
+	$output =~ s/(\r?\n|\r)(?!$)/$1$spaces/g;
 
 	$output;
 }
@@ -37,11 +37,13 @@ that looks nicer when there are new lines in messages.
 
 =head1 BUGS
 
-None that we are aware of. Of course, if you find a bug, let us know, and we will be sure to fix it. 
+None that we are aware of. Of course, if you find a bug, let us know, and we
+will be sure to fix it. 
 
 =head1 CODE COVERAGE
 
-We use B<Devel::Cover> to test the code coverage of the tests, please refer to COVERAGE section of the L<Verby> module for more information.
+We use B<Devel::Cover> to test the code coverage of the tests, please refer to
+COVERAGE section of the L<Verby> module for more information.
 
 =head1 SEE ALSO
 
