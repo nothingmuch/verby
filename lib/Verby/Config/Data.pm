@@ -1,30 +1,32 @@
 #!/usr/bin/perl
 
 package Verby::Config::Data;
+use Moose;
 
-use strict;
-use warnings;
-
-our $VERSION = '0.01';
-
-use Scalar::Util qw/weaken/;
 use List::MoreUtils qw/uniq/;
 use Carp qw/croak/;
 
-sub new {
-	my $pkg = shift;
+has data => (
+	isa => "HashRef",
+	is  => "rw",
+	default => sub { return {} },
+);
 
-	my $self = bless {
-		data => {},
-		parents => [ uniq @_ ],
-	}, $pkg;
+has parents => (
+	isa => "ArrayRef",
+	is  => "ro",
+	auto_deref => 1,
+	required   => 1,
+);
 
-	weaken($_) for @{ $self->{parents} };
+around new => sub {
+	my $next = shift;
+	my ( $class, @parents ) = @_;
 
-	$self;
-}
+	$class->$next( parents => [ uniq @parents ] );
+};
 
-sub DESTROY {
+sub DEMOLISH {
 	my $self = shift;
 	untie %{ $self->{data} } if tied $self->{data};
 }
@@ -62,43 +64,36 @@ sub get {
 sub extract {
 	my $self = shift;
 	my $key = shift;
-	$self->{data}{$key};
+	$self->data->{$key};
 }
 
 sub exists {
 	my $self = shift;
 	my $key = shift;
-	$self->{data}{$key} || exists $self->{data}{$key}; # XXX workaround for Tie::Memoize
+	$self->data->{$key} || exists $self->data->{$key}; # XXX workaround for Tie::Memoize
 }
 
 sub search {
 	my $self = shift;
 	my $key = shift;
 
-	my @candidates = ($self);
-	while (@candidates) {
-		my @providers = grep { $_->exists($key) } @candidates;
-		return $providers[0] if @providers == 1;
-		@candidates = uniq map { $_->parents } @candidates;
+	if ( $self->exists($key) ) {
+		return $self;
+	} else {
+		my @matches = uniq map { $_->search($key) } $self->parents;
+		if ( @matches == 1 ) {
+			return $matches[0];
+		} else {
+			return;
+		}
 	}
-
-	return;
 }
 
 sub derive {
-	my $self = shift;
-	my $class = shift || ref $self;
+	my ( $self, $class ) = @_;
+	$class ||= ref $self;
+
 	$class->new($self);
-}
-
-sub data {
-	my $self = shift;
-	$self->{data};
-}
-
-sub parents {
-	my $self = shift;
-	@{ $self->{parents} };
 }
 
 __PACKAGE__

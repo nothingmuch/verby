@@ -19,7 +19,6 @@ use ok "Verby::Config::Data::Mutable";
 use ok "Verby::Config::Source";
 use if HAVE_GETOPT_CASUAL, ok => "Verby::Config::Source::ARGV";
 use ok "Verby::Config::Source::Prompt";
-use ok "Verby::Config::Hub";
 
 use ok "Verby::Action";
 
