@@ -66,6 +66,10 @@ This Action, given a SQL command will run it using L<DBI/do>.
 
 =back
 
+=head1 TODO
+
+Use one of the nonblocking POE DBI components.
+
 =head1 BUGS
 
 None that we are aware of. Of course, if you find a bug, let us know, and we will be sure to fix it. 
