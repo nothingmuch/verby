@@ -17,9 +17,9 @@ use Fcntl qw/SEEK_SET/;
 use File::stat;
 
 my $dbh;
-BEGIN { plan tests => 15,
-	need_module("DBI"),
+BEGIN { plan tests => 14,
 	need_module("DBD::mysql"),
+	need_module("Time::Piece::MySQL"),
 	sub { $dbh = eval { DBI->connect("dbi:mysql:test") } }, # try to connect
 }
 
@@ -50,7 +50,6 @@ $c->logger->mock(logdie => sub { shift; die "@_" });
 $c->logger->set_true($_) for qw/info warn debug/;
 
 isa_ok(my $a = $m->new, $m);
-isa_ok($a, "Verby::Action");
 
 $stat->mtime(time + 3);
 

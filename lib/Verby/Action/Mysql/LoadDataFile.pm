@@ -1,7 +1,7 @@
 #!t/usr/bin/perl
 
 package Verby::Action::Mysql::LoadDataFile;
-use Moose
+use Moose;
 
 extends qw/Verby::Action::Mysql::DoSql/;
 
@@ -44,15 +44,12 @@ sub do_sql {
 				};
 				my $sth = $dbh->prepare(qq{
 					LOAD DATA
-						$local INFILE ?
+						$local INFILE } . $dbh->quote($file) . qq{
 						INTO TABLE $table_name
-						FIELDS TERMINATED BY ?
-						LINES TERMINATED BY ?
-						IGNORE ? LINES
+						FIELDS TERMINATED BY } . $dbh->quote($fs) . qq{
+						LINES TERMINATED BY } . $dbh->quote($ls) . qq{
+						IGNORE $skip LINES
 				});
-				my $i;
-				$sth->bind_param(++$i, $_) for ($file, $fs, $ls);
-				$sth->bind_param(++$i, $skip, DBI::SQL_INTEGER);
 				$sth->execute;
 			}){
 				$c->logger->info("Successfully loaded '$file', local=" . ($local ? 1 : 0));

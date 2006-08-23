@@ -64,8 +64,8 @@ sub _load_table_status {
 
 	my $dbh = $self->dbh;
 
-    my $status = $dbh->prepare('SHOW TABLE STATUS' . ($pattern ? " LIKE ?" : ""));
-    $status->execute($pattern || ());
+    my $status = $dbh->prepare('SHOW TABLE STATUS' . ($pattern ? " LIKE " . $dbh->quote($pattern) : ""));
+    $status->execute();
 
     while (my $table_row = $status->fetchrow_hashref('NAME_lc') ) {
         my $name = $table_row->{name};
