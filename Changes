@@ -1,4 +1,4 @@
-* Changes for 0.02 ()
+* Changes for 0.02 (9.12.2006)
 
 - Use Moose for all the boring OO bits
 - use POE for the underlying async runloop

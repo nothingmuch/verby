@@ -42,7 +42,7 @@ sub do {
 }
 
 sub rsync_cli {
-	my ( $self, %params ) = @_;
+	my ( $self, $c ) = @_;
 	my ( $source, $dest ) = ( $c->source, $c->dest );
 
 	my $rsync_path = $self->rsync_path;
@@ -62,7 +62,7 @@ sub _make_rsync_object {
 		archive => 1,
 		delete  => 1,
 		quiet   => 1,
-		( $rsync_path ? 'rsync-path' => $rsync_path : () ),
+		( defined($self->rsync_path) ? ( 'rsync-path' => $self->rsync_path ) : () ),
 		%{ $self->rsync_options },
 	});
 }

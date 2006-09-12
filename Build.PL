@@ -14,7 +14,7 @@ Module::Build->new(
 		'List::MoreUtils'     => 0,
 		'Devel::Caller::Perl' => 0,
 		'Class::Inspector'    => 0,
-		'POE'                 => 0,
+		'POE'                 => '0.37',
 	},
 	auto_features => {
 		'Verby::Config::Source::ARGV' => {
