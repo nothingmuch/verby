@@ -5,6 +5,8 @@ use Moose;
 
 with qw/Verby::Action::Run/;
 
+our $VERSION = "0.03";
+
 use Archive::Tar;
 use File::Spec;
 use File::stat;

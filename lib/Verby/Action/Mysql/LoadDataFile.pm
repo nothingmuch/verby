@@ -5,6 +5,8 @@ use Moose;
 
 extends qw/Verby::Action::Mysql::DoSql/;
 
+our $VERSION = "0.03";
+
 use Verby::Action::Mysql::Util;
 use Time::Piece;
 use File::stat;

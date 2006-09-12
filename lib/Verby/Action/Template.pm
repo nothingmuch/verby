@@ -5,6 +5,8 @@ use Moose;
 
 with qw/Verby::Action/;
 
+our $VERSION = "0.03";
+
 use Template;
 use Template::Constants qw( :debug );
 

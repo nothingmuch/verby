@@ -5,6 +5,8 @@ use Moose;
 
 extends qw/Verby::Config::Source/;
 
+our $VERSION = "0.03";
+
 has questions => (
 	isa => "Hashref",
 	is  => "ro",

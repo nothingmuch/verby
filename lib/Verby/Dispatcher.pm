@@ -3,6 +3,8 @@
 package Verby::Dispatcher;
 use Moose;
 
+our $VERSION = "0.03";
+
 # FIXME
 # do_all and wait_specific could be optimized to be a little less O(N) ish.
 # with small data sets it doesn't really matter.

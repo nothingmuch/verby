@@ -3,6 +3,8 @@
 package Verby::Action;
 use Moose::Role;
 
+our $VERSION = "0.03";
+
 use Carp qw/longmess/;
 
 requires "do";

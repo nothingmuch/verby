@@ -5,6 +5,8 @@ use Moose;
 
 with qw/Verby::Action::Run::Unconditional/;
 
+our $VERSION = "0.03";
+
 use File::Rsync;
 
 has rsync_path => (

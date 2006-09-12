@@ -3,6 +3,8 @@
 package Verby::Action::Mysql::Util;
 use Moose;
 
+our $VERSION = "0.03";
+
 has dbh => (
 	isa => "Object",
 	is  => "ro",

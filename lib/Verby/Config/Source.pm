@@ -3,6 +3,8 @@
 package Verby::Config::Source;
 use Moose;
 
+our $VERSION = "0.03";
+
 extends qw/Verby::Config::Data/;
 
 use Tie::Memoize;

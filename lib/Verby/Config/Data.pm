@@ -3,6 +3,8 @@
 package Verby::Config::Data;
 use Moose;
 
+our $VERSION = "0.03";
+
 use Log::Log4perl ();
 use List::MoreUtils qw/uniq/;
 use Carp qw/croak/;

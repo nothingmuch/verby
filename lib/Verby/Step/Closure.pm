@@ -5,6 +5,8 @@ use Moose;
 
 with qw/Verby::Step/;
 
+our $VERSION = "0.03";
+
 use overload '""' => 'stringify';
 
 use Class::Inspector;

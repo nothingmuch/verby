@@ -5,6 +5,8 @@ use Moose;
 
 with qw/Verby::Action/;
 
+our $VERSION = "0.03";
+
 sub do {
 	my ( $self, $c ) = @_;
 

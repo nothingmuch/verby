@@ -5,6 +5,8 @@ use Moose;
 
 extends qw/Verby::Config::Data/;
 
+our $VERSION = "0.03";
+
 use Getopt::Casual;
 
 sub BUILD {
