@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+sub POE::Kernel::CATCH_EXCEPTIONS () { 0 }
+
 use strict;
 use warnings;
 
@@ -54,34 +56,36 @@ sub run_poe (&) {
 }
 
 SKIP: {
-	my @true = ( $^X, "-e", "exit 0" );
+	my $true = "/usr/bin/true";
+	skip 3, "no true(1)" unless -x $true;
 
 	$logger->clear;
 	my $c = Hash::AsObject->new;
 	$c->logger($logger);
 
 	ok( !$a->verify($c), "command not yet verified" );
-	run_poe { $a->do( $c, cli => \@true) };
+	run_poe { $a->do( $c, cli => [$true]) };
 	ok( !$e, "exec of true" ) || diag $e;
 	ok( $a->verify($c), "command verified" );
 }
 
 SKIP: {
-	my @false = ( $^X, "-e", "exit 1" );
+	my $false = "/usr/bin/false";
+	skip 2, "no false(1)" unless -x $false;
 
 	$logger->clear;
 	my $c = Hash::AsObject->new;
 	$c->logger($logger);
 
 	ok( !$a->verify($c), "command not yet verified" );
-	run_poe { $a->do( $c, cli => \@false) };
+	run_poe { $a->do( $c, cli => [$false]) };
 	ok( $e, "exec of 'false'" ) || diag "no exception for false";
 	ok( $a->verify($c), "command verified" );
 }
 
 {
 	my $wc = "/usr/bin/wc";
-	skip "no wc(1)", 6 unless -x $wc;
+	skip 6, "no wc(1)" unless -x $wc;
 
 	$logger->clear;
 	my $c = Hash::AsObject->new;
