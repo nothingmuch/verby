@@ -33,6 +33,9 @@ $logger->mock("logdie" => sub { shift; die "@_" });
 
 can_ok($a, "create_poe_session");
 
+my $e; # $@ but doesn't get smashed by Test::More & friends
+
+
 sub run_poe (&) {
 	my $code = shift;
 
@@ -46,39 +49,39 @@ sub run_poe (&) {
 		);
 		$poe_kernel->run;
 	};
+
+    $e = $@;
 }
 
 SKIP: {
-	my $true = "/usr/bin/true";
-	skip 3, "no true(1)" unless -x $true;
+	my @true = ( $^X, "-e", "exit 0" );
 
 	$logger->clear;
 	my $c = Hash::AsObject->new;
 	$c->logger($logger);
 
 	ok( !$a->verify($c), "command not yet verified" );
-	run_poe { $a->do( $c, cli => [$true]) };
-	ok( !$@, "exec of true" ) || diag "cought: $@";
+	run_poe { $a->do( $c, cli => \@true) };
+	ok( !$e, "exec of true" ) || diag $e;
 	ok( $a->verify($c), "command verified" );
 }
 
 SKIP: {
-	my $false = "/usr/bin/false";
-	skip 2, "no false(1)" unless -x $false;
+	my @false = ( $^X, "-e", "exit 1" );
 
 	$logger->clear;
 	my $c = Hash::AsObject->new;
 	$c->logger($logger);
 
 	ok( !$a->verify($c), "command not yet verified" );
-	run_poe { $a->do( $c, cli => [$false]) };
-	ok( $@, "exec of 'false'" ) || diag "no exception for false";
+	run_poe { $a->do( $c, cli => \@false) };
+	ok( $e, "exec of 'false'" ) || diag "no exception for false";
 	ok( $a->verify($c), "command verified" );
 }
 
 {
 	my $wc = "/usr/bin/wc";
-	skip 6, "no wc(1)" unless -x $wc;
+	skip "no wc(1)", 6 unless -x $wc;
 
 	$logger->clear;
 	my $c = Hash::AsObject->new;
@@ -92,7 +95,7 @@ FOO
 
 	ok( !$a->verify($c), "command not yet verified" );
 	run_poe { $a->do( $c, cli => [$wc, "-l"], in => \$in ) };
-	ok( !$@, "wc -l didn't die" ) || diag($@);
+	ok( !$e, "wc -l didn't die" ) || diag($e);
 	ok( $a->verify($c), "command verified" );
 	my ($out, $err) = ( $c->stdout, $c->stderr );
 	like($out, qr/^\s*\d+\s*$/, "output of wc -l looks sane");

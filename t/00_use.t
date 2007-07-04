@@ -5,7 +5,7 @@ use warnings;
 
 use Test::More 'no_plan';
 
-use constant HAVE_DBD_MYSQL => scalar eval { require DBD::mysql; 1 };
+use constant HAVE_DBD_MYSQL => scalar eval { require DBD::mysql; require Time::Piece::MySQL; 1 };
 use constant HAVE_FILE_RSYNC => scalar eval { require File::Rsync; 1 };
 use constant HAVE_GETOPT_CASUAL => scalar eval { require Getopt::Casual; 1 };
 

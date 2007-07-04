@@ -34,6 +34,7 @@ Module::Build->new(
 			requires => {
 				'DBD::mysql' => 0,
 				'Time::Piece' => 0,
+				'Time::Piece::MySQL' => 0,
 			},
 		},
 		'Verby::Action::Untar' => {

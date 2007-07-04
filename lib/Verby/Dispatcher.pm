@@ -5,11 +5,6 @@ use Moose;
 
 our $VERSION = "0.03";
 
-# FIXME
-# do_all and wait_specific could be optimized to be a little less O(N) ish.
-# with small data sets it doesn't really matter.
-
-use Algorithm::Dependency::Objects::Ordered;
 use Set::Object;
 use Verby::Context;
 use Carp qw/croak/;
@@ -235,21 +230,6 @@ sub start_step {
 	$step->do($cxt, $poe);
 }
 
-sub pump_running {
-	my $self = shift;
-
-	$self->global_context->logger->debug("pumping all running steps");
-
-	foreach my $step (@{ $self->{running_queue} }){
-		next unless $step->can("pump");
-
-		unless ($step->pump($self->get_cxt($step))){
-			$self->global_context->logger->debug("step '$step' has finished");
-			$self->wait_specific($step);
-		}
-	}
-}
-
 sub finish_step {
 	# FIXME.... Technical debt!
 	die "Can't finish an unstarted step... the universe is bending!";
@@ -333,11 +313,6 @@ added into the batch too.
 Calculate all the dependencies using L<Algorithm::Dependency::Objects>, and
 then dispatch in order.
 
-=item B<dep_engine_class>
-
-The class used to instantiate the dependecy resolver. Defaults to
-L<Algorithm::Dependency::Objects::Ordered>. Subclass if you don't like it.
-
 =item B<config_hub ?$new_config_hub>
 
 A setter getter for the L<Verby::Config::Data> (or compatible) object from which we
@@ -401,21 +376,10 @@ Push $step into the running step queue.
 
 Pop a step from the running queue.
 
-=item B<mk_dep_engine>
-
-Creates a new object using L</dep_engine_class>.
 
 =item B<ordered_steps>
 
 Returns the steps to be executed in order.
-
-=item B<pump_running>
-
-Give every running step a bit of time to move things forward.
-
-This method is akin to L<IPC::Run/pump>.
-
-It also calls L</finish_step> on each step that returns false.
 
 =item B<steps>
 
@@ -437,19 +401,6 @@ Returns the L<Set::Object> that is used to track which steps are running.
 =item B<satisfied_set>
 
 Returns the L<Set::Object> that is used to track which steps are satisfied.
-
-=item B<wait_all>
-
-Wait for all the running steps to finish.
-
-=item B<wait_one>
-
-Effectively C<finish_step(pop_running)>.
-
-=item B<wait_specific $step>
-
-Waits for a specific step to finish. Called by L<pump_running> when a step
-claims that it's ready.
 
 =back
 

@@ -9,10 +9,7 @@ use Hash::AsObject;
 use Test::MockObject;
 use POE;
 
-BEGIN {
-	plan tests => 7,
-	need_module("Directory::Scratch");
-}
+BEGIN { plan tests => 7, [qw/Directory::Scratch/] }
 
 use ok "Verby::Action::BuildTool";
 

@@ -1,3 +1,10 @@
+* Changes for 0.04 (7.4.2007)
+
+- Fix Test::Plan idiocy
+- Fix Verby::Action::RunCmd
+
+* Changes for 0.03 (9.12.2006)
+
 * Changes for 0.02 (9.12.2006)
 
 - Use Moose for all the boring OO bits
