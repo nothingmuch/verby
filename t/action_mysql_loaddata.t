@@ -16,13 +16,14 @@ use File::Temp qw/tempfile/;
 use Fcntl qw/SEEK_SET/;
 use File::stat;
 
-my $dsn = $ENV{VERBY_TEST_MYSQL_DSN}; 
+my $dsn;
 my $dbh;
 BEGIN {
-    plan tests => 14,
-    need_module(qw/DBI DBD::mysql Time::Piece Time::Piece::MySQL/)
-        and
-	eval { $dbh = $dsn && DBI->connect($dsn); 1 }; # try to connect
+    $dsn = $ENV{VERBY_TEST_MYSQL_DSN};
+    plan (
+        tests => 14,
+        ( need_module(qw/DBI DBD::mysql Time::Piece Time::Piece::MySQL/) && $dsn && eval { $dbh = DBI->connect($dsn, $ENV{VERBY_TEST_MYSQL_USER}, $ENV{VERBY_TEST_MYSQL_PASSWORD}); 1 } ),
+    );
 }
 
 my $m;
