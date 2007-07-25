@@ -5,6 +5,8 @@ use Moose::Role;
 
 our $VERSION = "0.03";
 
+requires "do";
+
 requires "depends";
 
 requires "is_satisfied";

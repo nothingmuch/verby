@@ -3,7 +3,7 @@
 package Verby::Step::Closure;
 use Moose;
 
-with qw/Verby::Step/;
+with qw/Verby::Step::Simple/;
 
 our $VERSION = "0.03";
 
@@ -23,19 +23,6 @@ sub import {
     *{ (caller())[0] . "::step"} = \&step if $_[0] eq 'step';
 }
 
-sub depends {} # FIXME Moose::Role
-has depends => (
-	isa => "ArrayRef",
-	is  => "rw",
-	default    => sub { [] },
-	auto_deref => 1,
-);
-
-has action => (
-	isa => "Object", # "Verby::Action",
-	is => "rw",
-);
-
 has pre => (
 	isa => "CodeRef",
 	is  => "rw",
@@ -50,11 +37,6 @@ has provides_cxt => (
 	isa => "Bool",
 	is  => "rw",
 );
-
-sub add_deps {
-	my $self = shift;
-	push @{ $self->depends }, @_;
-}
 
 sub is_satisfied {
 	my $self = shift;
@@ -172,19 +154,11 @@ Append more steps to the dep list.
 
 =item B<is_satisfied>
 
-=item B<finish>
-
-=item B<start>
+Calls the pre hook, C<verify> and then the post hook.
 
 =item B<do>
 
-These methods all call the pre callback (except for C<finish>), then the
-corresponding method on the action (special case: L<Action/verify> for
-C<is_satisfied>), and lastly the post callback (except for C<start>).
-
-=item B<pump>
-
-This just delegates to the pump method of the action.
+Calls the pre hook, C<do>, and lastly the post hook.
 
 =item B<stringify>
 

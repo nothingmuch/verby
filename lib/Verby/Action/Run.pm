@@ -62,15 +62,10 @@ sub poe_parent {
 
 sub sigchld_handler {
     my ( $self, $kernel, $session, $heap, $pid, $child_error ) = @_[ OBJECT, KERNEL, SESSION, HEAP, ARG1, ARG2 ];
-    return unless exists $heap->{pid_to_wheel}{$pid};
-	
+
     my $wheel = delete $heap->{pid_to_wheel}{$pid};
     delete $heap->{id_to_wheel}{ $wheel->ID };
-   
-    $kernel->refcount_decrement( $session->ID, 'runcmd child' ); # FIXME this should not be necessary
 
-    # wtf? $kernel->sig( "CHLD" ) unless scalar keys %{ $heap->{id_to_wheel} };
-	
 	$heap->{program_exit} = $child_error;
 }
 
@@ -79,8 +74,7 @@ sub setup_wheel {
 
 	my $wheel = $self->create_wheel( $heap );
 
-	$kernel->sig( CHLD => "sigchld_handler" );
-    $kernel->refcount_increment( $session->ID, 'runcmd child' ); # FIXME this should not be necessary
+    $kernel->sig_child( $wheel->PID, "sigchld_handler" );
 
 	$heap->{pid_to_wheel}->{ $wheel->PID } = $wheel;
 	$heap->{id_to_wheel}->{ $wheel->ID }   = $wheel;
@@ -183,7 +177,7 @@ sub poe_stop {
 	$c->program_debug_string( $heap->{program_debug_string} );
 	$c->stdout( $heap->{accum}{stdout} );
 	$c->stderr( $heap->{accum}{stderr} );
-	$c->program_exit( $heap->{program_exit} >> 8 );
+	$c->program_exit( $heap->{program_exit} >> 8 ) if defined $heap->{program_exit};
 	$c->program_exit_full( $heap->{program_exit} );
 
 	$c->program_finished(1);
@@ -195,7 +189,8 @@ sub poe_stop {
 
 sub error {
 	my ( $self, $heap ) = @_[OBJECT, HEAP];
-	#$heap->{c}->logger->info("subprogram $heap->{program_debug_string} error: @_[ARG0 .. $#_]");
+    warn("subprogram $heap->{program_debug_string} error: @_[ARG0 .. $#_]") unless $_[ARG1] == 0;
+	$heap->{c}->logger->info("subprogram $heap->{program_debug_string} error: @_[ARG0 .. $#_]") unless $_[ARG1] == 0;
 }
 
 sub stdin {
