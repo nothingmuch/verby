@@ -47,6 +47,10 @@ has derivable_cxts => (
 has config_hub => (
 	isa => "Object",
 	is	=> "rw",
+	default => sub {
+		require Verby::Config::Data;
+		Verby::Config::Data->new;
+	},
 );
 
 has global_context => (
