@@ -78,8 +78,8 @@ sub step ($;&&) {
 	}
 
 	my $step = Verby::Step::Closure->new(
-		pre    => $pre,
-		post   => $post,
+		$pre  ? ( pre  => $pre )  : (),
+		$post ? ( post => $post ) : (),
 		action => $action
 	);
 
