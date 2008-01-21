@@ -14,26 +14,33 @@ use POE;
 
 my $m; BEGIN { use_ok($m = "Verby::Step::Closure", "step") };
 
-{
-	my $t = Test::MockObject->new;
 
-	isa_ok((my $s = step $t), $m);
+POE::Session->create(
+	inline_states => {
+		_start => sub {
+			my $t = Test::MockObject->new;
 
-	$t->set_false("verify");
-	ok(!$s->is_satisfied, "step not satisfied");
-	$t->called_ok("verify");
+			isa_ok((my $s = step $t, sub { }, sub { }), $m);
 
-	$t->clear;
+			$t->set_false("verify");
+			ok(!$s->is_satisfied, "step not satisfied");
+			$t->called_ok("verify");
 
-	$t->set_true("verify");
-	ok($s->is_satisfied, "step satisfied");
+			$t->clear;
 
-	$t->clear;
+			$t->set_true("verify");
+			ok($s->is_satisfied, "step satisfied");
 
-	$t->mock("do");
-	$s->do;
-	$t->called_ok("do");
-}
+			$t->clear;
+
+			$t->mock("do");
+			$s->do;
+			$t->called_ok("do");
+		},
+	},
+);
+
+$poe_kernel->run;
 
 {
 	dies_ok {
