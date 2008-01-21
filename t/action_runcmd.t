@@ -30,7 +30,7 @@ use ok "Verby::Action::Run::Unconditional";
 isa_ok(my $a = MyAction->new, "MyAction");
 
 my $logger = Test::MockObject->new;
-$logger->set_true($_) for qw/info warn/;
+$logger->set_true($_) for qw/info warn debug/;
 $logger->mock("logdie" => sub { shift; die "@_" });
 
 can_ok($a, "create_poe_session");
