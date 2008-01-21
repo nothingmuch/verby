@@ -9,7 +9,7 @@ with qw/Verby::Step/;
 
 sub depends {} # FIXME Moose::Role
 has depends => (
-	isa => "ArrayRef",
+	isa => "ArrayRef[Verby::Step]",
 	is  => "rw",
 	default    => sub { [] },
 	auto_deref => 1,
