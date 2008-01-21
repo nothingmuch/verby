@@ -35,12 +35,12 @@ sub poe_states {
 		_stop   => "poe_stop",
 		_parent => "poe_parent",
 		(map { ("std$_") x 2 } qw/in out err/),
-		(map { ($_) x 2 } qw/
+		(map { ($_) x 2 } qw(
 			error
 			close
 			sigchld_handler
 			DIE
-			/),
+		)),
 	);
 }
 
@@ -61,10 +61,14 @@ sub poe_parent {
 }
 
 sub sigchld_handler {
-    my ( $self, $kernel, $session, $heap, $pid, $child_error ) = @_[ OBJECT, KERNEL, SESSION, HEAP, ARG1, ARG2 ];
+	my ( $self, $kernel, $session, $heap, $pid, $child_error ) = @_[ OBJECT, KERNEL, SESSION, HEAP, ARG1, ARG2 ];
 
-    my $wheel = delete $heap->{pid_to_wheel}{$pid};
-    delete $heap->{id_to_wheel}{ $wheel->ID };
+	$heap->{c}->logger->debug("sigchild $pid");
+
+	my $wheel = delete $heap->{pid_to_wheel}{$pid};
+	delete $heap->{id_to_wheel}{ $wheel->ID };
+
+	$kernel->refcount_decrement( $session->ID, 'child_processes' );
 
 	$heap->{program_exit} = $child_error;
 }
@@ -74,7 +78,9 @@ sub setup_wheel {
 
 	my $wheel = $self->create_wheel( $heap );
 
-    $kernel->sig_child( $wheel->PID, "sigchld_handler" );
+	$kernel->refcount_increment( $session->ID, 'child_processes' );
+
+	$kernel->sig_child( $wheel->PID, "sigchld_handler" );
 
 	$heap->{pid_to_wheel}->{ $wheel->PID } = $wheel;
 	$heap->{id_to_wheel}->{ $wheel->ID }   = $wheel;
@@ -189,7 +195,7 @@ sub poe_stop {
 
 sub error {
 	my ( $self, $heap ) = @_[OBJECT, HEAP];
-    warn("subprogram $heap->{program_debug_string} error: @_[ARG0 .. $#_]") unless $_[ARG1] == 0;
+	warn("subprogram $heap->{program_debug_string} error: @_[ARG0 .. $#_]") unless $_[ARG1] == 0;
 	$heap->{c}->logger->info("subprogram $heap->{program_debug_string} error: @_[ARG0 .. $#_]") unless $_[ARG1] == 0;
 }
 

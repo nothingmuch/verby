@@ -1,7 +1,5 @@
 #!/usr/bin/perl
 
-sub POE::Kernel::CATCH_EXCEPTIONS () { 0 }
-
 use strict;
 use warnings;
 
@@ -44,15 +42,17 @@ sub run_poe (&) {
 	eval {
 		POE::Session->create(
 			inline_states => {
-				_start => sub { $code->(); return },
+				_start => sub { $_[KERNEL]->yield("start_code") },
 				_stop  => sub { },
 				_child => sub { },
+				start_code => sub { $code->(); return },
 			},
 		);
+
 		$poe_kernel->run;
 	};
 
-    $e = $@;
+	$e = $@;
 }
 
 SKIP: {
