@@ -3,6 +3,8 @@
 package Verby::Step::Simple;
 use Moose::Role;
 
+use Scalar::Util qw/refaddr/;
+
 with qw/Verby::Step/;
 
 sub depends {} # FIXME Moose::Role
@@ -20,7 +22,9 @@ has action => (
 
 sub add_deps {
 	my $self = shift;
-	push @{ $self->depends }, @_;
+	my %seen;
+	$self->depends([ grep { !$seen{refaddr $_}++ } @{ $self->depends }, @_ ]);
+
 }
 
 sub is_satisfied {
