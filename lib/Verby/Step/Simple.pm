@@ -28,8 +28,8 @@ sub add_deps {
 }
 
 sub is_satisfied {
-    my ( $self, $c, @args ) = @_;
-    $self->action->verify( $c, @args );
+	my ( $self, $c, @args ) = @_;
+	$self->action->verify( $c, @args );
 }
 
 __PACKAGE__;

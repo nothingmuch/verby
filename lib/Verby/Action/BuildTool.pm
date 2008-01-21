@@ -36,7 +36,7 @@ sub do {
 		c    => $c, 
 		cli  => [ $self->command, $self->script, @args ],
 		init => sub { chdir $wd },
-   	);
+	);
 }
 
 sub finished {

@@ -17,10 +17,10 @@ use POE;
 # stevan hates Exporter, so this is not a bug ;-)
 # FIXME - use Sub::Exporter
 sub import {
-    shift;            # remove pkg
-    return unless @_; # dont export it if they dont ask
+	shift;            # remove pkg
+	return unless @_; # dont export it if they dont ask
 	no strict 'refs';
-    *{ (caller())[0] . "::step"} = \&step if $_[0] eq 'step';
+	*{ (caller())[0] . "::step"} = \&step if $_[0] eq 'step';
 }
 
 has pre => (
@@ -70,8 +70,8 @@ sub step ($;&&) {
 
 	unless (blessed $action){
 		unless (Class::Inspector->loaded($action)) {
-            (my $file = "${action}.pm") =~ s{::}{/}g;
-            require $file;
+			(my $file = "${action}.pm") =~ s{::}{/}g;
+			require $file;
 		}
 
 		$action = $action->new;

@@ -61,16 +61,16 @@ sub get_info {
 }
 
 sub _load_table_status {
-    my $self = shift;
+	my $self = shift;
 	my $pattern = shift;
 
 	my $dbh = $self->dbh;
 
-    my $status = $dbh->prepare('SHOW TABLE STATUS' . ($pattern ? " LIKE " . $dbh->quote($pattern) : ""));
-    $status->execute();
+	my $status = $dbh->prepare('SHOW TABLE STATUS' . ($pattern ? " LIKE " . $dbh->quote($pattern) : ""));
+	$status->execute();
 
-    while (my $table_row = $status->fetchrow_hashref('NAME_lc') ) {
-        my $name = $table_row->{name};
+	while (my $table_row = $status->fetchrow_hashref('NAME_lc') ) {
+		my $name = $table_row->{name};
 
 		$self->_table_info->{$name} = $table_row;
 
@@ -82,9 +82,9 @@ sub _load_table_status {
 			$self->_table_info->{$name}{columns_hash}{$col->{Field}} = $col;
 		}
 		$desc->finish;
-    }
+	}
 
-    $status->finish;
+	$status->finish;
 }
 
 __PACKAGE__
