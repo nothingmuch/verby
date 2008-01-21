@@ -314,8 +314,7 @@ added into the batch too.
 
 =item B<do_all>
 
-Calculate all the dependencies using L<Algorithm::Dependency::Objects>, and
-then dispatch in order.
+Calculate all the dependencies, and then dispatch in order.
 
 =item B<config_hub ?$new_config_hub>
 
