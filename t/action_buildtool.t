@@ -40,7 +40,7 @@ utime( $now - 10, $now - 10, $makefile_pl );
 my $a = Verby::Action::BuildTool->new;
 
 my $logger = Test::MockObject->new;
-$logger->set_true("info");
+$logger->set_true($_) for qw(info debug);
 $logger->mock( logdie => sub { warn "$_[1]"; die "$_[1]"; } );
 
 my $c = Hash::AsObject->new;
