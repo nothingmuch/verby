@@ -58,7 +58,7 @@ my $logger = Test::MockObject->new;
 $logger->set_true("warn");
 
 no warnings 'redefine';
-sub Log::Log4perl::get_logger { $logger };
+sub Log::Dispatch::Config::instance { $logger };
 
 {
 	my @parents = map { $m->new } 1 .. 3;

@@ -7,25 +7,17 @@ extends qw/Verby::Config::Data::Mutable/;
 
 our $VERSION = "0.03";
 
-use Log::Log4perl ();
-use Devel::Caller::Perl ();
 require overload;
 
-sub logger {
-	my $self = shift;
+use MooseX::LogDispatch;
 
-	return $self->SUPER::logger(@_) || $self->_get_logger();
-}
+with Logger();
 
-sub _get_logger {
-	my $self = shift;
-	my $obj; $obj ||= (Devel::Caller::Perl::called_args($_))[0] for (2, 1);
+around logger => sub {
+	my ( $next, $self, @args ) = @_;
 
-	my $class = ref $obj || $obj;
-	my $str = (overload::Method($obj, '""') ? "::$obj" : ""); # if it knows to stringify, get that too
-
-	return Log::Log4perl::get_logger("$class$str");
-}
+	return $self->SUPER::logger(@args) || $self->$next(@args);
+};
 
 __PACKAGE__
 
@@ -73,11 +65,7 @@ practice.
 
 	$c->logger;
 
-will delegate to L<Log::Log4perl/get_logger>, sending it a nice string for a
-category.
-
-The category is the class of the caller, concatenated a stringification of the
-object if the object can stringify.
+See L<MooseX::LogDispatch>.
 
 =head1 BUGS
 

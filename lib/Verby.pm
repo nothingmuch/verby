@@ -122,8 +122,8 @@ It also provides a magic field:
 
 	my $l = $c->logger;
 
-Which returns a L<Log::Log4perl> logger, and tries to guess a proper namespace
-for the step/action asking for the it.
+See L<MooseX::LogDispatch>. If a logger is in a parent of the context it will
+be returned instead.
 
 =head1 EXECUTION
 
@@ -158,7 +158,7 @@ did not export a necessary field yet. In this case C<verify> should just return
 false, and will be asked again in due time.
 
 An error, on the other hand, should be fatal. L<Verby> uses
-L<Log::Log4perl/logdie> to do this.
+L<MooseX::LogDispatch> to do this.
 
 Actions should be short and sweet, doing as little as possible. Remember that a
 step being a delegator for actions is not limited to using only one action, so
