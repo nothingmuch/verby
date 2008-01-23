@@ -3,21 +3,8 @@
 use strict;
 use warnings;
 
-use Log::Log4perl qw/:easy/;
-
 use Verby::Step::Closure qw/step/;
 use Verby::Dispatcher;
-
-my $l4pconf = <<L4P;
-	log4perl.rootLogger 			= INFO, term
-
-	log4perl.appender.term			= Log::Log4perl::Appender::ScreenColoredLevels
-	log4perl.appender.term.layout	= Log::Log4perl::Layout::SimpleLayout::Multiline
-
-	#log4perl.logger.Verby.Dispatcher	= DEBUG
-L4P
-
-Log::Log4perl::init(\$l4pconf);
 
 my $cfg = Verby::Config::Data->new;
 %{ $cfg->data } = (

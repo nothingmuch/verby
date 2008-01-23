@@ -10,14 +10,6 @@ use Verby::Step::Closure qw/step/;
 use Verby::Config::Data;
 use File::Basename;
 
-my $l4pconf = <<L4P;
-	log4perl.rootLogger 			= INFO, term
-
-	log4perl.appender.term			= Log::Log4perl::Appender::ScreenColoredLevels
-	log4perl.appender.term.layout	= Log::Log4perl::Layout::SimpleLayout::Multiline
-L4P
-Log::Log4perl::init(\$l4pconf);
-
 my $cfg = Verby::Config::Data->new;
 %{ $cfg->data } = (
 	project_root => my $out_dir = tempdir(CLEANUP => 1),
