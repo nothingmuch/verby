@@ -25,10 +25,6 @@ Module::Build->new(
 			description => "Verby::Action::MkPath - Path creation action",
 			requires => { 'File::Path' => 0 },
 		},
-		'Verby::Action::RunCmd' => {
-			description => "Verby::Action::RunCmd - action baseclass for executing external commands",
-			requires => { 'IPC::Run' => 0 },
-		},
 		'Verby::Action::MySql' => {
 			description => "MySQL related actions",
 			requires => {
