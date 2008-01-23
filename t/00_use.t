@@ -29,17 +29,8 @@ use ok "Verby::Action::MkPath";
 use ok "Verby::Action::Run";
 use ok "Verby::Action::Run::Unconditional";
 
-use ok "Verby::Action::Untar";
 use ok "Verby::Action::Make";
 use ok "Verby::Action::BuildTool";
-use if HAVE_FILE_RSYNC, ok => "Verby::Action::Copy";
-
-use if HAVE_DBD_MYSQL, ok => "Verby::Action::Mysql::CreateDB";
-use if HAVE_DBD_MYSQL, ok => "Verby::Action::Mysql::CreateTable";
-use if HAVE_DBD_MYSQL, ok => "Verby::Action::Mysql::DoSql";
-use if HAVE_DBD_MYSQL, ok => "Verby::Action::Mysql::LoadDataFile";
-
-use ok "Verby::Action::Template";
 
 use ok "Verby::Step";
 
