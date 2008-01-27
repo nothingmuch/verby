@@ -15,7 +15,7 @@ sub confirm {
 	my ( $self, $c, @args ) = @_;
 
 	$self->verify($c, @args) or
-		$c->logger->logdie(
+		$c->logger->log_and_die(level => "error", message => 
 			"verification of $self failed: "
 			. ($c->error || "error unknown"));
 }
@@ -102,7 +102,7 @@ Typically called at the end of an action's do:
 		$self->confirm($c);
 	}
 
-It will call C<< $c->logger->logdie >> unless C<verify> returns a true value.
+It will call C<< $c->logger->log_and_die >> unless C<verify> returns a true value.
 
 If C<< $c->error >> contains a string then it'll be printed as well.
 

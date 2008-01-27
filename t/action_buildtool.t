@@ -41,7 +41,7 @@ my $a = Verby::Action::BuildTool->new;
 
 my $logger = Test::MockObject->new;
 $logger->set_true($_) for qw(info debug);
-$logger->mock( logdie => sub { warn "$_[1]"; die "$_[1]"; } );
+$logger->mock( log_and_die => sub { warn "$_[1]"; die "$_[1]"; } );
 
 my $c = Hash::AsObject->new;
 $c->workdir($temp->base);

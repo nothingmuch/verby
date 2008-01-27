@@ -46,7 +46,7 @@ sub poe_states {
 
 sub confirm_exit_code {
 	my ( $self, $c ) = @_;
-	$c->logger->logdie("subprogram " . $c->program_debug_string . " exited with non zero status: " . $c->program_exit)
+	$c->logger->log_and_die(level => "error", message => "subprogram " . $c->program_debug_string . " exited with non zero status: " . $c->program_exit)
 		unless $c->program_exit == 0;
 }
 

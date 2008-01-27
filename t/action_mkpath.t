@@ -21,7 +21,7 @@ $c->set_always(path => my $target = File::Spec->catdir($dir, qw/some nested dir/
 $c->set_always(logger => my $logger = Test::MockObject->new);
 
 $logger->set_true("info");
-$logger->mock(logdie => sub { shift; die "@_" });
+$logger->mock(log_and_die => sub { shift; die "@_" });
 
 isa_ok(my $a = $m->new, $m);
 

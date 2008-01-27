@@ -27,7 +27,7 @@ my @args;
 my $o = My::Action->new;
 
 my $logger = Test::MockObject->new;
-$logger->mock(logdie => sub { shift; die "@_" });
+$logger->mock(log_and_die => sub { shift; die "@_" });
 
 my $foo = Test::MockObject->new;
 $foo->set_always(logger => $logger);
@@ -45,5 +45,5 @@ $bar->set_false("error");
 dies_ok { $o->confirm($bar) } "confirm when verification failed";
 is_deeply(\@args, [ [ $o, $bar ] ], "confirm proxied args");
 
-$logger->called_ok("logdie");
+$logger->called_ok("log_and_die");
 

@@ -30,11 +30,11 @@ sub prompt ($;$) {
 	#my($mess, $def) = @_;
 	my ($mess, $key) = @_; # no notion of a default - if it's there another config source knows about it already
 	#Carp::confess("prompt function called without an argument") 
-	Log::Dispatch::Config->instance->logdie("prompt function called without an argument") 
+	Log::Dispatch::Config->instance->log_and_die(level => "error", message => "prompt function called without an argument") 
 		unless defined $mess;
 
 	#my $isa_tty = -t STDIN && (-t STDOUT || !(-f STDOUT || -c STDOUT)) ;
-	Log::Dispatch::Config->instance->logdie("Can't prompt for '$key' - STDIN is not a terminal")
+	Log::Dispatch::Config->instance->log_and_die(level => "error", message => "Can't prompt for '$key' - STDIN is not a terminal")
 		unless -t STDIN && (-t STDOUT || !(-f STDOUT || -c STDOUT)) ;
 
 	# defaults are no longer relevant
@@ -59,7 +59,7 @@ sub prompt ($;$) {
 	}
 	else { # user hit ctrl-D
 		print "\n";
-		Log::Dispatch::Config->instance->logdie("Can't proceed - value for '$key' unknown");
+		Log::Dispatch::Config->instance->log_and_die(level => "error", message => "Can't proceed - value for '$key' unknown");
 	}
 	#}
 
@@ -71,7 +71,7 @@ sub get_key {
 
 	my $prompt = $self->questions->{$key};
 
-	Log::Dispatch::Config->instance->logdie("Configuration key '$key' is unresolvable") unless $prompt;
+	Log::Dispatch::Config->instance->log_and_die(level => "error", message => "Configuration key '$key' is unresolvable") unless $prompt;
 
 	return prompt($prompt, $key);
 }

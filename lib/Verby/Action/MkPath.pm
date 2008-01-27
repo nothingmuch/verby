@@ -16,13 +16,13 @@ sub do {
 	my $path = $c->path;
 
 	if ( !defined($path) || !length($path) ){
-		$c->logger->logdie("invalid path");
+		$c->logger->log_and_die(level => "error", message => "invalid path");
 	}
 
 	$c->logger->info("creating path '$path'");
 
 	mkpath($path)
-		or $c->logger->logdie("couldn't mkpath('$path'): $!");
+		or $c->logger->log_and_die(level => "error", message => "couldn't mkpath('$path'): $!");
 
 	$self->confirm($c);
 }

@@ -29,7 +29,7 @@ has target => (
 sub do {
 	my ( $self, $c ) = @_;
 
-	my $wd = $c->workdir || $c->logger->logdie("No working directory provided");
+	my $wd = $c->workdir || $c->logger->log_and_die(level => "error", message => "No working directory provided");
 	my @args = @{ $c->additional_args || [] };
 
 	$self->create_poe_session(
