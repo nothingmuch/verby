@@ -151,7 +151,7 @@ sub create_poe_sessions {
 
 								if ( $deps->includes($done) ) {
 									$deps->remove( $done );
-									$kernel->yield("try_executing_step");
+									$kernel->yield("try_executing_step") unless $deps->size;
 								}
 							},
 							try_executing_step => sub {
