@@ -12,7 +12,11 @@ requires "depends";
 requires "is_satisfied";
 
 sub provides_cxt {
-	undef;
+	return undef;
+}
+
+sub cost {
+	return ( steps => 1 );
 }
 
 __PACKAGE__
@@ -60,8 +64,9 @@ you do before and after others.
 
 =head1 METHODS
 
-All methods should be subclassed except for C<provides_cxt>. This class is
-nearly completely virtual.
+This role provides the C<provides_cxt> and C<cost> methods, with sane default
+values, and requires C<depends>, C<is_satisfied> and C<do>. See
+L<Verby::Step::Simple> and L<Verby::Step::Closure> for more reusable behavior.
 
 =over 4
 
