@@ -3,13 +3,11 @@
 use strict;
 use warnings;
 
-use Test::More;
-use Test::Plan;
+use Test::More tests => 7;
 use Hash::AsObject;
 use Test::MockObject;
 use POE;
-
-BEGIN { plan tests => 7, [qw/Directory::Scratch/] }
+use Directory::Scratch;
 
 use ok "Verby::Action::BuildTool";
 
