@@ -11,7 +11,7 @@ require overload;
 
 with qw(MooseX::LogDispatch);
 
-has '+allow_preconfigured_logger' => ( default => 1 );
+has 'use_logger_singleton' => ( default => 1 );
 
 around logger => sub {
 	my ( $next, $self, @args ) = @_;
