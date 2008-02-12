@@ -7,15 +7,30 @@ our $VERSION = "0.03";
 
 with qw/Verby::Action/;
 
+has name => (
+	isa => "Str",
+	is  => "rw",
+	lazy_build => 1,
+);
+
+sub _build_name {
+	my $self = shift;
+	my $class = ref $self;
+
+	$class =~ s/^Verby::Action:://;
+
+	return $class;
+}
+
 sub do {
 	my ( $self, $c ) = @_;
 	$c->done(1);
-	$c->logger->debug("stub do");
+	$c->logger->debug($self->name . " do");
 }
 
 sub verify {
 	my ( $self, $c ) = @_;
-	$c->logger->debug("stub verify");
+	$c->logger->debug($self->name . " verify");
 	$c->done;
 }
 
