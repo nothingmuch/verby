@@ -44,10 +44,15 @@ sub poe_states {
 	);
 }
 
+sub exit_code_is_ok {
+	my ( $self, $c ) = @_;
+	$c->program_exit == 0;
+}
+
 sub confirm_exit_code {
 	my ( $self, $c ) = @_;
 	$c->logger->log_and_die(level => "error", message => "subprogram " . $c->program_debug_string . " exited with non zero status: " . $c->program_exit)
-		unless $c->program_exit == 0;
+		unless $self->exit_code_is_ok($c);
 }
 
 sub poe_start {

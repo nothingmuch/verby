@@ -3,7 +3,7 @@
 package Verby::Action::Make;
 use Moose;
 
-with qw/Verby::Action::Run::Unconditional/;
+with qw(Verby::Action::Run::Unconditional);
 
 our $VERSION = "0.03";
 
@@ -61,6 +61,19 @@ sub finished {
 
 	$self->confirm($c);
 }
+
+around exit_code_is_ok => sub {
+	my $next = shift;
+	my ( $self, $c ) = @_;
+	
+	if ( $c->is_make_test and $c->allow_test_failurei ) {
+		# GNU make exits with '2' on any error in a subtool
+		# this is not perfect, but it's something
+		$c->program_exit == 2 || $self->$next($c);
+	} else {
+		$self->$next($c);
+	}
+};
 
 sub log_extra {
 	my ( $self, $c ) = @_;
