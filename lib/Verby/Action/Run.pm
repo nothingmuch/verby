@@ -221,7 +221,7 @@ sub log_output {
 
 	chomp($output) if ($output =~ tr/\n// == 1); # if it's one line, trim it
 	foreach my $line (split /\n/, $output){ # if it's not split it looks chaotic
-		$c->logger->warn("$name: $line");
+		$c->logger->warning("$name: $line");
 	}
 }
 

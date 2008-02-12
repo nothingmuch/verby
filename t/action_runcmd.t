@@ -28,7 +28,7 @@ use ok "Verby::Action::Run::Unconditional";
 isa_ok(my $a = MyAction->new, "MyAction");
 
 my $logger = Test::MockObject->new;
-$logger->set_true($_) for qw/info warn debug/;
+$logger->set_true($_) for qw/info warning debug/;
 $logger->mock("log_and_die" => sub { shift; die "@_" });
 
 can_ok($a, "create_poe_session");
@@ -104,7 +104,7 @@ FOO
 	my ($out, $err) = ( $c->stdout, $c->stderr );
 	like($out, qr/^\s*\d+\s*$/, "output of wc -l looks sane");
 	is( ($err || ""), "", "no stderr");
-	ok(!$logger->called("warn"), "no warnings logged");
+	ok(!$logger->called("warning"), "no warnings logged");
 }
 
 {
@@ -125,7 +125,7 @@ FOO
 	chomp($err);
 	is($err, $str, "stderr looks good");
 
-	$logger->called_ok("warn");
+	$logger->called_ok("warning");
 }
 
 {
