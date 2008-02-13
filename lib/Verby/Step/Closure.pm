@@ -5,6 +5,11 @@ use Moose;
 
 with qw/Verby::Step::Simple/;
 
+extends qw(Moose::Object Exporter);
+
+our @EXPORT = "step";
+our @EXPORT_OK = ( @EXPORT, qw(chain_steps) );
+
 our $VERSION = "0.03";
 
 use overload '""' => 'stringify';
@@ -14,14 +19,13 @@ use Carp qw/croak/;
 
 use POE;
 
-# stevan hates Exporter, so this is not a bug ;-)
-# FIXME - use Sub::Exporter
-sub import {
-	shift;            # remove pkg
-	return unless @_; # dont export it if they dont ask
-	no strict 'refs';
-	*{ (caller())[0] . "::step"} = \&step if $_[0] eq 'step';
-}
+#my $id;
+#has id => (
+#	isa => "Int",
+#	is  => "ro",
+#	init_arg => undef,
+#	default => sub { ++$id },
+#);
 
 has pre => (
 	isa => "CodeRef",
@@ -65,8 +69,17 @@ sub _wrapped {
 	$self->action->$action_method(@args);
 }
 
-sub step ($;&&) {
-	my ( $action, $pre, $post ) = @_;
+sub step ($;%) {
+	my ( $action, @args ) = @_;
+
+	if ( @args == 1 ) {
+		unshift @args, "pre";
+	} elsif ( ref $args[0] and ref $args[0] ) {
+		my ( $pre, $post ) = splice @args, 0, 2;
+		unshift @args, pre => $pre, post => $post;
+	}
+
+	my %args = @args;
 
 	unless (blessed $action){
 		unless (Class::Inspector->loaded($action)) {
@@ -77,13 +90,35 @@ sub step ($;&&) {
 		$action = $action->new;
 	}
 
+	if ( exists $args{depends} and ref $args{depends} and ref $args{depends} ne 'ARRAY' ) {
+		warn "$args{depends} is not an array";
+		$args{depends} = [ $args{depends} ];
+	}
+
 	my $step = Verby::Step::Closure->new(
-		$pre  ? ( pre  => $pre )  : (),
-		$post ? ( post => $post ) : (),
+		%args,
 		action => $action
 	);
 
 	$step;
+}
+
+sub chain_steps {
+	my ( $head, @tail ) = @_;
+
+	return unless $head;
+
+	return $head unless @tail;
+
+	my @rest = chain_steps(@tail);
+
+	$rest[0]->add_deps($head);
+	
+	if ( wantarray ) {
+		return ( $head, @rest );
+	} else {
+		return $rest[-1];
+	}
 }
 
 sub stringify {

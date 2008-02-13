@@ -7,12 +7,19 @@ use Scalar::Util qw/refaddr/;
 
 with qw/Verby::Step/;
 
+use MooseX::AttributeHelpers;
+
 sub depends {} # FIXME Moose::Role
 has depends => (
-	isa => "ArrayRef[Verby::Step]",
-	is  => "rw",
+	isa        => "ArrayRef[Verby::Step]",
+	metaclass  => "Collection::Array",
+	is         => "rw",
 	default    => sub { [] },
 	auto_deref => 1,
+	provides => {
+		push  => "add_deps",
+		clear => "clear_deps",
+	},
 );
 
 has action => (
