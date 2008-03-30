@@ -1,7 +1,11 @@
-* Changes for 0.04 (7.4.2007)
+* Changes for 0.04
 
 - Fix Test::Plan idiocy
 - Fix Verby::Action::Run
+- Remove various miscellaneous actions from the main Verby distribution into
+  their own dists
+- Add support for POE::Component::ResourcePool, to facilitate throttling of
+  step execution
 
 * Changes for 0.03 (9.12.2006)
 
