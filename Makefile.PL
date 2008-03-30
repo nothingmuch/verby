@@ -14,7 +14,8 @@ WriteMakefile(
 	PL_FILES     => { },
 	PREREQ_PM    => {
 		'Set::Object'         => '1.17',
-		'MooseX::LogDispatch' => 0,
+		'Moose'               => '0.40',
+		'MooseX::LogDispatch' => '1.1001',
 		'Log::Dispatch'       => '2.21',
 		'List::MoreUtils'     => 0,
 		'Devel::Caller::Perl' => 0,
