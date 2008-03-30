@@ -21,7 +21,7 @@ foreach my $meth (qw/is_satisfied provides_cxt/){
 
 $_->set_list(depends => ()) for @items;
 
-# a complicated but non recursive dep tree
+# a dependency DAG
 foreach my $slice (map { $_ * 10 }  1 .. (($steps / 10) - 1)) {
 	my @dependant = grep { rand > rand } @items[$slice-10 .. $slice-1];
 	my @depended = @items[$slice .. $slice+9];
@@ -35,11 +35,11 @@ my @finished = grep { $_->is_satisfied } @items;
 
 foreach my $item ( @items ) {
 	$item->mock( 'do' => sub {
-		my $state = shift;
+		my $step = shift;
 		POE::Session->create(
 			inline_states => {
 				_start => sub { },
-				_stop => sub { push @finished, $state },
+				_stop => sub { push @finished, $step },
 			}
 		);
 	});
