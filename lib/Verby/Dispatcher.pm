@@ -171,9 +171,9 @@ sub create_poe_sessions {
 								$kernel->sig("VERBY_STEP_FINISHED"); # we're no longer waiting for other steps to finish
 								$kernel->refcount_decrement( $session->ID, "unresolved_dependencies" );
 
-								if ( my $pool = $heap->{resource_pool} ) {
+								if ( my $pool = $heap->{resource_pool} and my @req = $heap->{step}->resources ) {
 									$heap->{resource_request} = $pool->request(
-										params => { $heap->{step}->resources },
+										params => { @req },
 										event  => "execute_step",
 									);
 								} else {
