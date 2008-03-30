@@ -5,7 +5,7 @@ use Moose;
 
 with qw(Verby::Action::Run::Unconditional);
 
-our $VERSION = "0.03";
+our $VERSION = "0.04";
 
 has make_path => (
 	isa => "Str",

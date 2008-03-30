@@ -3,7 +3,7 @@
 package Verby::Step;
 use Moose::Role;
 
-our $VERSION = "0.03";
+our $VERSION = "0.04";
 
 requires "do";
 
