@@ -1,7 +1,7 @@
 * Changes for 0.04 (7.4.2007)
 
 - Fix Test::Plan idiocy
-- Fix Verby::Action::RunCmd
+- Fix Verby::Action::Run
 
 * Changes for 0.03 (9.12.2006)
 

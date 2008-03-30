@@ -73,7 +73,7 @@ The thing that the action really does. For example
 
 Will use wget to download C<< $c->url >> to C<< $c->file >>.
 
-This is a bad example though, you ought to subclass L<Verby::Action::RunCmd> if
+This is a bad example though, you ought to subclass L<Verby::Action::Run> if
 you want to run a command.
 
 =item B<verify $cxt>

@@ -299,7 +299,7 @@ COVERAGE section of the L<Verby> module for more information.
 
 =head1 SEE ALSO
 
-L<Verby::Action::Copy> - a L<Verby::Action::RunCmd> subclass.
+L<Verby::Action::Copy> - a L<Verby::Action::Run> subclass.
 
 =head1 AUTHOR
 

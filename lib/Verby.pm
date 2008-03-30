@@ -165,7 +165,7 @@ step being a delegator for actions is not limited to using only one action, so
 if you need to combine procedures, still try to refactor them.
 
 Long running steps, especially ones which drive external processes, like ones
-using L<Verby::Action::RunCmd> should be asynchroneous. This allows
+using L<Verby::Action::Run> should be asynchroneous. This allows
 non-interdependant steps to be executed in parallel.
 
 Actions should minimize partial side effects. Transactional behavior is desired
