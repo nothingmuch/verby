@@ -39,7 +39,7 @@ has derivable_cxts => (
 	isa => "HashRef",
 	is	=> "ro",
 	default => sub {
-	tie my %derivable_cxts, "Tie::RefHash";
+		tie my %derivable_cxts, "Tie::RefHash";
 		return \%derivable_cxts;
 	},
 );
@@ -120,7 +120,7 @@ sub create_poe_sessions {
 
 	my $g_cxt = $self->global_context;
 	$g_cxt->logger->debug("Creating parent POE session");
-	
+
 	POE::Session->create(
 		inline_states => {
 			_start => sub {
@@ -177,7 +177,7 @@ sub create_poe_sessions {
 										event  => "execute_step",
 									);
 								} else {
-									$kernel->call( $session, "execute_step");
+									$kernel->call( $session, "execute_step" );
 								}
 							},
 							execute_step => sub {
