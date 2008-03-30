@@ -15,7 +15,7 @@ sub provides_cxt {
 	return undef;
 }
 
-sub cost {
+sub resources {
 	return ( steps => 1 );
 }
 
@@ -64,8 +64,8 @@ you do before and after others.
 
 =head1 METHODS
 
-This role provides the C<provides_cxt> and C<cost> methods, with sane default
-values, and requires C<depends>, C<is_satisfied> and C<do>. See
+This role provides the C<provides_cxt> and C<resources> methods, with sane
+default values, and requires C<depends>, C<is_satisfied> and C<do>. See
 L<Verby::Step::Simple> and L<Verby::Step::Closure> for more reusable behavior.
 
 =over 4
@@ -107,6 +107,14 @@ chose C<the_path_to_the_thing> to be in your config, this is the place to do:
 
 L<Verby::Step::Closure> provides a convenient way to get this behavior for
 free.
+
+=item B<resources>
+
+Returns the list of required resources to allocate with the dispatcher's
+resource pool, if provided.
+
+This defaults to the resource C<steps> with the value C<1>, generally intended
+to control the maximum number of concurrent jobs.
 
 =back
 

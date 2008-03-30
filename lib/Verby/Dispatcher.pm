@@ -60,6 +60,12 @@ has global_context => (
 	default => sub { $_[0]->config_hub->derive("Verby::Context") },
 );
 
+has resource_pool => (
+	isa => "POE::Component::ResourcePool",
+	is  => "ro",
+	predicate => "has_resource_pool",
+);
+
 sub add_step {
 	my $self = shift;
 
@@ -160,19 +166,33 @@ sub create_poe_sessions {
 								return if $heap->{dependencies}->size; # don't run if we're waiting
 								return if $heap->{ran}++; # don't run twice
 
-								my $step = $heap->{step};
-
 								$heap->{g_cxt}->logger->debug("All dependencies of '$step' have finished, starting");
 
 								$kernel->sig("VERBY_STEP_FINISHED"); # we're no longer waiting for other steps to finish
 								$kernel->refcount_decrement( $session->ID, "unresolved_dependencies" );
 
+								if ( my $pool = $heap->{resource_pool} ) {
+									$heap->{resource_request} = $pool->request(
+										params => { $heap->{step}->resources },
+										event  => "execute_step",
+									);
+								} else {
+									$kernel->call( $session, "execute_step");
+								}
+							},
+							execute_step => sub {
+								my ( $kernel, $session, $heap ) = @_[KERNEL, SESSION, HEAP];
+
 								# this may create child sessions. If it doesn't this session will go away
-								$heap->{verby_dispatcher}->start_step( $step, \@_ );
+								$heap->{verby_dispatcher}->start_step( $heap->{step}, \@_ );
 							},
 							_stop => sub {
 								my ( $kernel, $heap ) = @_[KERNEL, HEAP];
 								my $step = $heap->{step};
+
+								if ( my $request = delete $heap->{resource_request} ) {
+									$request->dismiss;
+								}
 
 								$heap->{g_cxt}->logger->info("step $step has finished.");
 
@@ -208,6 +228,7 @@ sub create_poe_sessions {
 			verby_dispatcher => $self,
 			g_cxt            => $g_cxt, # convenience
 			satisfied        => $self->satisfied_set,
+			( $self->has_resource_pool ? ( resource_pool => $self->resource_pool ) : () ),
 		}
 	);
 }

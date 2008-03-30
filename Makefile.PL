@@ -21,6 +21,7 @@ WriteMakefile(
 		'Class::Inspector'    => 0,
 		'POE'                 => '0.37',
 		'File::Path'          => 0, #  MkPath
+		'POE::Component::ResourcePool' => '0.03',
 
 		# testing
 		'Test::More'         => 0,
