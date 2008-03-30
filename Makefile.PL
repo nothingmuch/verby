@@ -18,7 +18,6 @@ WriteMakefile(
 		'MooseX::LogDispatch' => '1.1001',
 		'Log::Dispatch'       => '2.21',
 		'List::MoreUtils'     => 0,
-		'Devel::Caller::Perl' => 0,
 		'Class::Inspector'    => 0,
 		'POE'                 => '0.37',
 		'File::Path'          => 0, #  MkPath
