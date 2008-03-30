@@ -255,19 +255,6 @@ sub start_step {
 	$step->do($cxt, $poe);
 }
 
-sub finish_step {
-	# FIXME.... Technical debt!
-	die "Can't finish an unstarted step... the universe is bending!";
-	my $self = shift;
-	my $step = shift;
-
-	my $cxt = $self->get_cxt($step);
-
-	$step->finish($cxt);
-	$self->satisfied_set->insert($step);
-	$self->running_set->remove($step);
-}
-
 sub _set_members_query {
 	my $self = shift;
 	my $set = shift;
@@ -316,6 +303,37 @@ Makefile.
 
 =head1 DESCRIPTION
 
+=head1 ATTRIBUTES
+
+=item B<resource_pool>
+
+If provided with a L<POE::Component::ResourcePool> instance, that resource pool
+will be used to handle resource allocation.
+
+The L<Verby::Step/resources> method is used to declare the required resources
+for each step.
+
+=item B<step_set>
+
+Returns the L<Set::Object> that is used for internal bookkeeping of the steps
+involved.
+
+=item B<satisfied_set>
+
+Returns the L<Set::Object> that is used to track which steps are satisfied.
+
+=item B<config_hub>
+
+The configuration hub that all contexts inherit from.
+
+Defaults to an empty parameter set.
+
+=item B<global_context>
+
+The global context objects.
+
+Defaults to a derivation of B<config_hub>.
+
 =head1 METHODS
 
 =over 4
@@ -337,20 +355,11 @@ added into the batch too.
 
 Calculate all the dependencies, and then dispatch in order.
 
-=item B<config_hub ?$new_config_hub>
+=back
 
-A setter getter for the L<Verby::Config::Data> (or compatible) object from which we
-will derive the global context, and it's sub-contexts.
+=begin private
 
-=item B<global_context>
-
-Returns the global context for the dispatcher.
-
-If necessary derives a context from L</config_hub>.
-
-=item B<is_running $step>
-
-Whether or not $step is currently executing.
+=over 4
 
 =item B<is_satisfied $step>
 
@@ -381,52 +390,15 @@ the global context.
 
 =item B<start_step $step>
 
-If step supports the async interface, start it and put it in the running step
-queue. If it's synchroneous, call it's L<Step/do> method.
-
-=item B<finish_step $step>
-
-Finish step, and mark it as satisfied. Only makes sense for async steps.
-
-=item B<mark_running $step>
-
-Put $step in the running queue, and mark it in the running step set.
-
-=item B<push_running $step>
-
-Push $step into the running step queue.
-
-=item B<pop_running>
-
-Pop a step from the running queue.
-
-
-=item B<ordered_steps>
-
-Returns the steps to be executed in order.
+Starts the 
 
 =item B<steps>
 
 Returns a list of steps that the dispatcher cares about.
 
-=item B<step_set>
-
-Returns the L<Set::Object> that is used for internal bookkeeping of the steps
-involved.
-
-=item B<running_steps>
-
-Returns a list of steps currently running.
-
-=item B<running_set>
-
-Returns the L<Set::Object> that is used to track which steps are running.
-
-=item B<satisfied_set>
-
-Returns the L<Set::Object> that is used to track which steps are satisfied.
-
 =back
+
+=end
 
 =head1 BUGS
 

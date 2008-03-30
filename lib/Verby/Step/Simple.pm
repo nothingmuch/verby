@@ -17,7 +17,6 @@ has depends => (
 	default    => sub { [] },
 	auto_deref => 1,
 	provides => {
-		push  => "add_deps",
 		clear => "clear_deps",
 	},
 );

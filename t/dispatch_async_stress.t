@@ -45,11 +45,6 @@ foreach my $item ( @items ) {
 	});
 }
 
-foreach my $item (@items){
-	my $i = rand(rand(10));
-	$item->mock(pump => sub { --$i > 1 });
-}
-
 isa_ok(my $d = $m->new, $m);
 
 my $cfg = Verby::Config::Data->new;
