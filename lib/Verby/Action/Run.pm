@@ -70,9 +70,6 @@ sub sigchld_handler {
 
 	$heap->{c}->logger->debug("sigchild $pid");
 
-	my $wheel = delete $heap->{pid_to_wheel}{$pid};
-	delete $heap->{id_to_wheel}{ $wheel->ID };
-
 	$kernel->refcount_decrement( $session->ID, 'child_processes' );
 
 	$heap->{program_exit} = $child_error;
@@ -175,11 +172,6 @@ sub poe_stop {
 	my ( $self, $kernel, $heap ) = @_[OBJECT, KERNEL, HEAP];
 
 	$heap->{c}->logger->info("Wheel::Run subsession closing");
-
-	if ( scalar keys %{ $heap->{pid_to_wheel} } ) {
-		require Data::Dumper;
-		die "AAAAAAAHHH Running proces!" . Data::Dumper::Dumper($heap);
-	}
 
 	my $c = $heap->{c};
 
