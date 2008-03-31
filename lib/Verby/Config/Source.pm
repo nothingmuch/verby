@@ -3,7 +3,7 @@
 package Verby::Config::Source;
 use Moose;
 
-our $VERSION = "0.04";
+our $VERSION = "0.05";
 
 extends qw/Verby::Config::Data/;
 

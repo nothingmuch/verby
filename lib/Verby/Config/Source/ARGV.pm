@@ -5,7 +5,7 @@ use Moose;
 
 extends qw/Verby::Config::Data/;
 
-our $VERSION = "0.04";
+our $VERSION = "0.05";
 
 use Getopt::Casual;
 

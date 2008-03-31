@@ -7,7 +7,7 @@ with qw/Verby::Action/;
 
 use File::Path qw/mkpath/;
 
-our $VERSION = "0.04";
+our $VERSION = "0.05";
 
 sub do {
 	my $self = shift;

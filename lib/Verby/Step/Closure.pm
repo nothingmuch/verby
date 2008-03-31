@@ -10,7 +10,7 @@ extends qw(Moose::Object Exporter);
 our @EXPORT = "step";
 our @EXPORT_OK = ( @EXPORT, qw(chain_steps) );
 
-our $VERSION = "0.04";
+our $VERSION = "0.05";
 
 use overload '""' => 'stringify';
 

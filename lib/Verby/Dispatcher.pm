@@ -3,7 +3,7 @@
 package Verby::Dispatcher;
 use Moose;
 
-our $VERSION = "0.04";
+our $VERSION = "0.05";
 
 use Set::Object;
 use Verby::Context;

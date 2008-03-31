@@ -3,7 +3,7 @@
 package Verby::Action::Stub;
 use Moose;
 
-our $VERSION = "0.04";
+our $VERSION = "0.05";
 
 with qw/Verby::Action/;
 

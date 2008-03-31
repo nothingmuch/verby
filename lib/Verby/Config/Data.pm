@@ -3,7 +3,7 @@
 package Verby::Config::Data;
 use Moose;
 
-our $VERSION = "0.04";
+our $VERSION = "0.05";
 
 use List::MoreUtils qw/uniq/;
 use Carp qw/croak/;

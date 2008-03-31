@@ -5,7 +5,7 @@ use Moose;
 
 extends qw/Verby::Config::Data::Mutable/;
 
-our $VERSION = "0.04";
+our $VERSION = "0.05";
 
 require overload;
 

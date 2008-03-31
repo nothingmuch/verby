@@ -5,7 +5,7 @@ use Moose;
 
 extends qw/Verby::Config::Source/;
 
-our $VERSION = "0.04";
+our $VERSION = "0.05";
 
 has questions => (
 	isa => "Hashref",
