@@ -57,7 +57,7 @@ sub run_poe (&) {
 
 SKIP: {
 	my $true = "/usr/bin/true";
-	skip 3, "no true(1)" unless -x $true;
+	skip "no true(1)", 3 unless -x $true;
 
 	$logger->clear;
 	my $c = Hash::AsObject->new;
@@ -71,7 +71,7 @@ SKIP: {
 
 SKIP: {
 	my $false = "/usr/bin/false";
-	skip 2, "no false(1)" unless -x $false;
+	skip "no false(1)", 2 unless -x $false;
 
 	$logger->clear;
 	my $c = Hash::AsObject->new;
@@ -83,9 +83,9 @@ SKIP: {
 	ok( $a->verify($c), "command verified" );
 }
 
-{
+SKIP: {
 	my $wc = "/usr/bin/wc";
-	skip 6, "no wc(1)" unless -x $wc;
+	skip "no wc(1)", 6 unless -x $wc;
 
 	$logger->clear;
 	my $c = Hash::AsObject->new;
@@ -107,9 +107,9 @@ FOO
 	ok(!$logger->called("warning"), "no warnings logged");
 }
 
-{
+SKIP: {
 	my $sh = "/bin/sh";
-	skip 5, "no sh(1)" unless -x $sh;
+	skip "no sh(1)", 5 unless -x $sh;
 
 	$logger->clear;
 	my $c = Hash::AsObject->new;
@@ -128,9 +128,9 @@ FOO
 	$logger->called_ok("warning");
 }
 
-{
+SKIP: {
 	my $true = "/usr/bin/true";
-	skip 2, "no true(1)" unless -x $true;
+	skip "no true(1)", 2 unless -x $true;
 
 	$logger->clear;
 	my $c = Hash::AsObject->new;
@@ -148,3 +148,4 @@ FOO
 	is($out, $o, "init invoked and outputted to stdout");
 	is($err, $e, "... and stderr");
 }
+
