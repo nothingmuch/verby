@@ -1,3 +1,10 @@
+* Changes for 0.05
+
+- Fix the skip() calls in t/action_run.t
+- Weird occasionaly premature deletion of output handle caused failure of same
+  test. Wheel is no longer deleted in the sigchld handler, allowing remaining
+  output to be delivered.
+
 * Changes for 0.04
 
 - Fix Test::Plan idiocy
