@@ -71,7 +71,7 @@ SKIP: {
 
 SKIP: {
 	my $false = "/usr/bin/false";
-	skip "no false(1)", 2 unless -x $false;
+	skip "no false(1)", 3 unless -x $false;
 
 	$logger->clear;
 	my $c = Hash::AsObject->new;
@@ -109,7 +109,7 @@ FOO
 
 SKIP: {
 	my $sh = "/bin/sh";
-	skip "no sh(1)", 5 unless -x $sh;
+	skip "no sh(1)", 3 unless -x $sh;
 
 	$logger->clear;
 	my $c = Hash::AsObject->new;
