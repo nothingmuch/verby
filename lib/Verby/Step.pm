@@ -11,9 +11,7 @@ requires "depends";
 
 requires "is_satisfied";
 
-sub provides_cxt {
-	return undef;
-}
+has 'provides_cxt' => (is => 'ro', default => undef);
 
 sub resources {
 	return ( steps => 1 );
